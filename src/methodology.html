@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GloRisk Methodology — How Risk Is Calculated</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/css/styles.css">
+<style>
+
+body { background: var(--bg); color: var(--text); }
+
+/* ── Page shell ─────────────────────────────────────────────────────── */
+.page-nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(10,12,15,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.page-nav .logo-text { font-size: 1.1rem; }
+.page-nav a.back {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.page-nav a.back:hover { color: var(--accent); }
+
+.page-body {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 6rem;
+}
+
+/* ── Typography ─────────────────────────────────────────────────────── */
+.page-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  margin-bottom: 1rem;
+  opacity: 0.8;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 1.25rem;
+}
+
+.page-intro {
+  font-size: 1rem;
+  line-height: 1.78;
+  color: var(--muted);
+  font-weight: 300;
+  margin-bottom: 3rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Section ────────────────────────────────────────────────────────── */
+.method-section { margin-bottom: 3rem; }
+
+.method-heading {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  margin-bottom: 0.85rem;
+  color: var(--text);
+}
+
+.method-body {
+  font-size: 0.93rem;
+  line-height: 1.8;
+  color: var(--muted);
+  font-weight: 300;
+}
+.method-body p { margin-bottom: 0.85rem; }
+.method-body p:last-child { margin-bottom: 0; }
+.method-body strong { color: var(--text); font-weight: 500; }
+
+/* ── Scoring chips ───────────────────────────────────────────────────── */
+.score-chips {
+  display: flex;
+  gap: 8px;
+  margin: 1.25rem 0 0;
+  flex-wrap: wrap;
+}
+.score-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+.score-chip--green { background: rgba(34,197,94,0.12);  color: var(--green); }
+.score-chip--amber { background: rgba(245,158,11,0.12); color: var(--amber); }
+.score-chip--red   { background: rgba(239,68,68,0.12);  color: var(--red); }
+
+/* ── Indicator groups ────────────────────────────────────────────────── */
+.ind-group { margin: 1.75rem 0 0; }
+
+.ind-group-label {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted2);
+  margin-bottom: 0.6rem;
+  padding-left: 2px;
+}
+
+.ind-list {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.ind-list-item {
+  display: grid;
+  grid-template-columns: 148px 1fr;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.ind-list-item:last-child { border-bottom: none; }
+
+.ind-list-name {
+  padding: 13px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.77rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  padding-top: 14px;
+}
+
+.ind-list-desc {
+  padding: 13px 16px;
+  color: var(--muted);
+  line-height: 1.55;
+  background: var(--surface);
+  font-size: 0.87rem;
+  font-weight: 300;
+}
+
+/* ── Mood table ──────────────────────────────────────────────────────── */
+.mood-table {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 1.5rem 0 0;
+}
+.mood-table-row {
+  display: grid;
+  grid-template-columns: 120px 90px 1fr;
+  border-bottom: 1px solid var(--border);
+}
+.mood-table-row:last-child { border-bottom: none; }
+.mood-table-row.header {
+  background: var(--surface2);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+}
+.mood-table-cell {
+  padding: 12px 16px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.87rem;
+}
+.mood-table-cell:last-child { border-right: none; }
+.mood-table-cell.pct {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.mood-table-cell.desc { color: var(--muted); font-weight: 300; line-height: 1.5; }
+.mood-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Divider ─────────────────────────────────────────────────────────── */
+.method-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 2.5rem 0;
+}
+
+/* ── Disclaimer ──────────────────────────────────────────────────────── */
+.method-disclaimer {
+  margin-top: 3rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: var(--muted);
+  font-style: italic;
+}
+
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <div class="logo-text">Glo<span style="color:var(--accent)">Risk</span></div>
+  <a href="/index.html" class="back">← Back to GloRisk</a>
+</nav>
+
+<div class="page-body">
+
+  <div class="page-eyebrow">Methodology</div>
+  <h1 class="page-title">How GloRisk calculates risk</h1>
+  <p class="page-intro">GloRisk assigns every asset a single risk score derived from price-based indicators. Each indicator is scored independently, the scores are summed, and the total determines the asset's Risk State — from Very Stable through to Critical. This page explains exactly how each step works.</p>
+
+  <!-- ── The basic idea ── -->
+  <div class="method-section">
+    <div class="method-heading">The basic idea</div>
+    <div class="method-body">
+      <p>Risk analysis can be thought of in three layers: <strong>volatility</strong> (how wildly the price moves), <strong>trend</strong> (is the price going up or down over time), and <strong>return</strong> (how much has the price actually changed). GloRisk measures all three, combining them into a single composite score.</p>
+      <p>Each indicator is scored green, amber, or red. A low score means low risk signals; a high score means multiple warning signs are active simultaneously.</p>
+    </div>
+    <div class="score-chips">
+      <div class="score-chip score-chip--green">● Green — low risk signal</div>
+      <div class="score-chip score-chip--amber">● Amber — elevated signal</div>
+      <div class="score-chip score-chip--red">● Red — high risk signal</div>
+    </div>
+  </div>
+
+  <div class="method-divider"></div>
+
+  <!-- ── Risk indicators ── -->
+  <div class="method-section">
+    <div class="method-heading">Risk indicators</div>
+    <div class="method-body">
+      <p>Indicators fall into three groups: volatility, trend, and return.</p>
+    </div>
+
+    <div class="ind-group">
+      <div class="ind-group-label">Volatility</div>
+      <div class="ind-list">
+        <div class="ind-list-item">
+          <div class="ind-list-name">Price Swings</div>
+          <div class="ind-list-desc">Measures how wildly the price swings day-to-day, expressed as an annualised figure. Higher volatility means larger and more unpredictable price moves — and greater risk.</div>
+        </div>
+        <div class="ind-list-item">
+          <div class="ind-list-name">Unusual Activity</div>
+          <div class="ind-list-desc">Compares recent volatility to the longer-term average. A rising ratio means volatility is accelerating — something is changing. Used to detect sudden spikes that may not yet be reflected in other indicators.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ind-group">
+      <div class="ind-group-label">Trend</div>
+      <div class="ind-list">
+        <div class="ind-list-item">
+          <div class="ind-list-name">Short-Term Trend</div>
+          <div class="ind-list-desc">The price relative to its 50-day moving average (50D MA). Trading above the 50D MA is a bullish signal. Trading well below it suggests the short-term trend has turned negative.</div>
+        </div>
+        <div class="ind-list-item">
+          <div class="ind-list-name">Long-Term Trend</div>
+          <div class="ind-list-desc">The price relative to its 200-day moving average (200D MA). The 200D MA is the gold standard of long-term trend direction. A significant gap below the 200D MA is a strong warning sign.</div>
+        </div>
+        <div class="ind-list-item">
+          <div class="ind-list-name">MA Cross</div>
+          <div class="ind-list-desc">Whether the 50D MA is above or below the 200D MA. When the 50D MA crosses above the 200D MA it is called a Golden Cross — a bullish signal. The reverse is the Death Cross. This is a binary indicator: either bullish or bearish, with no middle ground.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ind-group">
+      <div class="ind-group-label">Return</div>
+      <div class="ind-list">
+        <div class="ind-list-item">
+          <div class="ind-list-name">vs 3Y Peak</div>
+          <div class="ind-list-desc">How far the current price sits below its 3-year all-time high. Large sustained drawdowns from the peak signal structural weakness — the asset has lost significant value and not recovered.</div>
+        </div>
+        <div class="ind-list-item">
+          <div class="ind-list-name">1M Return</div>
+          <div class="ind-list-desc">Total price return over the past 30 days. Captures short-term direction. A sharp monthly decline is scored as a meaningful risk signal.</div>
+        </div>
+        <div class="ind-list-item">
+          <div class="ind-list-name">1Y Return</div>
+          <div class="ind-list-desc">Total price return over the past 12 months of available data. A sustained negative annual return indicates the asset has been in a prolonged downtrend.</div>
+        </div>
+        <div class="ind-list-item">
+          <div class="ind-list-name">52-Week Range</div>
+          <div class="ind-list-desc">Where the current price sits within its 52-week high-low band. An asset trading near its 52-week low has given back most of its recent gains and is showing price weakness.</div>
+        </div>
+        <div class="ind-list-item">
+          <div class="ind-list-name">3Y CAGR</div>
+          <div class="ind-list-desc">Compound annual growth rate over three years. This is a binary indicator: a positive 3-year CAGR means the asset has grown in value on an annualised basis. Any negative CAGR — meaning the asset has destroyed value over three years — is scored as a risk signal. There is no middle ground.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="method-divider"></div>
+
+  <!-- ── Composite score ── -->
+  <div class="method-section">
+    <div class="method-heading">Composite score and Risk State</div>
+    <div class="method-body">
+      <p>The indicator scores are summed to produce a composite score. This score is then expressed as a percentage of the maximum possible score to determine the asset's Risk State.</p>
+      <p>Using a percentage rather than a raw score means the thresholds remain stable even if the number of indicators changes in future.</p>
+    </div>
+
+    <div class="mood-table">
+      <div class="mood-table-row header">
+        <div class="mood-table-cell">Risk State</div>
+        <div class="mood-table-cell">% of max risk</div>
+        <div class="mood-table-cell">What it means</div>
+      </div>
+      <div class="mood-table-row">
+        <div class="mood-table-cell"><div class="mood-dot" style="background:#60a5fa"></div>Very Stable</div>
+        <div class="mood-table-cell pct">0 – 10%</div>
+        <div class="mood-table-cell desc">Nearly all indicators are green. The asset is showing very few risk signals.</div>
+      </div>
+      <div class="mood-table-row">
+        <div class="mood-table-cell"><div class="mood-dot" style="background:#22c55e"></div>Stable</div>
+        <div class="mood-table-cell pct">10 – 20%</div>
+        <div class="mood-table-cell desc">Mostly green indicators with a small number of ambers. Low overall risk signal.</div>
+      </div>
+      <div class="mood-table-row">
+        <div class="mood-table-cell"><div class="mood-dot" style="background:#f59e0b"></div>Unstable</div>
+        <div class="mood-table-cell pct">20 – 50%</div>
+        <div class="mood-table-cell desc">A mix of green, amber and red signals. Risk is elevated but not at an extreme level.</div>
+      </div>
+      <div class="mood-table-row">
+        <div class="mood-table-cell"><div class="mood-dot" style="background:#f97316"></div>Stressed</div>
+        <div class="mood-table-cell pct">50 – 70%</div>
+        <div class="mood-table-cell desc">Multiple red signals are active. More than half of the maximum risk score has been reached.</div>
+      </div>
+      <div class="mood-table-row">
+        <div class="mood-table-cell"><div class="mood-dot" style="background:#ef4444"></div>Critical</div>
+        <div class="mood-table-cell pct">70 – 100%</div>
+        <div class="mood-table-cell desc">The majority of indicators are red. The asset is displaying widespread, severe risk signals across all three dimensions.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="method-divider"></div>
+
+  <!-- ── Data and limitations ── -->
+  <div class="method-section">
+    <div class="method-heading">Data and limitations</div>
+    <div class="method-body">
+      <p>GloRisk uses <strong>daily closing prices</strong> as its primary input. Indicators that require moving averages are computed from 50-day and 200-day simple moving averages aligned to the price history.</p>
+      <p>All calculations are based on <strong>historical price data only</strong>. GloRisk does not factor in news, on-chain data, fundamentals, sentiment, liquidity, or any qualitative information. Two assets with identical price histories will always receive identical scores.</p>
+    </div>
+  </div>
+
+  <div class="method-divider"></div>
+
+  <!-- ── What this score is and isn't ── -->
+  <div class="method-section">
+    <div class="method-heading">What this score is — and isn't</div>
+    <div class="method-body">
+      <p>The GloRisk score is a <strong>signal aggregator</strong>, not a prediction. It summarises where an asset sits across multiple price-based dimensions at a given point in time. A Critical score does not mean the price will fall further; a Very Stable score does not mean the price will rise.</p>
+      <p>High-risk scores can persist for extended periods, and assets can move from Critical to Stable very quickly. The score is most useful as a consistent, comparable snapshot — particularly when tracking how an asset's risk profile changes over time, or when comparing risk levels across a portfolio.</p>
+    </div>
+  </div>
+
+  <div class="method-divider"></div>
+
+  <!-- ── Future development ── -->
+  <div class="method-section">
+    <div class="method-heading">Future development</div>
+    <div class="method-body">
+      <p>GloRisk currently bases its risk score entirely on <strong>price history</strong>. While this provides a consistent and objective baseline, price data alone does not capture the full picture of an asset's risk profile.</p>
+      <p>In future versions we plan to incorporate additional indicator categories — including <strong>company financials</strong> (earnings, debt, valuations) and <strong>macroeconomic factors</strong> (interest rates, inflation, broader market conditions) — to provide a more holistic and rounded risk assessment.</p>
+    </div>
+  </div>
+
+  <div class="method-disclaimer">
+    Analysis is based on historical price behaviour only. Not investment advice. Past performance is not indicative of future results. Conditions can change quickly and risk scores may not reflect current market circumstances. Always conduct your own research before making any investment decision.
+  </div>
+
+</div>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div class="site-footer-logo">Glo<span>Risk</span></div>
+    <p>GloRisk is a free research tool and not a commercial product. It was built to help everyday investors assess risk across global markets more clearly.</p>
+    <p>Data is refreshed at least weekly. Nothing on this site constitutes financial advice. Always do your own research before making investment decisions.</p>
+    <p>For questions or feedback, get in touch: <a href="https://knolalabs.com" target="_blank" rel="noopener">knolalabs.com</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

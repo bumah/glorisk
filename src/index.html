@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GloRisk — Global Asset Risk Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ── Page-specific styles ─────────────────────────────────────────────── */
+
+/* Landing */
+#landing {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 2rem 2rem 0;
+}
+.landing-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+.landing-grid::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, transparent 40%, var(--bg) 100%);
+}
+.landing-glow {
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(0,212,255,0.06) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -60%);
+  pointer-events: none;
+}
+.landing-inner {
+  position: relative; z-index: 1;
+  text-align: center;
+  width: 100%; max-width: 680px;
+}
+.logo-mark {
+  display: inline-flex; align-items: center; gap: 10px;
+  margin-bottom: 2.5rem;
+}
+.logo-mark .logo-text { font-size: 1.8rem; }
+.landing-headline {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin-bottom: 0.75rem;
+}
+.landing-sub {
+  font-size: 1rem;
+  color: var(--muted);
+  font-weight: 300;
+  margin-bottom: 2.5rem;
+  letter-spacing: 0.02em;
+}
+.search-wrap { max-width: 600px; margin: 0 auto; }
+.landing-hint {
+  margin-top: 1rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.landing-hint a { color: var(--accent); text-decoration: none; opacity: 0.7; }
+.landing-hint a:hover { opacity: 1; }
+.mood-legend {
+  display: flex; gap: 10px;
+  justify-content: center; flex-wrap: wrap;
+  margin-top: 3rem;
+}
+.ml-item { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono); letter-spacing: 0.05em; }
+.ml-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.scroll-hint { margin-top: 3rem; font-size: 0.75rem; color: var(--muted2); letter-spacing: 0.1em; }
+
+/* Browse */
+#browseSection { background: var(--bg); }
+#browse { padding: 3rem 1.5rem 4rem; max-width: 1200px; margin: 0 auto; }
+.browse-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+}
+.browse-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
+.browse-layout { display: flex; gap: 2rem; align-items: flex-start; }
+.cards-area { flex: 1; min-width: 0; }
+.cards-count { font-size: 0.8rem; color: var(--muted); font-family: var(--font-mono); margin-bottom: 1rem; }
+.cards-count span { color: var(--text); font-weight: 500; }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+
+/* Report page */
+#report { display: none; }
+.report-nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(10,12,15,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex; align-items: center; gap: 16px;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer; flex-shrink: 0; text-decoration: none;
+}
+.nav-logo .logo-text { font-size: 1.1rem; }
+.nav-search-wrap { flex: 1; max-width: 480px; position: relative; }
+.back-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--muted); font-size: 0.8rem; text-decoration: none;
+  cursor: pointer; transition: color 0.15s; margin-left: auto;
+}
+.back-link:hover { color: var(--accent); }
+.report-body { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+/* Report hero */
+.report-hero {
+  display: flex; align-items: flex-start; gap: 24px;
+  margin-bottom: 2rem; padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.hero-info { flex: 1; }
+.hero-ticker { font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 4px; }
+.hero-name { font-size: 1rem; color: var(--muted); margin-bottom: 10px; }
+.hero-badges { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.hero-price-block { text-align: right; flex-shrink: 0; }
+.hero-price { font-family: var(--font-mono); font-size: 1.8rem; font-weight: 500; letter-spacing: -0.5px; }
+.hero-change { font-family: var(--font-mono); font-size: 0.85rem; margin-top: 4px; }
+.hero-change.pos { color: var(--green); }
+.hero-change.neg { color: var(--red); }
+.hero-asof { font-size: 0.7rem; color: var(--muted); margin-top: 6px; font-family: var(--font-mono); }
+
+/* Loading state */
+.loading-state {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 200px; color: var(--muted); font-family: var(--font-mono);
+  font-size: 0.85rem; gap: 10px;
+}
+</style>
+</head>
+<body>
+
+<!-- ── LANDING ──────────────────────────────────────────────────────── -->
+<div id="landing">
+  <div class="landing-grid"></div>
+  <div class="landing-glow"></div>
+  <div class="landing-inner">
+
+    <div class="logo-mark">
+      <div class="logo-text">Glo<span>Risk</span></div>
+    </div>
+
+    <h1 class="landing-headline">Search any global asset.<br>Get a risk report.</h1>
+    <p class="landing-sub" id="landingSub">Loading… <a href="/methodology.html" style="color:var(--accent);text-decoration:none;opacity:0.7">Read GloRisk methodology →</a></p>
+
+    <div class="search-wrap">
+      <div class="search-bar">
+        <input type="text" class="search-input" id="landingInput"
+          placeholder="Search Bitcoin, ETH, Solana…" autocomplete="off" />
+        <button class="search-btn" id="landingBtn" disabled>Analyse →</button>
+      </div>
+      <div class="search-dropdown" id="landingDropdown"></div>
+    </div>
+
+    <p class="landing-hint" id="landingHint">Loading assets… · <a href="#browse">Browse all ↓</a></p>
+
+    <div class="mood-legend">
+      <div class="ml-item"><div class="ml-dot" style="background:#60a5fa"></div>Very Stable</div>
+      <div class="ml-item"><div class="ml-dot" style="background:#22c55e"></div>Stable</div>
+      <div class="ml-item"><div class="ml-dot" style="background:#f59e0b"></div>Unstable</div>
+      <div class="ml-item"><div class="ml-dot" style="background:#f97316"></div>Stressed</div>
+      <div class="ml-item"><div class="ml-dot" style="background:#ef4444"></div>Critical</div>
+    </div>
+    <div class="scroll-hint">↓ browse all assets</div>
+  </div>
+</div>
+
+<!-- ── BROWSE GRID ─────────────────────────────────────────────────── -->
+<div id="browseSection">
+  <div id="browse">
+    <div class="browse-header">
+      <div class="browse-title">Browse Assets</div>
+      <select class="sort-select" id="sortSelect">
+        <option value="default">Default order</option>
+        <option value="risk-high">Highest Risk</option>
+        <option value="risk-low">Lowest Risk</option>
+        <option value="price-high">Price: High → Low</option>
+        <option value="price-low">Price: Low → High</option>
+        <option value="change">Biggest Movers</option>
+      </select>
+    </div>
+
+    <div class="browse-layout">
+      <div class="filter-sidebar">
+        <div class="filter-group">
+          <div class="filter-group-title">
+            Risk Level
+            <span class="filter-clear" id="clearFilters">Clear all</span>
+          </div>
+          <label class="filter-check">
+            <div class="filter-check-left">
+              <input type="checkbox" class="mood-filter" value="Very Healthy" checked>
+              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#60a5fa"></div>Very Stable</span>
+            </div>
+            <span class="filter-count" id="cnt-very-healthy">0</span>
+          </label>
+          <label class="filter-check">
+            <div class="filter-check-left">
+              <input type="checkbox" class="mood-filter" value="Healthy" checked>
+              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#22c55e"></div>Stable</span>
+            </div>
+            <span class="filter-count" id="cnt-healthy">0</span>
+          </label>
+          <label class="filter-check">
+            <div class="filter-check-left">
+              <input type="checkbox" class="mood-filter" value="Unsettled" checked>
+              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#f59e0b"></div>Unstable</span>
+            </div>
+            <span class="filter-count" id="cnt-unsettled">0</span>
+          </label>
+          <label class="filter-check">
+            <div class="filter-check-left">
+              <input type="checkbox" class="mood-filter" value="Stressed" checked>
+              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#f97316"></div>Stressed</span>
+            </div>
+            <span class="filter-count" id="cnt-stressed">0</span>
+          </label>
+          <label class="filter-check">
+            <div class="filter-check-left">
+              <input type="checkbox" class="mood-filter" value="Critical" checked>
+              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#ef4444"></div>Critical</span>
+            </div>
+            <span class="filter-count" id="cnt-critical">0</span>
+          </label>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-group-title">Asset Type</div>
+          <label class="filter-check">
+            <div class="filter-check-left">
+              <input type="checkbox" class="group-filter" value="Crypto" checked>
+              <span class="filter-check-label">Crypto</span>
+            </div>
+            <span class="filter-count" id="cnt-crypto">—</span>
+          </label>
+          <label class="filter-check">
+            <div class="filter-check-left">
+              <input type="checkbox" class="group-filter" value="SP500" checked>
+              <span class="filter-check-label">S&amp;P 500</span>
+            </div>
+            <span class="filter-count" id="cnt-sp500">—</span>
+          </label>
+          <label class="filter-check">
+            <div class="filter-check-left">
+              <input type="checkbox" class="group-filter" value="FTSE100" checked>
+              <span class="filter-check-label">FTSE 100</span>
+            </div>
+            <span class="filter-count" id="cnt-ftse">—</span>
+          </label>
+          <label class="filter-check">
+            <div class="filter-check-left">
+              <input type="checkbox" class="group-filter" value="Nikkei225" checked>
+              <span class="filter-check-label">Nikkei 225</span>
+            </div>
+            <span class="filter-count" id="cnt-nikkei">—</span>
+          </label>
+          <label class="filter-check">
+            <div class="filter-check-left">
+              <input type="checkbox" class="group-filter" value="HSI" checked>
+              <span class="filter-check-label">Hang Seng</span>
+            </div>
+            <span class="filter-count" id="cnt-hsi">—</span>
+          </label>
+          <label class="filter-check">
+            <div class="filter-check-left">
+              <input type="checkbox" class="group-filter" value="SectorETFs" checked>
+              <span class="filter-check-label">Sector ETFs</span>
+            </div>
+            <span class="filter-count" id="cnt-etfs">—</span>
+          </label>
+          <label class="filter-check">
+            <div class="filter-check-left">
+              <input type="checkbox" class="group-filter" value="Index" checked>
+              <span class="filter-check-label">Indices</span>
+            </div>
+            <span class="filter-count" id="cnt-index">—</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="cards-area">
+        <div class="cards-count" id="cardsCount"></div>
+        <div class="cards-grid" id="cardsGrid">
+          <div class="loading-state" style="grid-column:1/-1">
+            <div class="ai-spinner"></div>
+            Calculating risk indicators…
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── REPORT PAGE ─────────────────────────────────────────────────── -->
+<div id="report">
+  <nav class="report-nav">
+    <div class="nav-logo" id="navLogo">
+      <div class="logo-text">Glo<span>Risk</span></div>
+    </div>
+    <div class="nav-search-wrap">
+      <div class="nav-search-bar">
+        <input type="text" class="nav-search-input" id="navInput"
+          placeholder="Search another asset…" autocomplete="off" />
+        <button class="nav-search-btn" id="navBtn" disabled>Go</button>
+      </div>
+      <div class="search-dropdown" id="navDropdown"></div>
+    </div>
+    <span class="back-link" id="backLink">← Back</span>
+  </nav>
+
+  <div class="report-body page-fade" id="reportBody">
+    <!-- populated by JS -->
+  </div>
+</div>
+
+<script type="module" src="/js/main.js"></script>
+
+<footer class="site-footer" id="siteFooter">
+  <div class="site-footer-inner">
+    <div class="site-footer-logo">Glo<span>Risk</span></div>
+    <p>GloRisk is a free research tool and not a commercial product. It was built to help everyday investors assess risk across global markets more clearly.</p>
+    <p>Data is refreshed at least weekly. Nothing on this site constitutes financial advice. Always do your own research before making investment decisions.</p>
+    <p>For questions or feedback, get in touch: <a href="https://knolalabs.com" target="_blank" rel="noopener">knolalabs.com</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
