@@ -319,13 +319,24 @@ body {
   padding: 1.25rem 1.5rem;
   margin-bottom: 2rem;
 }
+.rm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
 .rm-label {
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--muted);
   font-family: var(--font-mono);
-  margin-bottom: 10px;
+}
+.rm-score-value {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 .rm-track {
   height: 8px;

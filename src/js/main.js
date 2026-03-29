@@ -32,6 +32,24 @@ function moodRsbClass(label) {
   return map[label] ?? 'rsb-amber';
 }
 
+// Map data group to user-friendly asset type
+function assetTypeLabel(group) {
+  const STOCK_GROUPS = ['SP500', 'FTSE100', 'Nikkei225', 'HSI'];
+  if (group === 'Crypto') return 'Crypto';
+  if (STOCK_GROUPS.includes(group)) return 'Stock';
+  if (group === 'SectorETFs') return 'ETF';
+  if (group === 'Index') return 'Index';
+  return group;
+}
+
+// Panda Score: inverted so high = stable, low = risky
+// Raw risk = score * 5 (0-100), then invert. Floor at 10.
+function pandaScore(mood) {
+  const raw = mood.score * 5;
+  return Math.min(95, Math.max(10, 100 - raw));
+}
+
+
 /* ── State ─────────────────────────────────────────────────────────── */
 
 let allCoins     = [];
@@ -270,8 +288,8 @@ function renderCards() {
         </div>
         ${moodPill(c.mood.label)}
         <div class="card-bottom">
-          <div class="score-bar" style="flex:1"><div class="score-fill" style="width:${c.mood.pct}%;background:${color}"></div></div>
-          <div class="card-score-label">${c.mood.pct.toFixed(0)}% risk</div>
+          <div class="score-bar" style="flex:1"><div class="score-fill" style="width:${pandaScore(c.mood)}%;background:${color}"></div></div>
+          <div class="card-score-label">${pandaScore(c.mood)}</div>
         </div>
       </div>
     `;
@@ -364,8 +382,8 @@ function renderReport(coin) {
         <div class="hero-ticker">${coin.ticker}</div>
         <div class="hero-name">${coin.company}</div>
         <div class="hero-badges">
-          <span class="rsb ${rsbCls}">${mood.label}</span>
-          <span class="rsb" style="background:var(--surface2);color:var(--muted);border-color:var(--border2)">${coin.exchange} \u00b7 ${coin.group}</span>
+          <span class="rsb ${rsbCls}">${band.displayLabel ?? mood.label}</span>
+          <span class="rsb" style="background:var(--surface2);color:var(--muted);border-color:var(--border2)">${assetTypeLabel(coin.group)}</span>
         </div>
       </div>
       <div class="hero-price-block">
@@ -375,14 +393,17 @@ function renderReport(coin) {
       </div>
     </div>
 
-    <!-- Risk Meter -->
+    <!-- Panda Score -->
     <div class="risk-meter-wrap">
-      <div class="rm-label">Overall Risk Score</div>
+      <div class="rm-header">
+        <div class="rm-label">Panda Score</div>
+        <div class="rm-score-value" style="color:${band.color}">${pandaScore(mood)}</div>
+      </div>
       <div class="rm-track">
-        <div class="rm-fill" style="width:${mood.pct}%;background:${band.color}"></div>
+        <div class="rm-fill" style="width:${pandaScore(mood)}%;background:${band.color}"></div>
       </div>
       <div class="rm-ticks">
-        <span>Very Stable</span><span>Stable</span><span>Unstable</span><span>Stressed</span><span>Critical</span>
+        <span>Critical</span><span>Very Stable</span>
       </div>
     </div>
 
@@ -523,13 +544,16 @@ function generateSummary(coin) {
     .filter(k => coin.indicators[k]?.color === 'green')
     .map(k => IND_META[k].label);
 
+  const displayLabel = getMoodBand(coin.mood.label).displayLabel ?? coin.mood.label;
+  const ps = pandaScore(coin.mood);
+
   let verdict = '';
   if (coin.mood.label === 'Very Healthy' || coin.mood.label === 'Healthy') {
-    verdict = `${coin.company} is currently rated <strong>${coin.mood.label}</strong> with a risk score of ${coin.mood.score} out of ${MAX_SCORE}, placing it at ${coin.mood.pct.toFixed(0)}% of maximum risk. This is a low-risk reading, indicating the asset is showing few warning signals across the indicators tracked.`;
+    verdict = `${coin.company} is currently rated <strong>${displayLabel}</strong> with a Panda Score of ${ps}/100. A higher score indicates greater stability. This asset is showing few warning signals across the indicators tracked.`;
   } else if (coin.mood.label === 'Unsettled') {
-    verdict = `${coin.company} is currently rated <strong>${coin.mood.label}</strong> with a risk score of ${coin.mood.score} out of ${MAX_SCORE}, placing it at ${coin.mood.pct.toFixed(0)}% of maximum risk. This is an elevated reading \u2014 the asset is showing a mix of positive and negative signals that warrant monitoring.`;
+    verdict = `${coin.company} is currently rated <strong>${displayLabel}</strong> with a Panda Score of ${ps}/100. A higher score indicates greater stability. The asset is showing a mix of positive and negative signals that warrant monitoring.`;
   } else {
-    verdict = `${coin.company} is currently rated <strong>${coin.mood.label}</strong> with a risk score of ${coin.mood.score} out of ${MAX_SCORE}, placing it at ${coin.mood.pct.toFixed(0)}% of maximum risk. This is a high-risk reading, indicating the asset is showing widespread warning signals.`;
+    verdict = `${coin.company} is currently rated <strong>${displayLabel}</strong> with a Panda Score of ${ps}/100. A higher score indicates greater stability. This is a low-stability reading, with multiple warning signals active.`;
   }
 
   let drivers = `Of the ${IND_ORDER.length} indicators tracked, ${redCount} are showing red signals, ${amberCount} amber, and ${greenCount} green.`;
