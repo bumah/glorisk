@@ -254,36 +254,45 @@
           </label>
           <label class="filter-check">
             <div class="filter-check-left">
-              <input type="checkbox" class="group-filter" value="SP500" checked>
-              <span class="filter-check-label">S&amp;P 500</span>
+              <input type="checkbox" class="group-filter group-parent" value="Stocks" checked>
+              <span class="filter-check-label">Stocks</span>
             </div>
-            <span class="filter-count" id="cnt-sp500">—</span>
+            <span class="filter-count" id="cnt-stocks">—</span>
           </label>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="group-filter" value="FTSE100" checked>
-              <span class="filter-check-label">FTSE 100</span>
-            </div>
-            <span class="filter-count" id="cnt-ftse">—</span>
-          </label>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="group-filter" value="Nikkei225" checked>
-              <span class="filter-check-label">Nikkei 225</span>
-            </div>
-            <span class="filter-count" id="cnt-nikkei">—</span>
-          </label>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="group-filter" value="HSI" checked>
-              <span class="filter-check-label">Hang Seng</span>
-            </div>
-            <span class="filter-count" id="cnt-hsi">—</span>
-          </label>
+          <div class="filter-sub" id="stocksSub">
+            <label class="filter-check filter-check--sub">
+              <div class="filter-check-left">
+                <input type="checkbox" class="sub-filter" data-parent="Stocks" value="SP500" checked>
+                <span class="filter-check-label">S&amp;P 500</span>
+              </div>
+              <span class="filter-count" id="cnt-sp500">—</span>
+            </label>
+            <label class="filter-check filter-check--sub">
+              <div class="filter-check-left">
+                <input type="checkbox" class="sub-filter" data-parent="Stocks" value="FTSE100" checked>
+                <span class="filter-check-label">FTSE 100</span>
+              </div>
+              <span class="filter-count" id="cnt-ftse">—</span>
+            </label>
+            <label class="filter-check filter-check--sub">
+              <div class="filter-check-left">
+                <input type="checkbox" class="sub-filter" data-parent="Stocks" value="Nikkei225" checked>
+                <span class="filter-check-label">Nikkei 225</span>
+              </div>
+              <span class="filter-count" id="cnt-nikkei">—</span>
+            </label>
+            <label class="filter-check filter-check--sub">
+              <div class="filter-check-left">
+                <input type="checkbox" class="sub-filter" data-parent="Stocks" value="HSI" checked>
+                <span class="filter-check-label">Hang Seng</span>
+              </div>
+              <span class="filter-count" id="cnt-hsi">—</span>
+            </label>
+          </div>
           <label class="filter-check">
             <div class="filter-check-left">
               <input type="checkbox" class="group-filter" value="SectorETFs" checked>
-              <span class="filter-check-label">Sector ETFs</span>
+              <span class="filter-check-label">ETFs</span>
             </div>
             <span class="filter-count" id="cnt-etfs">—</span>
           </label>

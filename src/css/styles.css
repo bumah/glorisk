@@ -583,6 +583,34 @@ body {
 .filter-mood-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .filter-count { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
 
+/* ── Sub-filters (stock indices) ─────────────────────────────────────────── */
+.filter-sub {
+  padding-left: 23px;
+  border-left: 2px solid var(--border);
+  margin-left: 7px;
+  margin-bottom: 4px;
+  overflow: hidden;
+  transition: max-height 0.25s ease, opacity 0.2s ease;
+}
+.filter-sub.collapsed {
+  max-height: 0 !important;
+  opacity: 0;
+  margin-bottom: 0;
+}
+.filter-check--sub {
+  padding: 3px 0;
+}
+.filter-check--sub .filter-check-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.filter-check--sub:hover .filter-check-label {
+  color: var(--text);
+}
+.filter-check--sub input[type=checkbox] {
+  width: 13px; height: 13px;
+}
+
 /* ── No results ──────────────────────────────────────────────────────────── */
 .no-results {
   padding: 2rem;
