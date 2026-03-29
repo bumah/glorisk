@@ -199,6 +199,23 @@
       </select>
     </div>
 
+    <!-- Asset type tabs -->
+    <div class="type-tabs" id="typeTabs">
+      <button class="type-tab active" data-type="all">All <span class="type-tab-count" id="cnt-all">—</span></button>
+      <button class="type-tab" data-type="Stocks">Stocks <span class="type-tab-count" id="cnt-stocks">—</span></button>
+      <button class="type-tab" data-type="Crypto">Crypto <span class="type-tab-count" id="cnt-crypto">—</span></button>
+      <button class="type-tab" data-type="SectorETFs">ETFs <span class="type-tab-count" id="cnt-etfs">—</span></button>
+      <button class="type-tab" data-type="Index">Indices <span class="type-tab-count" id="cnt-index">—</span></button>
+    </div>
+    <!-- Stock sub-tabs (visible when Stocks is selected) -->
+    <div class="sub-tabs" id="subTabs" style="display:none">
+      <button class="sub-tab active" data-sub="all">All Stocks</button>
+      <button class="sub-tab" data-sub="SP500">S&amp;P 500 <span class="type-tab-count" id="cnt-sp500">—</span></button>
+      <button class="sub-tab" data-sub="FTSE100">FTSE 100 <span class="type-tab-count" id="cnt-ftse">—</span></button>
+      <button class="sub-tab" data-sub="Nikkei225">Nikkei 225 <span class="type-tab-count" id="cnt-nikkei">—</span></button>
+      <button class="sub-tab" data-sub="HSI">Hang Seng <span class="type-tab-count" id="cnt-hsi">—</span></button>
+    </div>
+
     <div class="browse-layout">
       <div class="filter-sidebar">
         <div class="filter-group">
@@ -240,68 +257,6 @@
               <span class="filter-check-label"><div class="filter-mood-dot" style="background:#ef4444"></div>Critical</span>
             </div>
             <span class="filter-count" id="cnt-critical">0</span>
-          </label>
-        </div>
-
-        <div class="filter-group">
-          <div class="filter-group-title">Asset Type</div>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="group-filter" value="Crypto" checked>
-              <span class="filter-check-label">Crypto</span>
-            </div>
-            <span class="filter-count" id="cnt-crypto">—</span>
-          </label>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="group-filter group-parent" value="Stocks" checked>
-              <span class="filter-check-label">Stocks</span>
-            </div>
-            <span class="filter-count" id="cnt-stocks">—</span>
-          </label>
-          <div class="filter-sub" id="stocksSub">
-            <label class="filter-check filter-check--sub">
-              <div class="filter-check-left">
-                <input type="checkbox" class="sub-filter" data-parent="Stocks" value="SP500" checked>
-                <span class="filter-check-label">S&amp;P 500</span>
-              </div>
-              <span class="filter-count" id="cnt-sp500">—</span>
-            </label>
-            <label class="filter-check filter-check--sub">
-              <div class="filter-check-left">
-                <input type="checkbox" class="sub-filter" data-parent="Stocks" value="FTSE100" checked>
-                <span class="filter-check-label">FTSE 100</span>
-              </div>
-              <span class="filter-count" id="cnt-ftse">—</span>
-            </label>
-            <label class="filter-check filter-check--sub">
-              <div class="filter-check-left">
-                <input type="checkbox" class="sub-filter" data-parent="Stocks" value="Nikkei225" checked>
-                <span class="filter-check-label">Nikkei 225</span>
-              </div>
-              <span class="filter-count" id="cnt-nikkei">—</span>
-            </label>
-            <label class="filter-check filter-check--sub">
-              <div class="filter-check-left">
-                <input type="checkbox" class="sub-filter" data-parent="Stocks" value="HSI" checked>
-                <span class="filter-check-label">Hang Seng</span>
-              </div>
-              <span class="filter-count" id="cnt-hsi">—</span>
-            </label>
-          </div>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="group-filter" value="SectorETFs" checked>
-              <span class="filter-check-label">ETFs</span>
-            </div>
-            <span class="filter-count" id="cnt-etfs">—</span>
-          </label>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="group-filter" value="Index" checked>
-              <span class="filter-check-label">Indices</span>
-            </div>
-            <span class="filter-count" id="cnt-index">—</span>
           </label>
         </div>
       </div>

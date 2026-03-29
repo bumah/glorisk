@@ -56,6 +56,8 @@ let allCoins     = [];
 let selectedCoin = null;
 let chartInst    = null;
 let favourites   = new Set();
+let activeType   = 'all';  // 'all', 'Stocks', 'Crypto', 'SectorETFs', 'Index'
+let activeSub    = 'all';  // 'all', 'SP500', 'FTSE100', 'Nikkei225', 'HSI'
 
 /* ── Init ──────────────────────────────────────────────────────────── */
 
@@ -78,14 +80,37 @@ async function init() {
 
   document.querySelectorAll('.mood-filter').forEach(el =>
     el.addEventListener('change', renderCards));
-  document.querySelectorAll('.group-filter').forEach(el =>
-    el.addEventListener('change', onGroupFilterChange));
-  document.querySelectorAll('.sub-filter').forEach(el =>
-    el.addEventListener('change', onSubFilterChange));
   document.getElementById('sortSelect').addEventListener('change', renderCards);
   document.getElementById('clearFilters').addEventListener('click', () => {
-    document.querySelectorAll('.mood-filter, .group-filter, .sub-filter').forEach(el => el.checked = true);
-    document.querySelectorAll('.filter-sub').forEach(el => el.classList.remove('collapsed'));
+    document.querySelectorAll('.mood-filter').forEach(el => el.checked = true);
+    renderCards();
+  });
+
+  // Asset type tabs
+  document.getElementById('typeTabs').addEventListener('click', e => {
+    const tab = e.target.closest('.type-tab');
+    if (!tab) return;
+    document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    activeType = tab.dataset.type;
+    activeSub  = 'all';
+    // Show/hide sub-tabs
+    const subTabs = document.getElementById('subTabs');
+    if (activeType === 'Stocks') {
+      subTabs.style.display = 'flex';
+      document.querySelectorAll('.sub-tab').forEach(t => t.classList.toggle('active', t.dataset.sub === 'all'));
+    } else {
+      subTabs.style.display = 'none';
+    }
+    renderCards();
+  });
+
+  document.getElementById('subTabs').addEventListener('click', e => {
+    const tab = e.target.closest('.sub-tab');
+    if (!tab) return;
+    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    activeSub = tab.dataset.sub;
     renderCards();
   });
   document.getElementById('backLink').addEventListener('click', showLanding);
@@ -159,57 +184,18 @@ function buildDropdownHTML(coins) {
   `).join('');
 }
 
-/* ── Hierarchical filter logic ──────────────────────────────────────── */
+/* ── Tab-based filter logic ─────────────────────────────────────────── */
 
-// Which data groups belong to the "Stocks" parent
 const STOCK_GROUPS = ['SP500', 'FTSE100', 'Nikkei225', 'HSI'];
 
-function onGroupFilterChange(e) {
-  const checkbox = e.target;
-
-  // If this is the "Stocks" parent, toggle all sub-filters + collapse/expand
-  if (checkbox.value === 'Stocks') {
-    const subEl = document.getElementById('stocksSub');
-    document.querySelectorAll('.sub-filter[data-parent="Stocks"]').forEach(el => {
-      el.checked = checkbox.checked;
-    });
-    if (checkbox.checked) {
-      subEl.classList.remove('collapsed');
-    } else {
-      subEl.classList.add('collapsed');
-    }
+function matchesTypeFilter(coin) {
+  if (activeType === 'all') return true;
+  if (activeType === 'Stocks') {
+    if (!STOCK_GROUPS.includes(coin.group)) return false;
+    if (activeSub !== 'all' && coin.group !== activeSub) return false;
+    return true;
   }
-
-  renderCards();
-}
-
-function onSubFilterChange() {
-  // If any sub-filter is checked, make sure the parent is checked too
-  const subs = [...document.querySelectorAll('.sub-filter[data-parent="Stocks"]')];
-  const anyChecked = subs.some(el => el.checked);
-  const parent = document.querySelector('.group-filter[value="Stocks"]');
-  if (parent) parent.checked = anyChecked;
-
-  renderCards();
-}
-
-// Get the set of active data-level groups from the filter UI
-function getActiveGroups() {
-  const groups = new Set();
-
-  // Direct group filters (Crypto, SectorETFs, Index)
-  document.querySelectorAll('.group-filter:checked').forEach(el => {
-    if (el.value !== 'Stocks') {
-      groups.add(el.value);
-    }
-  });
-
-  // Stock sub-filters (SP500, FTSE100, Nikkei225, HSI)
-  document.querySelectorAll('.sub-filter:checked').forEach(el => {
-    groups.add(el.value);
-  });
-
-  return groups;
+  return coin.group === activeType;
 }
 
 /* ── Browse grid ───────────────────────────────────────────────────── */
@@ -226,6 +212,7 @@ function updateCounts() {
   document.getElementById('cnt-unsettled').textContent    = moodCounts['Unsettled'];
   document.getElementById('cnt-stressed').textContent     = moodCounts['Stressed'];
   document.getElementById('cnt-critical').textContent     = moodCounts['Critical'];
+  document.getElementById('cnt-all').textContent           = allCoins.length;
   document.getElementById('cnt-crypto').textContent       = groupCounts['Crypto'];
   document.getElementById('cnt-stocks').textContent       = STOCK_GROUPS.reduce((s, g) => s + (groupCounts[g] || 0), 0);
   document.getElementById('cnt-sp500').textContent        = groupCounts['SP500'];
@@ -251,9 +238,8 @@ function renderCards() {
   const grid        = document.getElementById('cardsGrid');
   const countEl     = document.getElementById('cardsCount');
   const activeMoods = [...document.querySelectorAll('.mood-filter:checked')].map(el => el.value);
-  const activeGroups = getActiveGroups();
   const coins       = getSortedCoins().filter(c =>
-    activeMoods.includes(c.mood.label) && activeGroups.has(c.group)
+    activeMoods.includes(c.mood.label) && matchesTypeFilter(c)
   );
 
   countEl.innerHTML = `Showing <span>${coins.length}</span> of ${allCoins.length} assets`;
