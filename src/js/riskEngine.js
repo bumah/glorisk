@@ -76,17 +76,17 @@ export const MAX_SCORE = 20; // 10 indicators × 2 pts max
 /* ── Indicator metadata ──────────────────────────────────────────────────── */
 
 export const IND_META = {
-  volatility:  { label: 'Price Swings',      desc: 'How wildly the price moves day-to-day, expressed as an annualised figure. Higher volatility means larger and more unpredictable price moves.' },
-  volSpike:    { label: 'Unusual Activity',   desc: 'Recent volatility compared to the longer-term average. A rising ratio means volatility is accelerating — something is changing.' },
-  vsPeak:      { label: 'vs 3Y Peak',         desc: 'How far the price is from its 3-year high. Large drawdowns signal sustained weakness.' },
-  shortTrend:  { label: 'Short-Term Trend',   desc: 'Price vs 50-day moving average. Positive = trading above short-term trend (bullish).' },
-  longTrend:   { label: 'Long-Term Trend',    desc: 'Price vs 200-day moving average. Positive = sustained long-term uptrend intact.' },
-  maCross:     { label: 'MA Cross',           desc: 'Golden Cross (bullish) when the 50D MA is above the 200D MA. Death Cross signals a downtrend.' },
-  momentum:    { label: 'Momentum',           desc: '10-day return minus 30-day return. Positive = price is accelerating upward.' },
-  return1M:    { label: '1M Return',          desc: 'Total price return over the past 30 days.' },
-  return1Y:    { label: '1Y Return',          desc: 'Total price return over the past 12 months of available data.' },
-  range52W:    { label: '52-Week Range',      desc: 'Where the price sits within its 52-week high/low band. Near the bottom = bearish.' },
-  cagr3Y:      { label: '3Y CAGR',            desc: 'Compound annual growth rate over 3 years. Any negative CAGR = long-term value destruction.' },
+  volatility:  { label: 'Daily Volatility',   desc: 'How wildly the price moves day-to-day, expressed as an annualised figure. Higher volatility means larger and more unpredictable price moves.' },
+  volSpike:    { label: 'Volatility Spike',    desc: 'Recent volatility compared to the longer-term average. A rising ratio means volatility is accelerating — something is changing.' },
+  vsPeak:      { label: 'Distance from Peak',  desc: 'How far the price is from its 3-year high. Large drawdowns signal sustained weakness.' },
+  shortTrend:  { label: '50-Day Trend',        desc: 'Price relative to its 50-day moving average. Positive means the price is trading above its short-term trend (bullish).' },
+  longTrend:   { label: '200-Day Trend',       desc: 'Price relative to its 200-day moving average. Positive means the long-term uptrend is intact.' },
+  maCross:     { label: 'Trend Direction',     desc: 'Whether the 50-day average is above (Golden Cross) or below (Death Cross) the 200-day average. A key signal of overall trend direction.' },
+  momentum:    { label: 'Price Momentum',      desc: '10-day return minus 30-day return. Positive means the price is accelerating upward.' },
+  return1M:    { label: '30-Day Return',       desc: 'Total price return over the past 30 days.' },
+  return1Y:    { label: '12-Month Return',     desc: 'Total price return over the past 12 months of available data.' },
+  range52W:    { label: 'Position in Range',   desc: 'Where the price sits within its 52-week high/low band. Near the bottom signals weakness.' },
+  cagr3Y:      { label: '3-Year Growth',       desc: 'Compound annual growth rate over 3 years. A negative rate means the asset has lost value over time.' },
 };
 
 export const IND_ORDER = [

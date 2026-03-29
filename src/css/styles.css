@@ -650,6 +650,107 @@ body {
 }
 .sort-select:focus { border-color: var(--accent); }
 
+/* ── Indicator definitions table ──────────────────────────────────────────── */
+.ind-defs-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.ind-def-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  border-bottom: 1px solid var(--border);
+}
+.ind-def-row:last-child { border-bottom: none; }
+.ind-def-name {
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.77rem;
+  font-weight: 500;
+  color: var(--accent);
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+}
+.ind-def-desc {
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.55;
+  font-weight: 300;
+}
+
+/* ── Full Analysis cards ─────────────────────────────────────────────────── */
+.full-analysis {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.fa-group-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin: 1.5rem 0 0.5rem;
+  padding-left: 2px;
+}
+.fa-group-label:first-child { margin-top: 0; }
+.fa-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 8px;
+}
+.fa-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.fa-card-title {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.fa-card-value {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.fa-val--green { color: var(--green); }
+.fa-val--amber { color: var(--amber); }
+.fa-val--red   { color: var(--red); }
+.fa-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.fa-gauge {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.fa-gauge-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.fa-explain {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--muted);
+  font-weight: 300;
+}
+
 /* ── Report disclaimer ───────────────────────────────────────────────────── */
 .report-disclaimer {
   margin-top: 1.5rem;

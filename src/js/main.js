@@ -355,19 +355,13 @@ function renderReport(coin) {
   const change     = coin.priceChange || 0;
   const changeCls  = change >= 0 ? 'pos' : 'neg';
 
-  // Indicator rows
-  const indRowsHTML = IND_ORDER.map(key => {
-    const ind  = coin.indicators[key];
-    if (!ind) return '';
+  // Indicator definition rows (glossary — no values, just name + definition)
+  const indDefsHTML = IND_ORDER.map(key => {
     const meta = IND_META[key];
     return `
-      <div class="ind-row" title="${meta.desc}">
-        <div class="ind-signal ind-signal--${ind.color}"></div>
-        <div class="ind-info">
-          <div class="ind-name">${meta.label}</div>
-          <div class="ind-desc">${meta.desc}</div>
-        </div>
-        <div class="ind-val ind-val--${ind.color}">${ind.label}</div>
+      <div class="ind-def-row">
+        <div class="ind-def-name">${meta.label}</div>
+        <div class="ind-def-desc">${meta.desc}</div>
       </div>
     `;
   }).join('');
@@ -427,9 +421,13 @@ function renderReport(coin) {
       <canvas id="priceChart" style="max-height:240px"></canvas>
     </div>
 
-    <!-- Indicators -->
-    <div class="section-title" style="margin-top:2rem">Risk Indicators</div>
-    <div class="ind-table">${indRowsHTML}</div>
+    <!-- Full Analysis -->
+    <div class="section-title" style="margin-top:2rem">Full Analysis</div>
+    <div class="full-analysis" id="fullAnalysis">${buildFullAnalysis(coin)}</div>
+
+    <!-- Indicator Definitions -->
+    <div class="section-title" style="margin-top:2rem">Risk Indicator Definitions</div>
+    <div class="ind-defs-table">${indDefsHTML}</div>
 
     <!-- Disclaimer -->
     <p class="report-disclaimer">Analysis is based on historical price behaviour. Not investment advice. Conditions can change quickly.</p>
@@ -523,6 +521,139 @@ async function buildChart(coin) {
       },
     },
   });
+}
+
+/* ── Full Analysis — beginner-friendly breakdown ───────────────────── */
+
+function buildFullAnalysis(coin) {
+  const ind = coin.indicators;
+  const ticker = coin.ticker;
+
+  function dot(color) {
+    return `<span class="fa-dot" style="background:var(--${color})"></span>`;
+  }
+
+  function card(title, v, explanation) {
+    return `
+      <div class="fa-card">
+        <div class="fa-card-header">
+          ${dot(v.color)}
+          <span class="fa-card-title">${title}</span>
+          <span class="fa-card-value fa-val--${v.color}">${v.label}</span>
+        </div>
+        <p class="fa-explain">${explanation}</p>
+      </div>
+    `;
+  }
+
+  const sections = [];
+
+  // --- VOLATILITY ---
+  sections.push(`<div class="fa-group-label">Volatility</div>`);
+
+  if (ind.volatility) {
+    const v = ind.volatility;
+    const text = v.raw < 30
+      ? `${ticker} has relatively calm daily price movements. An annualised volatility of ${v.label} means day-to-day price swings are modest and more predictable.`
+      : v.raw < 60
+      ? `${ticker} shows moderate price swings at ${v.label} annualised. The price can move meaningfully from day to day, which is typical for this type of asset.`
+      : `${ticker} has high volatility at ${v.label} annualised. The price swings significantly from day to day, making it harder to predict short-term moves.`;
+    sections.push(card('Daily Volatility', v, text));
+  }
+
+  if (ind.volSpike) {
+    const v = ind.volSpike;
+    const text = v.raw < 1.0
+      ? `Recent volatility is lower than the historical average (${v.label}). Price behaviour has been calmer than usual lately \u2014 a stable sign.`
+      : v.raw < 2.0
+      ? `Recent volatility is slightly above the historical average at ${v.label}. Something may be shifting, but it\u2019s not extreme.`
+      : `Recent volatility is ${v.label} the historical average \u2014 a significant spike. This often precedes larger price moves and indicates heightened uncertainty.`;
+    sections.push(card('Volatility Spike', v, text));
+  }
+
+  // --- TREND ---
+  sections.push(`<div class="fa-group-label">Trend</div>`);
+
+  if (ind.shortTrend) {
+    const v = ind.shortTrend;
+    const text = v.raw > 0
+      ? `The price is ${v.label} above its 50-day average. The short-term direction is upward \u2014 buyers have been in control recently.`
+      : v.raw > -6
+      ? `The price is ${v.label} below its 50-day average. It has slipped slightly below the short-term trend, which could signal early weakness.`
+      : `The price is ${v.label} below its 50-day average. This is a clear downtrend signal \u2014 the asset has fallen well below where it was trading recently.`;
+    sections.push(card('50-Day Trend', v, text));
+  }
+
+  if (ind.longTrend) {
+    const v = ind.longTrend;
+    const text = v.raw > 0
+      ? `The price sits ${v.label} above its 200-day average \u2014 the long-term trend is intact and pointing upward.`
+      : v.raw > -10
+      ? `The price is ${v.label} below its 200-day average. The long-term trend is starting to weaken but hasn\u2019t broken down completely.`
+      : `The price is ${v.label} below its 200-day average. This is a significant long-term downtrend \u2014 the asset has been losing value over an extended period.`;
+    sections.push(card('200-Day Trend', v, text));
+  }
+
+  if (ind.maCross) {
+    const v = ind.maCross;
+    const text = v.color === 'green'
+      ? `The 50-day average is above the 200-day average \u2014 known as a "Golden Cross." This is a widely-watched bullish signal that suggests the overall trend direction is upward.`
+      : `The 50-day average has fallen below the 200-day average \u2014 known as a "Death Cross." This is a bearish signal that suggests the overall trend direction is downward.`;
+    sections.push(card('Trend Direction', v, text));
+  }
+
+  // --- RETURNS ---
+  sections.push(`<div class="fa-group-label">Returns</div>`);
+
+  if (ind.vsPeak) {
+    const v = ind.vsPeak;
+    const text = v.raw < 20
+      ? `The price is only ${v.label} below its 3-year high. It has held up well and remains close to its peak value.`
+      : v.raw < 30
+      ? `The price is ${v.label} below its 3-year high. A noticeable pullback from the peak, though not extreme.`
+      : `The price is ${v.label} below its 3-year high. This is a deep drawdown \u2014 the asset has lost a significant portion of its peak value and hasn\u2019t recovered.`;
+    sections.push(card('Distance from Peak', v, text));
+  }
+
+  if (ind.return1M) {
+    const v = ind.return1M;
+    const text = v.raw >= 0
+      ? `Over the past 30 days, the price has risen ${v.label}. Short-term direction is positive.`
+      : v.raw > -10
+      ? `Over the past 30 days, the price has fallen ${v.label}. A modest short-term decline.`
+      : `Over the past 30 days, the price has dropped ${v.label}. This is a sharp decline that signals significant selling pressure.`;
+    sections.push(card('30-Day Return', v, text));
+  }
+
+  if (ind.return1Y) {
+    const v = ind.return1Y;
+    const text = v.raw > 0
+      ? `Over the past 12 months, the price is up ${v.label}. The asset has gained value over the longer term.`
+      : v.raw > -20
+      ? `Over the past 12 months, the price is down ${v.label}. A moderate decline over the year.`
+      : `Over the past 12 months, the price has fallen ${v.label}. This sustained decline indicates a prolonged period of weakness.`;
+    sections.push(card('12-Month Return', v, text));
+  }
+
+  if (ind.range52W) {
+    const v = ind.range52W;
+    const text = v.raw > 45
+      ? `The price is in the upper half of its 52-week range (${v.label}). It\u2019s closer to its yearly high than its low \u2014 a sign of strength.`
+      : v.raw > 25
+      ? `The price sits in the middle of its 52-week range (${v.label}). It\u2019s neither near the top nor the bottom of its recent trading band.`
+      : `The price is near the bottom of its 52-week range (${v.label}). It has given back most of its gains from the past year.`;
+    sections.push(card('Position in Range', v, text));
+  }
+
+  if (ind.cagr3Y) {
+    const v = ind.cagr3Y;
+    const text = v.raw > 0
+      ? `The 3-year annual growth rate is ${v.label}. Over three years, the asset has grown in value on an annualised basis \u2014 a positive long-term sign.`
+      : `The 3-year annual growth rate is ${v.label}. Over three years, the asset has lost value on an annualised basis \u2014 meaning it has destroyed long-term value.`;
+    sections.push(card('3-Year Growth', v, text));
+  }
+
+  return sections.join('');
 }
 
 /* ── Risk Summary (rule-based) ─────────────────────────────────────── */
