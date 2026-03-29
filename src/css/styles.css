@@ -814,6 +814,88 @@ body {
   font-weight: 300;
 }
 
+/* ── Report action buttons ───────────────────────────────────────────────── */
+.report-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.ra-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.ra-btn:hover {
+  border-color: var(--border2);
+  color: var(--text);
+  background: var(--surface2);
+}
+.ra-btn svg { flex-shrink: 0; }
+
+/* Section share button */
+.section-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  transition: all 0.15s;
+  margin-left: auto;
+}
+.section-share::before { content: none; }
+.section-share:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ── Print styles ────────────────────────────────────────────────────────── */
+@media print {
+  body { background: #fff; color: #111; }
+  .report-nav, .report-actions, .section-share, .back-link { display: none !important; }
+  .report-body { padding: 1rem; max-width: 100%; }
+  .risk-meter-wrap, .ai-box, .chart-wrap, .fa-card, .ind-defs-table {
+    background: #fff; border-color: #ddd;
+  }
+  .rm-track { background: #e5e5e5; }
+  .fa-explain, .ai-text, .ind-def-desc { color: #333; }
+  .fa-card-title, .ind-name, .hero-ticker { color: #111; }
+  .section-title { color: #666; }
+  .section-title::after { background: #ddd; }
+  .mood-pill { border: 1px solid; }
+  .rsb { border-width: 1px; }
+  canvas { max-height: 200px !important; }
+  .report-body::after {
+    content: 'glorisk.com';
+    display: block;
+    text-align: center;
+    color: #999;
+    font-size: 0.75rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+  }
+  @page { margin: 1.5cm; }
+}
+
 /* ── Report disclaimer ───────────────────────────────────────────────────── */
 .report-disclaimer {
   margin-top: 1.5rem;

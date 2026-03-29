@@ -8,6 +8,7 @@
 
 import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE } from './riskEngine.js';
 import { loadData, searchCoins, fetchAssetData } from './data.js';
+import html2canvas from 'html2canvas';
 
 /* ── Formatting ────────────────────────────────────────────────────── */
 
@@ -42,9 +43,9 @@ function assetTypeLabel(group) {
   return group;
 }
 
-// Panda Score: inverted so high = stable, low = risky
+// GloRisk Score: inverted so high = stable, low = risky
 // Raw risk = score * 5 (0-100), then invert. Floor at 10.
-function pandaScore(mood) {
+function gloriskScore(mood) {
   const raw = mood.score * 5;
   return Math.min(95, Math.max(10, 100 - raw));
 }
@@ -274,8 +275,8 @@ function renderCards() {
         </div>
         ${moodPill(c.mood.label)}
         <div class="card-bottom">
-          <div class="score-bar" style="flex:1"><div class="score-fill" style="width:${pandaScore(c.mood)}%;background:${color}"></div></div>
-          <div class="card-score-label">${pandaScore(c.mood)}</div>
+          <div class="score-bar" style="flex:1"><div class="score-fill" style="width:${gloriskScore(c.mood)}%;background:${color}"></div></div>
+          <div class="card-score-label">${gloriskScore(c.mood)}</div>
         </div>
       </div>
     `;
@@ -356,6 +357,11 @@ function renderReport(coin) {
     ? new Date(coin.lastDate).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
     : '';
 
+  const displayLabel = band.displayLabel ?? mood.label;
+  const ps = gloriskScore(mood);
+  const shareText = `${coin.ticker} (${coin.company}) is rated ${displayLabel} with a GloRisk Score of ${ps}/100 on GloRisk.`;
+  const shareUrl = window.location.origin + '/?asset=' + encodeURIComponent(coin.ticker);
+
   body.innerHTML = `
     <div class="report-hero">
       <div class="hero-info">
@@ -373,14 +379,38 @@ function renderReport(coin) {
       </div>
     </div>
 
-    <!-- Panda Score -->
+    <!-- Report Actions -->
+    <div class="report-actions">
+      <button class="ra-btn" id="btnExportPdf" title="Export as PDF">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Export PDF
+      </button>
+      <button class="ra-btn" id="btnShareX" title="Share on X">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        Share on X
+      </button>
+      <button class="ra-btn" id="btnShareLi" title="Share on LinkedIn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        LinkedIn
+      </button>
+      <button class="ra-btn" id="btnShareImg" title="Share as Image">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Share as Image
+      </button>
+      <button class="ra-btn" id="btnCopyLink" title="Copy link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Copy Link
+      </button>
+    </div>
+
+    <!-- GloRisk Score -->
     <div class="risk-meter-wrap">
       <div class="rm-header">
-        <div class="rm-label">Panda Score</div>
-        <div class="rm-score-value" style="color:${band.color}">${pandaScore(mood)}</div>
+        <div class="rm-label">GloRisk Score</div>
+        <div class="rm-score-value" style="color:${band.color}">${gloriskScore(mood)}</div>
       </div>
       <div class="rm-track">
-        <div class="rm-fill" style="width:${pandaScore(mood)}%;background:${band.color}"></div>
+        <div class="rm-fill" style="width:${gloriskScore(mood)}%;background:${band.color}"></div>
       </div>
       <div class="rm-ticks">
         <span>Critical</span><span>Very Stable</span>
@@ -408,7 +438,13 @@ function renderReport(coin) {
     </div>
 
     <!-- Full Analysis -->
-    <div class="section-title" style="margin-top:2rem">Full Analysis</div>
+    <div class="section-title" style="margin-top:2rem">
+      Full Analysis
+      <span class="section-share" id="btnShareAnalysis" title="Share analysis">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share
+      </span>
+    </div>
     <div class="full-analysis" id="fullAnalysis">${buildFullAnalysis(coin)}</div>
 
     <!-- Indicator Definitions -->
@@ -424,6 +460,167 @@ function renderReport(coin) {
 
   // Rule-based summary
   generateSummary(coin);
+
+  // Wire share/export buttons
+  wireReportActions(coin, shareText, shareUrl);
+}
+
+/* ── Image capture helper ──────────────────────────────────────────── */
+
+async function captureReportImage(coin) {
+  const reportBody = document.getElementById('reportBody');
+  const elements = reportBody.querySelectorAll('.report-hero, .risk-meter-wrap, .ai-box');
+  if (!elements.length) return;
+
+  const tempDiv = document.createElement('div');
+  tempDiv.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:900px;padding:2rem;background:#0a0c0f;color:#e8edf2;font-family:Inter,sans-serif;';
+  elements.forEach(el => tempDiv.appendChild(el.cloneNode(true)));
+  tempDiv.querySelectorAll('.report-actions').forEach(el => el.remove());
+  const wm = document.createElement('div');
+  wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:1rem;border-top:1px solid #1e2530;margin-top:1.5rem;';
+  wm.textContent = 'glorisk.com';
+  tempDiv.appendChild(wm);
+  document.body.appendChild(tempDiv);
+
+  try {
+    const canvas = await html2canvas(tempDiv, { backgroundColor: '#0a0c0f', scale: 2 });
+    document.body.removeChild(tempDiv);
+    // Copy to clipboard
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    } catch {}
+  } catch {
+    document.body.removeChild(tempDiv);
+  }
+}
+
+/* ── Report actions (share + PDF) ───────────────────────────────────── */
+
+function wireReportActions(coin, shareText, shareUrl) {
+  // PDF export via browser print
+  document.getElementById('btnExportPdf')?.addEventListener('click', () => {
+    window.print();
+  });
+
+  // Share on X/Twitter — capture image to clipboard, then open compose
+  document.getElementById('btnShareX')?.addEventListener('click', async () => {
+    await captureReportImage(coin);
+    const url = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`;
+    window.open(url, '_blank', 'width=550,height=420');
+  });
+
+  // Share on LinkedIn
+  document.getElementById('btnShareLi')?.addEventListener('click', async () => {
+    await captureReportImage(coin);
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+    window.open(url, '_blank', 'width=550,height=520');
+  });
+
+  // Copy link
+  document.getElementById('btnCopyLink')?.addEventListener('click', (e) => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      const btn = e.target.closest('.ra-btn');
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+      setTimeout(() => { btn.innerHTML = orig; }, 2000);
+    });
+  });
+
+  // Share as image — capture hero + GloRisk Score + summary
+  document.getElementById('btnShareImg')?.addEventListener('click', async () => {
+    const reportBody = document.getElementById('reportBody');
+    // Capture the top portion: hero, panda score, summary
+    const elements = reportBody.querySelectorAll('.report-hero, .risk-meter-wrap, .ai-box');
+    if (!elements.length) return;
+
+    // Create a temporary container with the key sections
+    const tempDiv = document.createElement('div');
+    tempDiv.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:900px;padding:2rem;background:#0a0c0f;color:#e8edf2;font-family:Inter,sans-serif;';
+    // Add a GloRisk watermark
+    const watermark = document.createElement('div');
+    watermark.style.cssText = 'font-family:Bricolage Grotesque,sans-serif;font-size:0.75rem;color:#3a4250;text-align:center;padding-top:1rem;border-top:1px solid #1e2530;margin-top:1.5rem;';
+    watermark.textContent = 'glorisk.com \u00b7 glorisk.com';
+
+    elements.forEach(el => tempDiv.appendChild(el.cloneNode(true)));
+    tempDiv.appendChild(watermark);
+    // Remove action buttons from the clone
+    tempDiv.querySelectorAll('.report-actions').forEach(el => el.remove());
+    document.body.appendChild(tempDiv);
+
+    try {
+      const canvas = await html2canvas(tempDiv, {
+        backgroundColor: '#0a0c0f',
+        scale: 2,
+        useCORS: true,
+      });
+      document.body.removeChild(tempDiv);
+
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], `${coin.ticker}-glorisk-report.png`, { type: 'image/png' });
+
+        // Try Web Share API with image (mobile)
+        if (navigator.canShare?.({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: `${coin.ticker} Risk Report`, text: shareText });
+            return;
+          } catch {}
+        }
+
+        // Fallback: download the image
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${coin.ticker}-glorisk-report.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    } catch {
+      document.body.removeChild(tempDiv);
+    }
+  });
+
+  // Share analysis section as image
+  document.getElementById('btnShareAnalysis')?.addEventListener('click', async () => {
+    const analysisEl = document.getElementById('fullAnalysis');
+    if (!analysisEl) return;
+
+    const tempDiv = document.createElement('div');
+    tempDiv.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:900px;padding:2rem;background:#0a0c0f;color:#e8edf2;font-family:Inter,sans-serif;';
+    // Header
+    const header = document.createElement('div');
+    header.style.cssText = 'font-family:Bricolage Grotesque,sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:1rem;color:#e8edf2;';
+    header.textContent = `${coin.ticker} \u2014 Full Analysis (GloRisk Score: ${gloriskScore(coin.mood)}/100)`;
+    tempDiv.appendChild(header);
+    tempDiv.appendChild(analysisEl.cloneNode(true));
+    // Watermark
+    const wm = document.createElement('div');
+    wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:1rem;border-top:1px solid #1e2530;margin-top:1rem;';
+    wm.textContent = 'glorisk.com';
+    tempDiv.appendChild(wm);
+    document.body.appendChild(tempDiv);
+
+    try {
+      const canvas = await html2canvas(tempDiv, { backgroundColor: '#0a0c0f', scale: 2 });
+      document.body.removeChild(tempDiv);
+
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], `${coin.ticker}-analysis.png`, { type: 'image/png' });
+        const summaryText = shareText;
+
+        if (navigator.canShare?.({ files: [file] })) {
+          try { await navigator.share({ files: [file], title: `${coin.ticker} Analysis`, text: summaryText }); return; } catch {}
+        }
+        // Fallback: download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${coin.ticker}-analysis.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    } catch { document.body.removeChild(tempDiv); }
+  });
 }
 
 /* ── Price chart ───────────────────────────────────────────────────── */
@@ -662,15 +859,15 @@ function generateSummary(coin) {
     .map(k => IND_META[k].label);
 
   const displayLabel = getMoodBand(coin.mood.label).displayLabel ?? coin.mood.label;
-  const ps = pandaScore(coin.mood);
+  const ps = gloriskScore(coin.mood);
 
   let verdict = '';
   if (coin.mood.label === 'Very Healthy' || coin.mood.label === 'Healthy') {
-    verdict = `${coin.company} is currently rated <strong>${displayLabel}</strong> with a Panda Score of ${ps}/100. A higher score indicates greater stability. This asset is showing few warning signals across the indicators tracked.`;
+    verdict = `${coin.company} is currently rated <strong>${displayLabel}</strong> with a GloRisk Score of ${ps}/100. A higher score indicates greater stability. This asset is showing few warning signals across the indicators tracked.`;
   } else if (coin.mood.label === 'Unsettled') {
-    verdict = `${coin.company} is currently rated <strong>${displayLabel}</strong> with a Panda Score of ${ps}/100. A higher score indicates greater stability. The asset is showing a mix of positive and negative signals that warrant monitoring.`;
+    verdict = `${coin.company} is currently rated <strong>${displayLabel}</strong> with a GloRisk Score of ${ps}/100. A higher score indicates greater stability. The asset is showing a mix of positive and negative signals that warrant monitoring.`;
   } else {
-    verdict = `${coin.company} is currently rated <strong>${displayLabel}</strong> with a Panda Score of ${ps}/100. A higher score indicates greater stability. This is a low-stability reading, with multiple warning signals active.`;
+    verdict = `${coin.company} is currently rated <strong>${displayLabel}</strong> with a GloRisk Score of ${ps}/100. A higher score indicates greater stability. This is a low-stability reading, with multiple warning signals active.`;
   }
 
   let drivers = `Of the ${IND_ORDER.length} indicators tracked, ${redCount} are showing red signals, ${amberCount} amber, and ${greenCount} green.`;
