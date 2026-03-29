@@ -546,6 +546,20 @@ body {
 .rsb-orange { background: rgba(249,115,22,0.1); color: var(--orange); border-color: rgba(249,115,22,0.2); }
 .rsb-red    { background: rgba(239,68,68,0.1);  color: var(--red);    border-color: rgba(239,68,68,0.2); }
 
+/* ── Asset type pill (report hero) ───────────────────────────────────────── */
+.asset-type-pill {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: none;
+}
+
 /* ── Filter sidebar ──────────────────────────────────────────────────────── */
 .filter-sidebar {
   width: 200px;

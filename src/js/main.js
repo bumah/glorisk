@@ -369,7 +369,7 @@ function renderReport(coin) {
         <div class="hero-name">${coin.company}</div>
         <div class="hero-badges">
           <span class="rsb ${rsbCls}">${band.displayLabel ?? mood.label}</span>
-          <span class="rsb" style="background:var(--surface2);color:var(--muted);border-color:var(--border2)">${assetTypeLabel(coin.group)}</span>
+          <span class="asset-type-pill">${assetTypeLabel(coin.group)}</span>
         </div>
       </div>
       <div class="hero-price-block">
