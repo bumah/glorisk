@@ -900,42 +900,65 @@ function generateSummary(coin) {
   const aiText = document.getElementById('aiText');
   if (!aiText) return;
 
-  const redCount   = IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length;
-  const greenCount = IND_ORDER.filter(k => coin.indicators[k]?.color === 'green').length;
-  const amberCount = IND_ORDER.length - redCount - greenCount;
-
-  // Build a more specific summary based on actual indicator states
-  const redIndicators = IND_ORDER
-    .filter(k => coin.indicators[k]?.color === 'red')
-    .map(k => IND_META[k].label);
-
-  const greenIndicators = IND_ORDER
-    .filter(k => coin.indicators[k]?.color === 'green')
-    .map(k => IND_META[k].label);
-
+  const ind = coin.indicators;
   const displayLabel = getMoodBand(coin.mood.label).displayLabel ?? coin.mood.label;
   const ps = gloriskScore(coin.mood);
+  const price = formatPrice(coin.price);
+  const ticker = coin.ticker;
 
-  let verdict = '';
-  if (coin.mood.label === 'Very Healthy' || coin.mood.label === 'Healthy') {
-    verdict = `${coin.company} is currently rated <strong>${displayLabel}</strong> with a GloRisk Score of ${ps}/100. A higher score indicates greater stability. This asset is showing few warning signals across the indicators tracked.`;
-  } else if (coin.mood.label === 'Unsettled') {
-    verdict = `${coin.company} is currently rated <strong>${displayLabel}</strong> with a GloRisk Score of ${ps}/100. A higher score indicates greater stability. The asset is showing a mix of positive and negative signals that warrant monitoring.`;
+  // Opening line
+  let html = `<p><strong>${coin.company}</strong> is rated <strong>${displayLabel}</strong> with a GloRisk Score of <strong>${ps}/100</strong>.</p>`;
+
+  // Build risk details from amber + red indicators only
+  const riskLines = [];
+
+  if (ind.vsPeak && ind.vsPeak.color !== 'green') {
+    riskLines.push(`The current price (${price}) is <strong>${ind.vsPeak.label}</strong> below the 3-year peak \u2014 ${ind.vsPeak.color === 'red' ? 'a deep drawdown that has not recovered' : 'a noticeable pullback from peak value'}.`);
+  }
+
+  if (ind.shortTrend && ind.shortTrend.color !== 'green') {
+    riskLines.push(`The price is <strong>${ind.shortTrend.label}</strong> below the 50-day average \u2014 ${ind.shortTrend.color === 'red' ? 'well below the short-term trend' : 'slightly below the short-term trend'}.`);
+  }
+
+  if (ind.longTrend && ind.longTrend.color !== 'green') {
+    riskLines.push(`The price is <strong>${ind.longTrend.label}</strong> below the 200-day average \u2014 ${ind.longTrend.color === 'red' ? 'a significant long-term gap' : 'the long-term trend is weakening'}.`);
+  }
+
+  if (ind.maCross && ind.maCross.color === 'red') {
+    riskLines.push(`The 50-day average has dropped below the 200-day average \u2014 a <strong>Death Cross</strong>, signalling the overall trend is firmly downward.`);
+  }
+
+  if (ind.return1M && ind.return1M.color !== 'green') {
+    riskLines.push(`Over the past 30 days, the price has fallen <strong>${ind.return1M.label}</strong> \u2014 ${ind.return1M.color === 'red' ? 'sharp recent selling pressure' : 'a modest short-term decline'}.`);
+  }
+
+  if (ind.return1Y && ind.return1Y.color !== 'green') {
+    riskLines.push(`The 12-month return is <strong>${ind.return1Y.label}</strong> \u2014 ${ind.return1Y.color === 'red' ? 'a sustained annual decline' : 'a moderate decline over the year'}.`);
+  }
+
+  if (ind.range52W && ind.range52W.color !== 'green') {
+    riskLines.push(`The price sits at just <strong>${ind.range52W.label}</strong> of its 52-week range \u2014 ${ind.range52W.color === 'red' ? 'near the yearly low' : 'in the lower half of the range'}.`);
+  }
+
+  if (ind.volatility && ind.volatility.color !== 'green') {
+    riskLines.push(`Daily volatility is elevated at <strong>${ind.volatility.label}</strong> annualised \u2014 ${ind.volatility.color === 'red' ? 'large unpredictable swings' : 'moderate price swings'}.`);
+  }
+
+  if (ind.volSpike && ind.volSpike.color !== 'green') {
+    riskLines.push(`Recent volatility is <strong>${ind.volSpike.label}</strong> the historical average \u2014 ${ind.volSpike.color === 'red' ? 'a significant spike in activity' : 'slightly elevated activity'}.`);
+  }
+
+  if (ind.cagr3Y && ind.cagr3Y.color === 'red') {
+    riskLines.push(`The 3-year growth rate is <strong>${ind.cagr3Y.label}</strong> \u2014 the asset has destroyed value over three years.`);
+  }
+
+  if (riskLines.length > 0) {
+    html += `<p>${riskLines.join(' ')}</p>`;
   } else {
-    verdict = `${coin.company} is currently rated <strong>${displayLabel}</strong> with a GloRisk Score of ${ps}/100. A higher score indicates greater stability. This is a low-stability reading, with multiple warning signals active.`;
+    html += `<p>No significant risk signals are currently active. The asset is showing stability across all indicators tracked.</p>`;
   }
 
-  let drivers = `Of the ${IND_ORDER.length} indicators tracked, ${redCount} are showing red signals, ${amberCount} amber, and ${greenCount} green.`;
-  if (redIndicators.length > 0) {
-    drivers += ` Key pressure points: ${redIndicators.slice(0, 3).join(', ')}.`;
-  }
-  if (greenIndicators.length > 0) {
-    drivers += ` Positive signals: ${greenIndicators.slice(0, 3).join(', ')}.`;
-  }
-
-  const context = `For the risk rating to improve, ${coin.ticker} would need to recover above its key moving averages, show sustained positive momentum, and reduce its drawdown from the historical peak. Until those conditions are met, the current rating reflects the asset\u2019s price-based risk profile at this point in time.`;
-
-  aiText.innerHTML = `<p>${verdict}</p><p>${drivers}</p><p>${context}</p>`;
+  aiText.innerHTML = html;
 }
 
 /* ── Boot ──────────────────────────────────────────────────────────── */
