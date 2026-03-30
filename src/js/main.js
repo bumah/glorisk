@@ -274,7 +274,9 @@ function renderCards() {
     const color     = moodColorMap[c.mood.label] || '#f59e0b';
     const change    = c.priceChange || 0;
     const changeClass = change >= 0 ? 'pos' : 'neg';
-    const isFav    = favourites.has(c.ticker);
+    const g = IND_ORDER.filter(k => c.indicators[k]?.color === 'green').length;
+    const a = IND_ORDER.filter(k => c.indicators[k]?.color === 'amber').length;
+    const r = IND_ORDER.filter(k => c.indicators[k]?.color === 'red').length;
     return `
       <div class="asset-card mood-${moodKey}" data-ticker="${c.ticker}">
         <div class="card-top">
@@ -284,16 +286,18 @@ function renderCards() {
               <div class="card-name">${c.company}</div>
             </div>
           </div>
-          <button class="card-fav ${isFav ? 'active' : ''}" data-fav="${c.ticker}" title="Watchlist">\u2665</button>
+          <div class="card-score" style="color:${color}">${gloriskScore(c.mood)}</div>
         </div>
         <div class="card-mid">
           <div class="card-price">${formatPrice(c.price)}</div>
           <div class="card-change ${changeClass}">${change >= 0 ? '+' : ''}${change.toFixed(2)}% 30D</div>
         </div>
-        ${moodPill(c.mood.label)}
+        <div class="card-mood-row">
+          ${moodPill(c.mood.label)}
+          <span class="card-ind-counts"><span class="cic-g">${g}G</span> <span class="cic-a">${a}A</span> <span class="cic-r">${r}R</span></span>
+        </div>
         <div class="card-bottom">
           <div class="score-bar" style="flex:1"><div class="score-fill" style="width:${gloriskScore(c.mood)}%;background:${color}"></div></div>
-          <div class="card-score-label">${gloriskScore(c.mood)}</div>
         </div>
       </div>
     `;
@@ -301,20 +305,9 @@ function renderCards() {
 
   // Card click
   grid.querySelectorAll('.asset-card').forEach(card => {
-    card.addEventListener('click', e => {
-      if (e.target.closest('.card-fav')) return;
+    card.addEventListener('click', () => {
       const coin = allCoins.find(c => c.ticker === card.dataset.ticker);
       if (coin) showReport(coin);
-    });
-  });
-
-  // Fav click
-  grid.querySelectorAll('.card-fav').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      const ticker = btn.dataset.fav;
-      if (favourites.has(ticker)) { favourites.delete(ticker); btn.classList.remove('active'); }
-      else { favourites.add(ticker); btn.classList.add('active'); }
     });
   });
 }
