@@ -96,20 +96,29 @@ async function init() {
     activeType = tab.dataset.type;
     activeSub  = 'all';
     // Show/hide sub-tabs
-    const subTabs = document.getElementById('subTabs');
-    if (activeType === 'Stocks') {
-      subTabs.style.display = 'flex';
-      document.querySelectorAll('.sub-tab').forEach(t => t.classList.toggle('active', t.dataset.sub === 'all'));
-    } else {
-      subTabs.style.display = 'none';
-    }
+    document.getElementById('subTabs').style.display = activeType === 'Stocks' ? 'flex' : 'none';
+    document.getElementById('cryptoSubTabs').style.display = activeType === 'Crypto' ? 'flex' : 'none';
+    // Reset sub-tab active states
+    document.querySelectorAll('#subTabs .sub-tab, #cryptoSubTabs .sub-tab').forEach(t =>
+      t.classList.toggle('active', t.dataset.sub === 'all'));
     renderCards();
   });
 
+  // Stock sub-tabs
   document.getElementById('subTabs').addEventListener('click', e => {
     const tab = e.target.closest('.sub-tab');
     if (!tab) return;
-    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('#subTabs .sub-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    activeSub = tab.dataset.sub;
+    renderCards();
+  });
+
+  // Crypto sub-tabs
+  document.getElementById('cryptoSubTabs').addEventListener('click', e => {
+    const tab = e.target.closest('.sub-tab');
+    if (!tab) return;
+    document.querySelectorAll('#cryptoSubTabs .sub-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     activeSub = tab.dataset.sub;
     renderCards();
@@ -188,12 +197,20 @@ function buildDropdownHTML(coins) {
 /* ── Tab-based filter logic ─────────────────────────────────────────── */
 
 const STOCK_GROUPS = ['SP500', 'FTSE100', 'Nikkei225', 'HSI'];
+const MAG7_TICKERS = ['MSFT', 'META', 'TSLA', 'GOOG', 'NVDA', 'AMZN', 'AAPL'];
+const CRYPTO_MAJORS = ['BTC', 'ETH', 'BNB', 'XRP', 'SOL'];
 
 function matchesTypeFilter(coin) {
   if (activeType === 'all') return true;
   if (activeType === 'Stocks') {
     if (!STOCK_GROUPS.includes(coin.group)) return false;
+    if (activeSub === 'Mag7') return MAG7_TICKERS.includes(coin.ticker);
     if (activeSub !== 'all' && coin.group !== activeSub) return false;
+    return true;
+  }
+  if (activeType === 'Crypto') {
+    if (coin.group !== 'Crypto') return false;
+    if (activeSub === 'Majors') return CRYPTO_MAJORS.includes(coin.ticker);
     return true;
   }
   return coin.group === activeType;
