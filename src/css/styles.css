@@ -686,6 +686,16 @@ body {
   border-color: var(--accent);
   color: var(--accent);
 }
+.sub-tabs-wrap .sub-tabs { margin-bottom: 8px; }
+.sub-tabs-wrap .sub-tabs:last-child { margin-bottom: 14px; }
+.sub-tabs-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted2);
+  padding: 5px 4px;
+}
 
 /* ── Sub-filters (stock indices) ─────────────────────────────────────────── */
 .filter-sub {

@@ -58,7 +58,8 @@ let selectedCoin = null;
 let chartInst    = null;
 let favourites   = new Set();
 let activeType   = 'all';  // 'all', 'Stocks', 'Crypto', 'SectorETFs', 'Index'
-let activeSub    = 'all';  // 'all', 'SP500', 'FTSE100', 'Nikkei225', 'HSI'
+let activeSub    = 'all';  // 'all', 'SP500', 'FTSE100', 'Nikkei225', 'HSI', 'Mag7', 'Majors', 'sector:...'
+let activeIssuer = 'all';  // 'all', 'Vanguard', 'iShares', 'SPDR'
 
 /* ── Init ──────────────────────────────────────────────────────────── */
 
@@ -96,11 +97,15 @@ async function init() {
     activeType = tab.dataset.type;
     activeSub  = 'all';
     // Show/hide sub-tabs
+    activeIssuer = 'all';
     document.getElementById('subTabs').style.display = activeType === 'Stocks' ? 'flex' : 'none';
     document.getElementById('cryptoSubTabs').style.display = activeType === 'Crypto' ? 'flex' : 'none';
+    document.getElementById('etfSubWrap').style.display = activeType === 'SectorETFs' ? 'block' : 'none';
     // Reset sub-tab active states
-    document.querySelectorAll('#subTabs .sub-tab, #cryptoSubTabs .sub-tab').forEach(t =>
+    document.querySelectorAll('#subTabs .sub-tab, #cryptoSubTabs .sub-tab, #etfSectorTabs .sub-tab').forEach(t =>
       t.classList.toggle('active', t.dataset.sub === 'all'));
+    document.querySelectorAll('#etfIssuerTabs .sub-tab').forEach(t =>
+      t.classList.toggle('active', t.dataset.issuer === 'all'));
     renderCards();
   });
 
@@ -121,6 +126,26 @@ async function init() {
     document.querySelectorAll('#cryptoSubTabs .sub-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     activeSub = tab.dataset.sub;
+    renderCards();
+  });
+
+  // ETF sector sub-tabs
+  document.getElementById('etfSectorTabs').addEventListener('click', e => {
+    const tab = e.target.closest('.sub-tab');
+    if (!tab) return;
+    document.querySelectorAll('#etfSectorTabs .sub-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    activeSub = tab.dataset.sub;
+    renderCards();
+  });
+
+  // ETF issuer sub-tabs
+  document.getElementById('etfIssuerTabs').addEventListener('click', e => {
+    const tab = e.target.closest('.sub-tab');
+    if (!tab) return;
+    document.querySelectorAll('#etfIssuerTabs .sub-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    activeIssuer = tab.dataset.issuer;
     renderCards();
   });
   document.getElementById('backLink').addEventListener('click', showLanding);
@@ -200,6 +225,14 @@ const STOCK_GROUPS = ['SP500', 'FTSE100', 'Nikkei225', 'HSI'];
 const MAG7_TICKERS = ['MSFT', 'META', 'TSLA', 'GOOG', 'NVDA', 'AMZN', 'AAPL'];
 const CRYPTO_MAJORS = ['BTC', 'ETH', 'BNB', 'XRP', 'SOL'];
 
+// Detect ETF issuer from company name
+function etfIssuer(company) {
+  if (company.startsWith('Vanguard')) return 'Vanguard';
+  if (company.startsWith('iShares')) return 'iShares';
+  if (company.includes('SPDR')) return 'SPDR';
+  return 'Other';
+}
+
 function matchesTypeFilter(coin) {
   if (activeType === 'all') return true;
   if (activeType === 'Stocks') {
@@ -211,6 +244,18 @@ function matchesTypeFilter(coin) {
   if (activeType === 'Crypto') {
     if (coin.group !== 'Crypto') return false;
     if (activeSub === 'Majors') return CRYPTO_MAJORS.includes(coin.ticker);
+    return true;
+  }
+  if (activeType === 'SectorETFs') {
+    if (coin.group !== 'SectorETFs') return false;
+    // Sector filter
+    if (activeSub !== 'all' && activeSub.startsWith('sector:')) {
+      if (coin.sector !== activeSub.replace('sector:', '')) return false;
+    }
+    // Issuer filter
+    if (activeIssuer !== 'all') {
+      if (etfIssuer(coin.company) !== activeIssuer) return false;
+    }
     return true;
   }
   return coin.group === activeType;
