@@ -140,6 +140,7 @@ body {
 .search-btn:hover  { background: #00eaff; }
 .search-btn:active { transform: scale(0.97); }
 .search-btn:disabled { background: var(--muted2); color: var(--muted); cursor: default; }
+.search-btn--standalone { margin-top: 12px; width: 100%; padding: 14px 22px; font-size: 0.95rem; border-radius: var(--radius); }
 
 /* Nav compact search */
 .nav-search-bar {

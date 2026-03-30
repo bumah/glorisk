@@ -266,12 +266,12 @@ body { background: var(--bg); color: var(--text); }
       <div class="ind-group-label">Volatility</div>
       <div class="ind-list">
         <div class="ind-list-item">
-          <div class="ind-list-name">Price Swings</div>
-          <div class="ind-list-desc">Measures how wildly the price swings day-to-day, expressed as an annualised figure. Higher volatility means larger and more unpredictable price moves — and greater risk.</div>
+          <div class="ind-list-name">Daily Volatility</div>
+          <div class="ind-list-desc">How wildly the price moves day-to-day, expressed as an annualised figure. Higher volatility means larger and more unpredictable price moves.</div>
         </div>
         <div class="ind-list-item">
-          <div class="ind-list-name">Unusual Activity</div>
-          <div class="ind-list-desc">Compares recent volatility to the longer-term average. A rising ratio means volatility is accelerating — something is changing. Used to detect sudden spikes that may not yet be reflected in other indicators.</div>
+          <div class="ind-list-name">Volatility Spike</div>
+          <div class="ind-list-desc">Recent volatility compared to the longer-term average. A rising ratio means volatility is accelerating — something is changing.</div>
         </div>
       </div>
     </div>
@@ -280,16 +280,16 @@ body { background: var(--bg); color: var(--text); }
       <div class="ind-group-label">Trend</div>
       <div class="ind-list">
         <div class="ind-list-item">
-          <div class="ind-list-name">Short-Term Trend</div>
-          <div class="ind-list-desc">The price relative to its 50-day moving average (50D MA). Trading above the 50D MA is a bullish signal. Trading well below it suggests the short-term trend has turned negative.</div>
+          <div class="ind-list-name">50-Day Trend</div>
+          <div class="ind-list-desc">Price relative to its 50-day moving average. Positive means the price is trading above its short-term trend (bullish).</div>
         </div>
         <div class="ind-list-item">
-          <div class="ind-list-name">Long-Term Trend</div>
-          <div class="ind-list-desc">The price relative to its 200-day moving average (200D MA). The 200D MA is the gold standard of long-term trend direction. A significant gap below the 200D MA is a strong warning sign.</div>
+          <div class="ind-list-name">200-Day Trend</div>
+          <div class="ind-list-desc">Price relative to its 200-day moving average. Positive means the long-term uptrend is intact.</div>
         </div>
         <div class="ind-list-item">
-          <div class="ind-list-name">MA Cross</div>
-          <div class="ind-list-desc">Whether the 50D MA is above or below the 200D MA. When the 50D MA crosses above the 200D MA it is called a Golden Cross — a bullish signal. The reverse is the Death Cross. This is a binary indicator: either bullish or bearish, with no middle ground.</div>
+          <div class="ind-list-name">Trend Direction</div>
+          <div class="ind-list-desc">Whether the 50-day average is above (Golden Cross) or below (Death Cross) the 200-day average. A key signal of overall trend direction.</div>
         </div>
       </div>
     </div>
@@ -298,24 +298,24 @@ body { background: var(--bg); color: var(--text); }
       <div class="ind-group-label">Return</div>
       <div class="ind-list">
         <div class="ind-list-item">
-          <div class="ind-list-name">vs 3Y Peak</div>
-          <div class="ind-list-desc">How far the current price sits below its 3-year all-time high. Large sustained drawdowns from the peak signal structural weakness — the asset has lost significant value and not recovered.</div>
+          <div class="ind-list-name">Distance from Peak</div>
+          <div class="ind-list-desc">How far the price is from its 3-year high. Large drawdowns signal sustained weakness.</div>
         </div>
         <div class="ind-list-item">
-          <div class="ind-list-name">1M Return</div>
-          <div class="ind-list-desc">Total price return over the past 30 days. Captures short-term direction. A sharp monthly decline is scored as a meaningful risk signal.</div>
+          <div class="ind-list-name">30-Day Return</div>
+          <div class="ind-list-desc">Total price return over the past 30 days.</div>
         </div>
         <div class="ind-list-item">
-          <div class="ind-list-name">1Y Return</div>
-          <div class="ind-list-desc">Total price return over the past 12 months of available data. A sustained negative annual return indicates the asset has been in a prolonged downtrend.</div>
+          <div class="ind-list-name">12-Month Return</div>
+          <div class="ind-list-desc">Total price return over the past 12 months of available data.</div>
         </div>
         <div class="ind-list-item">
-          <div class="ind-list-name">52-Week Range</div>
-          <div class="ind-list-desc">Where the current price sits within its 52-week high-low band. An asset trading near its 52-week low has given back most of its recent gains and is showing price weakness.</div>
+          <div class="ind-list-name">Position in Range</div>
+          <div class="ind-list-desc">Where the price sits within its 52-week high/low band. Near the bottom signals weakness.</div>
         </div>
         <div class="ind-list-item">
-          <div class="ind-list-name">3Y CAGR</div>
-          <div class="ind-list-desc">Compound annual growth rate over three years. This is a binary indicator: a positive 3-year CAGR means the asset has grown in value on an annualised basis. Any negative CAGR — meaning the asset has destroyed value over three years — is scored as a risk signal. There is no middle ground.</div>
+          <div class="ind-list-name">3-Year Growth</div>
+          <div class="ind-list-desc">Compound annual growth rate over 3 years. A negative rate means the asset has lost value over time.</div>
         </div>
       </div>
     </div>

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GloRisk — Market Summary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/css/styles.css">
+<style>
+body { background: var(--bg); color: var(--text); }
+
+.page-nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(10,12,15,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 2rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.page-nav .logo-text { font-size: 1.1rem; }
+.page-nav a { font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+.page-nav a:hover { color: var(--accent); }
+.page-nav .nav-right { margin-left: auto; display: flex; gap: 1rem; }
+
+.page-body { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+.page-eyebrow { font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); margin-bottom: 0.5rem; opacity: 0.8; }
+.page-title { font-family: var(--font-display); font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 800; letter-spacing: -1px; margin-bottom: 0.5rem; }
+.page-date { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); margin-bottom: 2rem; }
+
+.ms-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2rem; }
+
+/* Section */
+.ms-section { margin-bottom: 2.5rem; }
+.ms-section-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
+.ms-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.ms-highlight {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--muted);
+  font-weight: 300;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+}
+.ms-highlight strong { color: var(--text); font-weight: 500; }
+
+/* Table */
+.ms-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.ms-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.78rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.ms-table th {
+  background: var(--surface2);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  padding: 10px 10px;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+}
+.ms-table th:first-child, .ms-table th:nth-child(2), .ms-table th:nth-child(3) { text-align: left; }
+.ms-table td {
+  padding: 10px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+.ms-table tr:last-child td { border-bottom: none; }
+.ms-table td:first-child { text-align: left; font-weight: 500; color: var(--accent); }
+.ms-table td:nth-child(2) { text-align: right; font-weight: 700; font-family: var(--font-display); }
+.ms-table td:nth-child(3) { text-align: left; }
+.ms-table tr:hover td { background: var(--surface2); }
+.ms-table .cell-green { color: var(--green); }
+.ms-table .cell-amber { color: var(--amber); }
+.ms-table .cell-red { color: var(--red); }
+.ms-table .cell-score { font-family: var(--font-display); font-weight: 800; font-size: 0.85rem; }
+
+/* Status pill in table */
+.ms-status { font-size: 0.65rem; font-family: var(--font-display); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 10px; }
+.ms-status-very-stable { background: rgba(96,165,250,0.15); color: var(--blue); }
+.ms-status-stable { background: rgba(34,197,94,0.15); color: var(--green); }
+.ms-status-unstable { background: rgba(245,158,11,0.15); color: var(--amber); }
+.ms-status-stressed { background: rgba(249,115,22,0.15); color: var(--orange); }
+.ms-status-critical { background: rgba(239,68,68,0.15); color: var(--red); }
+
+/* Print */
+@media print {
+  body { background: #fff; color: #111; }
+  .page-nav, .ms-actions { display: none !important; }
+  .ms-table { border-color: #ddd; }
+  .ms-table th { background: #f5f5f5; color: #666; }
+  .ms-table td { color: #333; border-color: #eee; }
+  .page-body::after { content: 'glorisk.com'; display: block; text-align: center; color: #999; font-size: 0.75rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd; }
+}
+
+@media (max-width: 768px) {
+  .ms-table { font-size: 0.68rem; }
+  .ms-table th, .ms-table td { padding: 8px 6px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="/index.html"><div class="logo-text">Glo<span style="color:var(--accent)">Risk</span></div></a>
+  <div class="nav-right">
+    <a href="/index.html">Browse Assets</a>
+    <a href="/methodology.html">Methodology</a>
+  </div>
+</nav>
+
+<div class="page-body">
+  <div class="page-eyebrow">Market Summary</div>
+  <h1 class="page-title">Risk Overview</h1>
+  <div class="page-date" id="asOfDate">Loading...</div>
+
+  <div class="ms-actions">
+    <button class="ra-btn" id="btnPrint">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Export PDF
+    </button>
+    <button class="ra-btn" id="btnShareX">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      Share on X
+    </button>
+  </div>
+
+  <div id="tables">
+    <div style="text-align:center;padding:3rem;color:var(--muted);font-family:var(--font-mono)">Loading market data...</div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div class="site-footer-logo">Glo<span>Risk</span></div>
+    <p>GloRisk is a free research tool. Not financial advice. Always do your own research.</p>
+  </div>
+</footer>
+
+<script type="module">
+import { IND_ORDER, IND_META, getMoodBand, MAX_SCORE } from '/js/riskEngine.js';
+
+// Reduced set of indicators for the summary table
+const SUMMARY_INDS = ['volatility', 'vsPeak', 'shortTrend', 'longTrend', 'maCross', 'return1M'];
+
+const MAG7    = ['MSFT', 'META', 'TSLA', 'GOOG', 'NVDA', 'AMZN', 'AAPL'];
+const MAJORS  = ['BTC', 'ETH', 'BNB', 'XRP', 'SOL'];
+const INDICES = ['SP500', 'FTSE100', 'Nikkei225', 'HSI'];
+const TECH_ETFS = ['XLK', 'VGT', 'IYW'];
+
+function gloriskScore(mood) {
+  return Math.min(95, Math.max(10, 100 - mood.score * 5));
+}
+
+function statusPill(label) {
+  const band = getMoodBand(label);
+  const dl = band.displayLabel ?? label;
+  const cls = dl.toLowerCase().replace(' ', '-');
+  return `<span class="ms-status ms-status-${cls}">${dl}</span>`;
+}
+
+function buildHighlight(title, coins) {
+  if (!coins.length) return '';
+
+  const scores = coins.map(c => gloriskScore(c.mood));
+  const avg = Math.round(scores.reduce((s, v) => s + v, 0) / scores.length);
+  const total = coins.length;
+  const nm = (c) => c.company.split(' ')[0]; // short name — first word
+
+  // Count by status
+  const critical = coins.filter(c => c.mood.label === 'Critical');
+  const stressed = coins.filter(c => c.mood.label === 'Stressed');
+  const elevated = [...critical, ...stressed];
+  const stableCoins = coins.filter(c => c.mood.label === 'Very Healthy' || c.mood.label === 'Healthy');
+
+  // Sort worst to best
+  const sorted = [...coins].sort((a, b) => gloriskScore(a.mood) - gloriskScore(b.mood));
+  const worst3 = sorted.slice(0, 3);
+  const best2  = sorted.slice(-2).reverse();
+
+  // Death crosses & drawdowns
+  const deathCrosses = coins.filter(c => c.indicators.maCross?.color === 'red');
+  const deepDrawdowns = coins.filter(c => c.indicators.vsPeak?.raw > 30);
+
+  // Build rich narrative
+  let parts = [];
+
+  // Opening — how many are at risk
+  if (elevated.length > 0) {
+    const assetWord = title.includes('crypto') || title.includes('Crypto') ? 'cryptocurrencies' : title.includes('ETF') ? 'ETFs' : title.includes('Indic') ? 'indices' : 'stocks';
+    if (elevated.length === total) {
+      parts.push(`All ${total} ${assetWord} are in stressed or critical territory.`);
+    } else {
+      parts.push(`${elevated.length} of ${total} ${assetWord} are showing elevated risk.`);
+    }
+  } else {
+    parts.push(`All ${total} are in stable territory.`);
+  }
+
+  // Name the weakest with their conditions
+  if (worst3.length && elevated.length > 0) {
+    const weakDesc = worst3.map(c => {
+      const ps = gloriskScore(c.mood);
+      const conditions = [];
+      if (c.indicators.maCross?.color === 'red') conditions.push('Death Cross');
+      if (c.indicators.vsPeak?.raw > 40) conditions.push(`${c.indicators.vsPeak.label} from peak`);
+      else if (c.indicators.return1M?.color === 'red') conditions.push(`${c.indicators.return1M.label} in 30 days`);
+      const cond = conditions.length ? ` with ${conditions.join(' and ')}` : '';
+      return `${nm(c)} (${ps})${cond}`;
+    });
+    parts.push(`${weakDesc.join(', ')} are under the most pressure.`);
+  }
+
+  // Name the strongest if there's a mix
+  if (stableCoins.length > 0 && elevated.length > 0 && stableCoins.length <= 3) {
+    const stableDesc = stableCoins.map(c => `${nm(c)} (${gloriskScore(c.mood)})`).join(' and ');
+    parts.push(`Only ${stableDesc} ${stableCoins.length === 1 ? 'remains' : 'remain'} stable.`);
+  }
+
+  // Death cross count
+  if (deathCrosses.length > 0 && deathCrosses.length > 1) {
+    if (deathCrosses.length === total) {
+      parts.push(`Every asset has an active Death Cross.`);
+    } else {
+      parts.push(`${deathCrosses.length} have active Death Cross formations.`);
+    }
+  }
+
+  // Average score
+  parts.push(`The group\u2019s average GloRisk Score is <strong>${avg}</strong>.`);
+
+  return `<div class="ms-highlight">${parts.join(' ')}</div>`;
+}
+
+function buildTable(title, coins) {
+  if (!coins.length) return '';
+
+  const highlight = buildHighlight(title, coins);
+  const headers = SUMMARY_INDS.map(k => `<th>${IND_META[k].label}</th>`).join('');
+
+  const rows = coins.map(c => {
+    const ps = gloriskScore(c.mood);
+    const band = getMoodBand(c.mood.label);
+    const scoreColor = band.color;
+
+    const cells = SUMMARY_INDS.map(k => {
+      const ind = c.indicators[k];
+      if (!ind) return '<td>—</td>';
+      return `<td class="cell-${ind.color}">${ind.label}</td>`;
+    }).join('');
+
+    return `<tr>
+      <td><a href="/index.html?asset=${encodeURIComponent(c.ticker)}" style="color:var(--accent);text-decoration:none">${c.ticker}</a></td>
+      <td class="cell-score" style="color:${scoreColor}">${ps}</td>
+      <td>${statusPill(c.mood.label)}</td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="ms-section">
+      <div class="ms-section-title">${title}</div>
+      ${highlight}
+      <div class="ms-table-wrap">
+        <table class="ms-table">
+          <thead><tr><th>Ticker</th><th>Score</th><th>Status</th>${headers}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function worstSP500(coins) {
+  return coins
+    .filter(c => c.group === 'SP500')
+    .sort((a, b) => a.mood.score === b.mood.score
+      ? b.mood.pct - a.mood.pct
+      : b.mood.score - a.mood.score)
+    .slice(0, 10);
+}
+
+async function init() {
+  const res  = await fetch('/data/coins.json');
+  const data = await res.json();
+  const lookup = {};
+  data.coins.forEach(c => { lookup[c.ticker] = c; });
+
+  const asOfDate = new Date(data.asOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('asOfDate').textContent = `Data as of ${asOfDate}`;
+
+  const mag7Coins  = MAG7.map(t => lookup[t]).filter(Boolean);
+  const majorCoins = MAJORS.map(t => lookup[t]).filter(Boolean);
+  const indexCoins = INDICES.map(t => lookup[t]).filter(Boolean);
+  const techCoins  = TECH_ETFS.map(t => lookup[t]).filter(Boolean);
+
+  document.getElementById('tables').innerHTML =
+    buildTable('Magnificent 7', mag7Coins) +
+    buildTable('Crypto Majors', majorCoins) +
+    buildTable('Global Indices', indexCoins) +
+    buildTable('Technology ETFs', techCoins) +
+    buildTable('Worst S&P 500 Performers', worstSP500(data.coins));
+}
+
+// Actions
+document.getElementById('btnPrint').addEventListener('click', () => window.print());
+document.getElementById('btnShareX').addEventListener('click', () => {
+  const text = 'GloRisk Market Summary \u2014 Risk overview for Magnificent 7, Crypto Majors, Indices & Tech ETFs.';
+  const url = window.location.href;
+  window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text + '\n\n' + url)}`, '_blank', 'width=550,height=420');
+});
+
+init().catch(console.error);
+</script>
+
+</body>
+</html>

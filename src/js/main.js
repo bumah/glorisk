@@ -67,15 +67,23 @@ async function init() {
   const data = await loadData();
   allCoins   = data.coins;
 
-  // Update landing sub — date
+  // Update landing sub — date + market summary link
   const asOfDate = new Date(data.asOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   document.getElementById('landingSub').innerHTML =
-    `Data as of ${asOfDate}. <a href="/methodology.html" style="color:var(--accent);text-decoration:none;opacity:0.7">Read GloRisk methodology \u2192</a>`;
+    `Data as of ${asOfDate}. <a href="/market.html" style="color:var(--accent);text-decoration:none;opacity:0.7">Read latest market summary \u2192</a>`;
   document.getElementById('landingHint').innerHTML =
-    `${allCoins.length} assets \u00b7 <a href="#browse">Browse all \u2193</a>`;
+    `${allCoins.length} assets \u00b7 <a href="/methodology.html" style="color:var(--accent);text-decoration:none;opacity:0.7">GloRisk methodology \u2192</a>`;
 
   updateCounts();
   renderCards();
+
+  // Handle ?asset= URL parameter (deep link from market summary)
+  const params = new URLSearchParams(window.location.search);
+  const assetParam = params.get('asset');
+  if (assetParam) {
+    const coin = allCoins.find(c => c.ticker === assetParam.toUpperCase());
+    if (coin) showReport(coin);
+  }
 
   initSearch('landingInput', 'landingDropdown', 'landingBtn');
   initSearch('navInput', 'navDropdown', 'navBtn');
@@ -414,7 +422,7 @@ function renderReport(coin) {
 
   const displayLabel = band.displayLabel ?? mood.label;
   const ps = gloriskScore(mood);
-  const shareText = `${coin.ticker} (${coin.company}) is rated ${displayLabel} with a GloRisk Score of ${ps}/100 on GloRisk.`;
+  const shareText = `${coin.ticker} (${coin.company}) is rated ${displayLabel} with a GloRisk Score of ${ps} on GloRisk.`;
   const shareUrl = window.location.origin + '/?asset=' + encodeURIComponent(coin.ticker);
 
   body.innerHTML = `
@@ -645,7 +653,7 @@ function wireReportActions(coin, shareText, shareUrl) {
     // Header
     const header = document.createElement('div');
     header.style.cssText = 'font-family:Bricolage Grotesque,sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:1rem;color:#e8edf2;';
-    header.textContent = `${coin.ticker} \u2014 Full Analysis (GloRisk Score: ${gloriskScore(coin.mood)}/100)`;
+    header.textContent = `${coin.ticker} \u2014 Full Analysis (GloRisk Score: ${gloriskScore(coin.mood)})`;
     tempDiv.appendChild(header);
     tempDiv.appendChild(analysisEl.cloneNode(true));
     // Watermark
@@ -907,7 +915,7 @@ function generateSummary(coin) {
   const ticker = coin.ticker;
 
   // Opening line
-  let html = `<p><strong>${coin.company}</strong> is rated <strong>${displayLabel}</strong> with a GloRisk Score of <strong>${ps}/100</strong>.</p>`;
+  let html = `<p><strong>${coin.company}</strong> is rated <strong>${displayLabel}</strong> with a GloRisk Score of <strong>${ps}</strong>.</p>`;
 
   // Build risk details from amber + red indicators only
   const riskLines = [];
