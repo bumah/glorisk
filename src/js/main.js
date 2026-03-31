@@ -381,6 +381,8 @@ function showLanding() {
   document.getElementById('browseSection').style.display  = 'block';
   document.getElementById('report').style.display         = 'none';
   document.getElementById('siteFooter').style.display     = 'block';
+  const solSection = document.querySelector('.solutions-section');
+  if (solSection) solSection.style.display = '';
   document.getElementById('landingInput').value           = '';
   document.getElementById('landingBtn').disabled          = true;
   selectedCoin = null;
@@ -392,6 +394,8 @@ function showReport(coin) {
   document.getElementById('browseSection').style.display  = 'none';
   document.getElementById('report').style.display         = 'block';
   document.getElementById('siteFooter').style.display     = 'none';
+  const solSection = document.querySelector('.solutions-section');
+  if (solSection) solSection.style.display = 'none';
   document.getElementById('navInput').value               = '';
   document.getElementById('navBtn').disabled              = true;
   renderReport(coin);

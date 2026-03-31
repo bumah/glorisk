@@ -71,6 +71,22 @@ body { background: var(--bg); color: var(--text); }
 /* Empty state */
 .st-empty { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.9rem; }
 
+/* Mobile */
+@media (max-width: 768px) {
+  .page-body { padding: 1.5rem 1rem 5rem; }
+  .st-presets { gap: 6px; }
+  .st-preset { padding: 8px 12px; flex: 1; min-width: 100px; }
+  .st-preset-name { font-size: 0.75rem; }
+  .st-preset-desc { font-size: 0.6rem; }
+  .st-table { font-size: 0.7rem; }
+  .st-table th, .st-table td { padding: 8px 6px; }
+  .st-val-input { width: 70px; font-size: 0.68rem; }
+  .st-shock-input { width: 50px; font-size: 0.68rem; }
+  .st-impact { padding: 1rem; }
+  .st-impact-big { font-size: 1.1rem; }
+  .page-nav .nav-right { display: none; }
+}
+
 /* Print */
 @media print {
   body { background: #fff; color: #111; }
