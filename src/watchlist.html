@@ -35,6 +35,11 @@ body { background: var(--bg); color: var(--text); }
 .wl-remove:hover { color: var(--red); }
 .wl-score { font-family: var(--font-display); font-weight: 800; font-size: 0.9rem; }
 
+/* Auth bar */
+.wl-auth-bar { display: flex; align-items: center; margin-bottom: 1rem; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); flex-wrap: wrap; gap: 8px; }
+.wl-auth-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.wl-auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; width: 100%; max-width: 360px; }
+
 /* Actions */
 .wl-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
 
@@ -81,6 +86,35 @@ body { background: var(--bg); color: var(--text); }
   <h1 class="page-title">Your Risk Watchlist</h1>
   <p class="page-sub">Track the risk profile of assets you care about. Add tickers, monitor their scores, and share your watchlist via link.</p>
 
+  <!-- Auth bar -->
+  <div id="authBar" class="wl-auth-bar" style="display:none">
+    <div id="authLoggedOut" style="display:none">
+      <span style="font-size:0.78rem;color:var(--muted)">Sign in to save your watchlist across devices</span>
+      <button class="ra-btn ra-btn--accent" id="btnShowAuth" style="margin-left:8px">Sign In</button>
+    </div>
+    <div id="authLoggedIn" style="display:none">
+      <span style="font-size:0.78rem;color:var(--green)">&#10003;</span>
+      <span style="font-size:0.78rem;color:var(--muted)" id="authEmail"></span>
+      <button class="ra-btn" id="btnSignOut" style="margin-left:8px;font-size:0.7rem">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- Auth modal -->
+  <div id="authModal" class="wl-auth-modal" style="display:none">
+    <div class="wl-auth-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div style="font-family:var(--font-display);font-weight:700;font-size:1rem">Sign In</div>
+        <button id="authClose" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">&times;</button>
+      </div>
+      <input type="email" id="authEmail2" placeholder="Email" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-size:0.85rem;margin-bottom:8px;outline:none">
+      <input type="password" id="authPass" placeholder="Password" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-size:0.85rem;margin-bottom:12px;outline:none">
+      <div id="authError" style="color:var(--red);font-size:0.75rem;margin-bottom:8px;display:none"></div>
+      <button class="search-btn" id="btnSignIn" style="width:100%;margin-bottom:8px">Sign In</button>
+      <button class="ra-btn" id="btnSignUp" style="width:100%;justify-content:center">Create Account</button>
+      <div style="font-size:0.68rem;color:var(--muted);margin-top:10px;text-align:center">Your watchlist syncs across all your devices.</div>
+    </div>
+  </div>
+
   <div class="wl-add" id="addWrap">
     <input type="text" id="addInput" placeholder="Search and add assets to your watchlist..." autocomplete="off">
     <div class="search-dropdown" id="addDrop"></div>
@@ -103,9 +137,11 @@ body { background: var(--bg); color: var(--text); }
 
 <script type="module">
 import { getMoodBand, IND_ORDER, MAX_SCORE } from '/js/riskEngine.js';
+import { supabase, getUser, signIn, signUp, signOut, onAuthChange, getWatchlist, saveWatchlistCloud } from '/js/supabase.js';
 
 let allCoins = [];
 let watchlist = []; // array of ticker strings
+let currentUser = null;
 
 function gloriskScore(mood) { return Math.min(95, Math.max(10, 100 - mood.score * 5)); }
 function formatPrice(p) {
@@ -115,11 +151,15 @@ function formatPrice(p) {
 }
 function getCoin(ticker) { return allCoins.find(c => c.ticker === ticker); }
 
-function saveWatchlist() {
+async function saveWatchlist() {
   localStorage.setItem('glorisk-watchlist', JSON.stringify(watchlist));
   updateUrl();
+  // Sync to cloud if logged in
+  if (currentUser) {
+    await saveWatchlistCloud(watchlist);
+  }
 }
-function loadWatchlist() {
+async function loadWatchlist() {
   // Check URL first
   const params = new URLSearchParams(window.location.search);
   const urlList = params.get('w');
@@ -128,6 +168,16 @@ function loadWatchlist() {
     localStorage.setItem('glorisk-watchlist', JSON.stringify(watchlist));
     return;
   }
+  // Try cloud first if logged in
+  if (currentUser) {
+    const cloud = await getWatchlist();
+    if (cloud?.tickers?.length) {
+      watchlist = cloud.tickers;
+      localStorage.setItem('glorisk-watchlist', JSON.stringify(watchlist));
+      return;
+    }
+  }
+  // Fallback to localStorage
   try { watchlist = JSON.parse(localStorage.getItem('glorisk-watchlist') || '[]'); } catch { watchlist = []; }
 }
 function updateUrl() {
@@ -273,11 +323,112 @@ function wireSearch() {
   });
 }
 
+function updateAuthUI() {
+  const bar = document.getElementById('authBar');
+  const loggedOut = document.getElementById('authLoggedOut');
+  const loggedIn = document.getElementById('authLoggedIn');
+  const emailEl = document.getElementById('authEmail');
+
+  bar.style.display = 'flex';
+  if (currentUser) {
+    loggedOut.style.display = 'none';
+    loggedIn.style.display = 'flex';
+    emailEl.textContent = currentUser.email;
+  } else {
+    loggedOut.style.display = 'flex';
+    loggedIn.style.display = 'none';
+  }
+}
+
+function wireAuth() {
+  const modal = document.getElementById('authModal');
+
+  document.getElementById('btnShowAuth')?.addEventListener('click', () => {
+    modal.style.display = 'flex';
+  });
+  document.getElementById('authClose')?.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  document.getElementById('btnSignIn')?.addEventListener('click', async () => {
+    const email = document.getElementById('authEmail2').value.trim();
+    const pass = document.getElementById('authPass').value;
+    const errEl = document.getElementById('authError');
+    errEl.style.display = 'none';
+
+    const { data, error } = await signIn(email, pass);
+    if (error) {
+      errEl.textContent = error.message;
+      errEl.style.display = 'block';
+    } else {
+      modal.style.display = 'none';
+      currentUser = data.user;
+      updateAuthUI();
+      // Sync: merge localStorage into cloud
+      if (watchlist.length) await saveWatchlistCloud(watchlist);
+      await loadWatchlist();
+      render();
+    }
+  });
+
+  document.getElementById('btnSignUp')?.addEventListener('click', async () => {
+    const email = document.getElementById('authEmail2').value.trim();
+    const pass = document.getElementById('authPass').value;
+    const errEl = document.getElementById('authError');
+    errEl.style.display = 'none';
+
+    if (pass.length < 6) {
+      errEl.textContent = 'Password must be at least 6 characters.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const { data, error } = await signUp(email, pass);
+    if (error) {
+      errEl.textContent = error.message;
+      errEl.style.display = 'block';
+    } else {
+      errEl.textContent = '';
+      errEl.style.display = 'none';
+      modal.style.display = 'none';
+      if (data.user) {
+        currentUser = data.user;
+        updateAuthUI();
+        if (watchlist.length) await saveWatchlistCloud(watchlist);
+      } else {
+        alert('Check your email to confirm your account, then sign in.');
+      }
+    }
+  });
+
+  document.getElementById('btnSignOut')?.addEventListener('click', async () => {
+    await signOut();
+    currentUser = null;
+    updateAuthUI();
+  });
+
+  // Listen for auth changes (e.g., email confirmation redirect)
+  onAuthChange(async (user) => {
+    currentUser = user;
+    updateAuthUI();
+    if (user) {
+      await loadWatchlist();
+      render();
+    }
+  });
+}
+
 async function init() {
   const res = await fetch('/data/coins.json');
   const data = await res.json();
   allCoins = data.coins;
-  loadWatchlist();
+
+  // Check auth state
+  currentUser = await getUser();
+
+  wireAuth();
+  updateAuthUI();
+  await loadWatchlist();
   wireSearch();
   render();
 }
