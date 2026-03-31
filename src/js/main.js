@@ -385,8 +385,6 @@ function showLanding() {
   document.getElementById('landingBtn').disabled          = true;
   selectedCoin = null;
   if (chartInst) { chartInst.destroy(); chartInst = null; }
-  const mobileBar = document.getElementById('mobileToolBar');
-  if (mobileBar) mobileBar.style.display = 'none';
 }
 
 function showReport(coin) {
@@ -634,10 +632,6 @@ function renderReport(coin) {
   if (rtbStress) rtbStress.href = '/stress-test.html';
   const mtbCompare = document.getElementById('mtbCompare');
   if (mtbCompare) mtbCompare.href = `/compare.html?a=${encodeURIComponent(coin.ticker)}`;
-
-  // Show mobile bottom bar
-  const mobileBar = document.getElementById('mobileToolBar');
-  if (mobileBar) mobileBar.style.display = '';
 
   // Add save-as-image buttons to charts
   setTimeout(() => {
