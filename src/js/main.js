@@ -339,7 +339,15 @@ function renderCards() {
               <div class="card-name">${c.company}</div>
             </div>
           </div>
-          <div class="card-score" style="color:${color}">${gloriskScore(c.mood)}</div>
+          <div class="card-score" style="color:${color}">${gloriskScore(c.mood)}${(() => {
+            const sh = c.scoreHistory?.['1m'];
+            if (!sh) return '';
+            const diff = gloriskScore(c.mood) - gloriskScore(sh);
+            if (diff === 0) return '';
+            return diff > 0
+              ? '<span class="card-score-arrow" style="color:var(--green)">\u2191</span>'
+              : '<span class="card-score-arrow" style="color:var(--red)">\u2193</span>';
+          })()}</div>
         </div>
         <div class="card-mid">
           <div class="card-price">${formatPrice(c.price)}</div>
@@ -387,6 +395,44 @@ function showReport(coin) {
   document.getElementById('navBtn').disabled              = true;
   renderReport(coin);
   window.scrollTo(0, 0);
+}
+
+/* ── Score history display ─────────────────────────────────────────── */
+
+function buildScoreHistory(coin) {
+  const sh = coin.scoreHistory;
+  if (!sh || (!sh['1m'] && !sh['1y'])) return '';
+
+  const now = gloriskScore(coin.mood);
+
+  function delta(period) {
+    if (!sh[period]) return null;
+    const prev = gloriskScore(sh[period]);
+    const diff = now - prev;
+    return { prev, diff, prevLabel: sh[period].label };
+  }
+
+  const m1 = delta('1m');
+  const y1 = delta('1y');
+
+  function deltaHtml(d, label) {
+    if (!d) return '';
+    // Color the previous score based on its band
+    const prevBand = getMoodBand(d.prevLabel || 'Unsettled');
+    return `
+      <div class="sh-item">
+        <div class="sh-period">${label}</div>
+        <div class="sh-prev" style="color:${prevBand.color}">${d.prev}</div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="score-history">
+      ${deltaHtml(m1, '1 month ago')}
+      ${deltaHtml(y1, '1 year ago')}
+    </div>
+  `;
 }
 
 /* ── Report rendering ──────────────────────────────────────────────── */
@@ -470,7 +516,16 @@ function renderReport(coin) {
     <div class="risk-meter-wrap">
       <div class="rm-header">
         <div class="rm-label">GloRisk Score</div>
-        <div class="rm-score-value" style="color:${band.color}">${gloriskScore(mood)}</div>
+        <div class="rm-score-value" style="color:${band.color}">${gloriskScore(mood)}${(() => {
+          const sh = coin.scoreHistory?.['1m'];
+          if (!sh) return '';
+          const prev = gloriskScore(sh);
+          const diff = gloriskScore(mood) - prev;
+          if (diff === 0) return '';
+          const cls = diff > 0 ? 'sh-up' : 'sh-down';
+          const arrow = diff > 0 ? '\u2191' : '\u2193';
+          return ` <span class="rm-delta ${cls}">${arrow}${Math.abs(diff)}</span>`;
+        })()}</div>
       </div>
       <div class="rm-track">
         <div class="rm-fill" style="width:${gloriskScore(mood)}%;background:${band.color}"></div>
@@ -478,6 +533,7 @@ function renderReport(coin) {
       <div class="rm-ticks">
         <span>Critical</span><span>Very Stable</span>
       </div>
+      ${buildScoreHistory(coin)}
     </div>
 
     <!-- Risk Summary -->

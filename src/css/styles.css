@@ -303,6 +303,7 @@ body {
   letter-spacing: -0.5px;
   line-height: 1;
 }
+.card-score-arrow { font-size: 0.8rem; margin-left: 2px; }
 
 .card-mood-row {
   display: flex;
@@ -355,6 +356,11 @@ body {
   font-weight: 800;
   letter-spacing: -0.5px;
 }
+.rm-delta {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-left: 4px;
+}
 .rm-track {
   height: 8px;
   background: var(--border);
@@ -374,6 +380,48 @@ body {
   font-size: 0.63rem;
   color: var(--muted);
 }
+
+/* Score history */
+.score-history {
+  display: flex;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-top: 1rem;
+}
+.sh-item {
+  flex: 1;
+  background: var(--bg);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sh-period {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  flex: 1;
+}
+.sh-prev {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.sh-delta {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  min-width: 40px;
+  text-align: right;
+}
+.sh-up { color: var(--green); }
+.sh-down { color: var(--red); }
+.sh-flat { color: var(--muted); }
 .rm-history {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

@@ -226,6 +226,27 @@ function processFile(csvFile, group, exchange, nameResolver, usedTickers) {
     const { indicators, ma50History, ma200History } = computeIndicatorsFromPrices(prices252, catA);
     const mood = computeMood(indicators);
 
+    // Historical scores — 1 month ago (T-30) and 1 year ago (T-252)
+    const scoreHistory = {};
+
+    // Score 30 days ago
+    if (prices.length >= 252 + 30) {
+      const pricesT30 = prices.slice(-(252 + 30), -30);
+      const catAT30   = computeCategoryA(prices.slice(0, -30));
+      const { indicators: indT30 } = computeIndicatorsFromPrices(pricesT30, catAT30);
+      const moodT30 = computeMood(indT30);
+      scoreHistory['1m'] = { score: moodT30.score, pct: moodT30.pct, label: moodT30.label };
+    }
+
+    // Score 252 days ago (1 year)
+    if (prices.length >= 252 + 252) {
+      const pricesT252 = prices.slice(-(252 + 252), -252);
+      const catAT252   = computeCategoryA(prices.slice(0, -252));
+      const { indicators: indT252 } = computeIndicatorsFromPrices(pricesT252, catAT252);
+      const moodT252 = computeMood(indT252);
+      scoreHistory['1y'] = { score: moodT252.score, pct: moodT252.pct, label: moodT252.label };
+    }
+
     const price       = prices.at(-1).p;
     const priceChange = compute30DChange(prices);
     const lastDate    = prices.at(-1).d;
@@ -251,6 +272,7 @@ function processFile(csvFile, group, exchange, nameResolver, usedTickers) {
       lastDate,
       mood,
       indicators,
+      scoreHistory,
       assetFile,
     });
   }

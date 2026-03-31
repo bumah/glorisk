@@ -260,9 +260,16 @@ function buildTable(title, coins) {
     const band = getMoodBand(c.mood.label);
     const scoreColor = band.color;
 
+    // Historical scores
+    const sh = c.scoreHistory || {};
+    const prev1m = sh['1m'] ? gloriskScore(sh['1m']) : null;
+    const prev1y = sh['1y'] ? gloriskScore(sh['1y']) : null;
+    const color1m = prev1m !== null ? getMoodBand(sh['1m'].label).color : '';
+    const color1y = prev1y !== null ? getMoodBand(sh['1y'].label).color : '';
+
     const cells = SUMMARY_INDS.map(k => {
       const ind = c.indicators[k];
-      if (!ind) return '<td>—</td>';
+      if (!ind) return '<td>\u2014</td>';
       return `<td class="cell-${ind.color}">${ind.label}</td>`;
     }).join('');
 
@@ -270,6 +277,8 @@ function buildTable(title, coins) {
       <td><a href="/index.html?asset=${encodeURIComponent(c.ticker)}" style="color:var(--accent);text-decoration:none">${c.ticker}</a></td>
       <td class="cell-score" style="color:${scoreColor}">${ps}</td>
       <td>${statusPill(c.mood.label)}</td>
+      <td style="color:${color1m}">${prev1m !== null ? prev1m : '\u2014'}</td>
+      <td style="color:${color1y}">${prev1y !== null ? prev1y : '\u2014'}</td>
       ${cells}
     </tr>`;
   }).join('');
@@ -280,7 +289,7 @@ function buildTable(title, coins) {
       ${highlight}
       <div class="ms-table-wrap">
         <table class="ms-table">
-          <thead><tr><th>Ticker</th><th>Score</th><th>Status</th>${headers}</tr></thead>
+          <thead><tr><th>Ticker</th><th>Score</th><th>Status</th><th>1M Ago</th><th>1Y Ago</th>${headers}</tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
