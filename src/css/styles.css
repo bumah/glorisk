@@ -1100,6 +1100,31 @@ body {
 }
 .site-footer-logo span { color: var(--accent); opacity: 0.5; }
 
+/* ── Shared page header styles ────────────────────────────────────────────── */
+.page-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+  opacity: 0.8;
+}
+.page-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3vw, 1.8rem);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.3rem;
+}
+.page-sub {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 300;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
 /* ── Global desktop nav bar ───────────────────────────────────────────────── */
 .global-nav {
   position: sticky; top: 0; z-index: 50;
