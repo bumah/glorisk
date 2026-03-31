@@ -56,6 +56,7 @@ function gloriskScore(mood) {
 let allCoins     = [];
 let selectedCoin = null;
 let chartInst    = null;
+let scoreChartInst = null;
 let favourites   = new Set();
 let activeType   = 'all';  // 'all', 'Stocks', 'Crypto', 'SectorETFs', 'Index'
 let activeSub    = 'all';  // 'all', 'SP500', 'FTSE100', 'Nikkei225', 'HSI', 'Mag7', 'Majors', 'sector:...'
@@ -427,10 +428,19 @@ function buildScoreHistory(coin) {
     `;
   }
 
+  // 12-month average
+  const avgHtml = coin.avgScore ? `
+    <div class="sh-item">
+      <div class="sh-period">12M Average</div>
+      <div class="sh-prev" style="color:var(--text)">${coin.avgScore}</div>
+    </div>
+  ` : '';
+
   return `
     <div class="score-history">
       ${deltaHtml(m1, '1 month ago')}
       ${deltaHtml(y1, '1 year ago')}
+      ${avgHtml}
     </div>
   `;
 }
@@ -444,6 +454,7 @@ function renderReport(coin) {
   body.classList.add('page-fade');
 
   if (chartInst) { chartInst.destroy(); chartInst = null; }
+  if (scoreChartInst) { scoreChartInst.destroy(); scoreChartInst = null; }
 
   const mood       = coin.mood;
   const band       = getMoodBand(mood.label);
@@ -543,6 +554,15 @@ function renderReport(coin) {
       <div class="ai-text" id="aiText"></div>
     </div>
 
+    <!-- Score Timeline Chart -->
+    <div class="section-title">Score History</div>
+    <div class="chart-wrap" style="margin-bottom:2rem">
+      <div class="chart-header">
+        <div class="chart-title">${coin.ticker} \u00b7 GloRisk Score over 12 months</div>
+      </div>
+      <canvas id="scoreChart" style="max-height:180px"></canvas>
+    </div>
+
     <!-- Price Chart -->
     <div class="section-title">Price History</div>
     <div class="chart-wrap">
@@ -574,7 +594,8 @@ function renderReport(coin) {
     <p class="report-disclaimer">Analysis is based on historical price behaviour. Not investment advice. Conditions can change quickly.</p>
   `;
 
-  // Build chart
+  // Build charts
+  buildScoreChart(coin);
   buildChart(coin);
 
   // Rule-based summary
@@ -742,6 +763,84 @@ function wireReportActions(coin, shareText, shareUrl) {
   });
 }
 
+/* ── Score timeline chart ──────────────────────────────────────────── */
+
+async function buildScoreChart(coin) {
+  const ctx = document.getElementById('scoreChart')?.getContext('2d');
+  if (!ctx) return;
+
+  // Fetch per-asset data which contains scoreTimeline
+  let assetData;
+  try {
+    assetData = await fetchAssetData(coin);
+  } catch { return; }
+
+  const timeline = assetData?.scoreTimeline;
+  if (!timeline || timeline.length < 2) {
+    ctx.canvas.closest('.chart-wrap').style.display = 'none';
+    return;
+  }
+
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const labels = timeline.map(p => {
+    const [,m,d] = p.d.split('-');
+    return `${parseInt(d)}-${months[parseInt(m)-1]}`;
+  });
+  const scores = timeline.map(p => p.s);
+  const avg = coin.avgScore || Math.round(scores.reduce((s,v) => s+v, 0) / scores.length);
+
+  if (scoreChartInst) { scoreChartInst.destroy(); scoreChartInst = null; }
+
+  scoreChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'GloRisk Score',
+          data: scores,
+          borderColor: '#00d4ff',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: {
+            target: 'origin',
+            above: 'rgba(0,212,255,0.06)',
+          },
+        },
+        {
+          label: '12M Average',
+          data: scores.map(() => avg),
+          borderColor: 'rgba(90,100,112,0.5)',
+          borderWidth: 1,
+          borderDash: [4, 4],
+          pointRadius: 0,
+          fill: false,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#111418',
+          borderColor: '#252d38',
+          borderWidth: 1,
+          titleColor: '#5a6470',
+          bodyColor: '#e8edf2',
+          bodyFont: { family: 'DM Mono' },
+        },
+      },
+      scales: {
+        x: { grid: { color: '#1e2530' }, ticks: { color: '#5a6470', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 8, maxRotation: 0 } },
+        y: { min: 0, max: 100, position: 'right', grid: { color: '#1e2530' }, ticks: { color: '#5a6470', font: { family: 'DM Mono', size: 10 }, stepSize: 25 } },
+      },
+    },
+  });
+}
+
 /* ── Price chart ───────────────────────────────────────────────────── */
 
 async function buildChart(coin) {
@@ -767,7 +866,11 @@ async function buildChart(coin) {
   const history = assetData.priceHistory.slice(-60);
   if (chartTitle) chartTitle.textContent = `${coin.ticker} \u00b7 60-day price`;
 
-  const labels = history.map(p => p.d.slice(5));
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const labels = history.map(p => {
+    const [,m,d] = p.d.split('-');
+    return `${parseInt(d)}-${months[parseInt(m)-1]}`;
+  });
   const prices = history.map(p => p.p);
   const ma14   = prices.map((_, i) => {
     if (i < 13) return null;

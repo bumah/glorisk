@@ -247,6 +247,28 @@ function processFile(csvFile, group, exchange, nameResolver, usedTickers) {
       scoreHistory['1y'] = { score: moodT252.score, pct: moodT252.pct, label: moodT252.label };
     }
 
+    // Weekly score timeline — compute score every 5 trading days going back
+    const scoreTimeline = [];
+    const maxWeeks = Math.min(52, Math.floor((prices.length - 252) / 5));
+    for (let w = 0; w <= maxWeeks; w++) {
+      const offset = w * 5; // 5 trading days per week
+      if (prices.length < 252 + offset) break;
+      const sliceEnd = prices.length - offset;
+      const slicePrices = prices.slice(sliceEnd - 252, sliceEnd);
+      const sliceCatA   = computeCategoryA(prices.slice(0, sliceEnd));
+      const { indicators: sliceInd } = computeIndicatorsFromPrices(slicePrices, sliceCatA);
+      const sliceMood = computeMood(sliceInd);
+      const gs = Math.min(95, Math.max(10, 100 - sliceMood.score * 5));
+      scoreTimeline.unshift({
+        d: slicePrices.at(-1).d,
+        s: gs,
+      });
+    }
+
+    // 12-month average score
+    const avgScore = scoreTimeline.length > 0
+      ? Math.round(scoreTimeline.reduce((sum, p) => sum + p.s, 0) / scoreTimeline.length)
+      : Math.min(95, Math.max(10, 100 - mood.score * 5));
     const price       = prices.at(-1).p;
     const priceChange = compute30DChange(prices);
     const lastDate    = prices.at(-1).d;
@@ -257,6 +279,7 @@ function processFile(csvFile, group, exchange, nameResolver, usedTickers) {
       priceHistory: prices252,
       ma50History,
       ma200History,
+      scoreTimeline,
     };
     fs.writeFileSync(path.join(ASSETS_DIR, assetFile), JSON.stringify(assetData));
 
@@ -273,6 +296,7 @@ function processFile(csvFile, group, exchange, nameResolver, usedTickers) {
       mood,
       indicators,
       scoreHistory,
+      avgScore,
       assetFile,
     });
   }

@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 body { background: var(--bg); color: var(--text); }
 
@@ -283,6 +284,8 @@ function buildTable(title, coins) {
     </tr>`;
   }).join('');
 
+  const chartId = 'chart-' + title.replace(/[^a-zA-Z0-9]/g, '');
+
   return `
     <div class="ms-section">
       <div class="ms-section-title">${title}</div>
@@ -292,6 +295,9 @@ function buildTable(title, coins) {
           <thead><tr><th>Ticker</th><th>Score</th><th>Status</th><th>1M Ago</th><th>1Y Ago</th>${headers}</tr></thead>
           <tbody>${rows}</tbody>
         </table>
+      </div>
+      <div class="ms-chart-wrap" data-tickers="${coins.map(c => c.ticker).join(',')}">
+        <canvas id="${chartId}" style="max-height:200px;margin-top:1rem"></canvas>
       </div>
     </div>
   `;
@@ -326,6 +332,68 @@ async function init() {
     buildTable('Global Indices', indexCoins) +
     buildTable('Technology ETFs', techCoins) +
     buildTable('Worst S&P 500 Performers', worstSP500(data.coins));
+
+  // Build score timeline charts for key sections
+  const chartGroups = [
+    { title: 'Magnificent 7', coins: mag7Coins },
+    { title: 'Crypto Majors', coins: majorCoins },
+    { title: 'Global Indices', coins: indexCoins },
+  ];
+
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fmtDate = (d) => { const [,m,dd] = d.split('-'); return `${parseInt(dd)}-${months[parseInt(m)-1]}`; };
+  const colors = ['#00d4ff','#22c55e','#f59e0b','#ef4444','#60a5fa','#f97316','#a78bfa'];
+
+  for (const grp of chartGroups) {
+    const chartId = 'chart-' + grp.title.replace(/[^a-zA-Z0-9]/g, '');
+    const ctx = document.getElementById(chartId)?.getContext('2d');
+    if (!ctx) continue;
+
+    // Fetch score timelines for each asset
+    const datasets = [];
+    let allLabels = [];
+
+    for (let i = 0; i < grp.coins.length; i++) {
+      const c = grp.coins[i];
+      try {
+        const res = await fetch('/data/assets/' + c.assetFile);
+        const ad = await res.json();
+        if (ad.scoreTimeline?.length > 1) {
+          if (ad.scoreTimeline.length > allLabels.length) {
+            allLabels = ad.scoreTimeline.map(p => fmtDate(p.d));
+          }
+          datasets.push({
+            label: c.ticker,
+            data: ad.scoreTimeline.map(p => p.s),
+            borderColor: colors[i % colors.length],
+            borderWidth: 1.5,
+            pointRadius: 0,
+            tension: 0.3,
+            fill: false,
+          });
+        }
+      } catch {}
+    }
+
+    if (!datasets.length) { ctx.canvas.closest('.ms-chart-wrap').style.display = 'none'; continue; }
+
+    new Chart(ctx, {
+      type: 'line',
+      data: { labels: allLabels, datasets },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: true, labels: { color: '#5a6470', font: { family: 'DM Mono', size: 10 }, boxWidth: 12 } },
+          tooltip: { backgroundColor: '#111418', borderColor: '#252d38', borderWidth: 1, titleColor: '#5a6470', bodyColor: '#e8edf2', bodyFont: { family: 'DM Mono' } },
+        },
+        scales: {
+          x: { grid: { color: '#1e2530' }, ticks: { color: '#5a6470', font: { family: 'DM Mono', size: 9 }, maxTicksLimit: 8, maxRotation: 0 } },
+          y: { min: 0, max: 100, position: 'right', grid: { color: '#1e2530' }, ticks: { color: '#5a6470', font: { family: 'DM Mono', size: 10 }, stepSize: 25 } },
+        },
+      },
+    });
+  }
 }
 
 // Actions
