@@ -1100,6 +1100,77 @@ body {
 }
 .site-footer-logo span { color: var(--accent); opacity: 0.5; }
 
+/* ── Global desktop nav bar ───────────────────────────────────────────────── */
+.global-nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(10,12,15,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  height: 48px;
+}
+.global-nav .gn-logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--text);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.global-nav .gn-logo span { color: var(--accent); }
+.global-nav .gn-links {
+  display: flex;
+  gap: 4px;
+  margin: 0 auto;
+}
+.global-nav .gn-link {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.global-nav .gn-link:hover { color: var(--text); background: var(--surface2); }
+.global-nav .gn-link.active { color: var(--accent); }
+.global-nav .gn-link--soon { opacity: 0.35; cursor: default; }
+
+/* ── Global mobile bottom nav ────────────────────────────────────────────── */
+.global-mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  z-index: 200;
+  padding: 4px 0 calc(4px + env(safe-area-inset-bottom));
+}
+.gmn-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.56rem;
+  font-family: var(--font-body);
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 2px;
+  transition: color 0.15s;
+}
+.gmn-item:active { color: var(--accent); }
+.gmn-item.active { color: var(--accent); }
+.gmn-item svg { flex-shrink: 0; }
+
+@media (max-width: 768px) {
+  .global-nav .gn-links { display: none; }
+  .global-mobile-nav { display: flex; }
+  body { padding-bottom: 64px; }
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .filter-sidebar {

@@ -98,12 +98,14 @@ body { background: var(--bg); color: var(--text); }
 </head>
 <body>
 
-<nav class="page-nav">
-  <a href="/index.html"><div class="logo-text">Glo<span style="color:var(--accent)">Risk</span></div></a>
-  <div class="nav-right">
-    <a href="/index.html">Browse Assets</a>
-    <a href="/market.html">Market Summary</a>
-    <a href="/compare.html">Compare</a>
+<nav class="global-nav">
+  <a href="/" class="gn-logo">Glo<span>Risk</span></a>
+  <div class="gn-links">
+    <a href="/" class="gn-link">Browse</a>
+    <a href="/compare.html" class="gn-link">Compare</a>
+    <a href="/stress-test.html" class="gn-link active">Stress Test</a>
+    <a href="/market.html" class="gn-link">Market Summary</a>
+    <a href="/methodology.html" class="gn-link">Methodology</a>
   </div>
 </nav>
 
@@ -395,6 +397,15 @@ async function init() {
 
 init().catch(console.error);
 </script>
+
+<!-- Global mobile bottom nav -->
+<div class="global-mobile-nav">
+  <a href="/" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span>Search</span></a>
+  <a href="/#browse" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Browse</span></a>
+  <a href="/compare.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-9 9"/><path d="M3 21l9-9"/></svg><span>Compare</span></a>
+  <a href="/stress-test.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><span>Stress</span></a>
+  <a href="/market.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span>Summary</span></a>
+</div>
 
 </body>
 </html>
