@@ -385,6 +385,8 @@ function showLanding() {
   document.getElementById('landingBtn').disabled          = true;
   selectedCoin = null;
   if (chartInst) { chartInst.destroy(); chartInst = null; }
+  const mobileBar = document.getElementById('mobileToolBar');
+  if (mobileBar) mobileBar.style.display = 'none';
 }
 
 function showReport(coin) {
@@ -522,6 +524,16 @@ function renderReport(coin) {
         Copy Link
       </button>
     </div>
+    <div class="report-actions" style="margin-top:-0.5rem">
+      <a href="/compare.html?a=${encodeURIComponent(coin.ticker)}" class="ra-btn ra-btn--accent" style="text-decoration:none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-9 9"/><path d="M3 21l9-9"/></svg>
+        + Add to Compare
+      </a>
+      <button class="ra-btn ra-btn--accent" id="btnAddStress">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        + Add to Stress Test
+      </button>
+    </div>
 
     <!-- GloRisk Score -->
     <div class="risk-meter-wrap">
@@ -603,6 +615,29 @@ function renderReport(coin) {
 
   // Wire share/export buttons
   wireReportActions(coin, shareText, shareUrl);
+
+  // Wire "Add to Stress Test" button
+  document.getElementById('btnAddStress')?.addEventListener('click', () => {
+    let portfolio = [];
+    try { portfolio = JSON.parse(localStorage.getItem('glorisk-portfolio') || '[]'); } catch {}
+    if (!portfolio.find(p => p.ticker === coin.ticker)) {
+      portfolio.push({ ticker: coin.ticker, value: Math.round(coin.price * 10), shock: 0 });
+      localStorage.setItem('glorisk-portfolio', JSON.stringify(portfolio));
+    }
+    window.location.href = '/stress-test.html';
+  });
+
+  // Update tool bar links with current ticker
+  const rtbCompare = document.getElementById('rtbCompare');
+  if (rtbCompare) rtbCompare.href = `/compare.html?a=${encodeURIComponent(coin.ticker)}`;
+  const rtbStress = document.getElementById('rtbStress');
+  if (rtbStress) rtbStress.href = '/stress-test.html';
+  const mtbCompare = document.getElementById('mtbCompare');
+  if (mtbCompare) mtbCompare.href = `/compare.html?a=${encodeURIComponent(coin.ticker)}`;
+
+  // Show mobile bottom bar
+  const mobileBar = document.getElementById('mobileToolBar');
+  if (mobileBar) mobileBar.style.display = '';
 
   // Add save-as-image buttons to charts
   setTimeout(() => {

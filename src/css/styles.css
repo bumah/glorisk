@@ -964,6 +964,15 @@ body {
   background: var(--surface2);
 }
 .ra-btn svg { flex-shrink: 0; }
+.ra-btn--accent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.ra-btn--accent:hover {
+  background: rgba(0,212,255,0.1);
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 /* Save as image button (used on charts + tables) */
 .save-img-btn {
