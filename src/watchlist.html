@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GloRisk — Watchlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/css/styles.css">
+<style>
+body { background: var(--bg); color: var(--text); }
+.page-body { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+/* Add asset */
+.wl-add { position: relative; margin-bottom: 1.5rem; }
+.wl-add input { width: 100%; background: var(--surface); border: 1.5px solid var(--border2); border-radius: var(--radius-sm); padding: 12px 16px; font-family: var(--font-body); font-size: 0.9rem; color: var(--text); outline: none; caret-color: var(--accent); }
+.wl-add input:focus { border-color: var(--accent); }
+.wl-add input::placeholder { color: var(--muted); }
+.wl-add .search-dropdown { top: calc(100% + 4px); }
+
+/* Watchlist table */
+.wl-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.82rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.5rem; }
+.wl-table th { background: var(--surface2); font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+.wl-table th:nth-child(n+3) { text-align: right; }
+.wl-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.wl-table tr:last-child td { border-bottom: none; }
+.wl-table td:first-child { font-weight: 500; }
+.wl-table td:nth-child(n+3) { text-align: right; font-family: var(--font-mono); font-size: 0.78rem; }
+.wl-table tr:hover td { background: var(--surface2); }
+.wl-ticker { color: var(--accent); cursor: pointer; text-decoration: none; }
+.wl-ticker:hover { text-decoration: underline; }
+.wl-name { font-size: 0.72rem; color: var(--muted); }
+.wl-remove { background: none; border: none; color: var(--muted2); cursor: pointer; font-size: 1rem; padding: 2px 6px; transition: color 0.15s; }
+.wl-remove:hover { color: var(--red); }
+.wl-score { font-family: var(--font-display); font-weight: 800; font-size: 0.9rem; }
+
+/* Actions */
+.wl-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+
+/* Empty */
+.wl-empty { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.9rem; }
+.wl-empty-sub { font-size: 0.78rem; margin-top: 0.5rem; color: var(--muted2); }
+
+/* Share link box */
+.wl-share-url { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); word-break: break-all; margin-bottom: 1.5rem; display: none; }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .page-body { padding: 1.5rem 1rem 5rem; }
+  .wl-table { font-size: 0.75rem; }
+  .wl-table th, .wl-table td { padding: 8px 8px; }
+  .wl-name { display: none; }
+}
+
+/* Print */
+@media print {
+  .global-nav, .wl-add, .wl-actions, .wl-remove, .global-mobile-nav { display: none !important; }
+  .wl-table { background: #fff; border-color: #ddd; }
+  body { background: #fff; color: #111; }
+  .page-body::after { content: 'glorisk.com'; display: block; text-align: center; color: #999; font-size: 0.75rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd; }
+}
+</style>
+</head>
+<body>
+
+<nav class="global-nav">
+  <a href="/" class="gn-logo">Glo<span>Risk</span></a>
+  <div class="gn-links">
+    <a href="/" class="gn-link">Browse</a>
+    <a href="/compare.html" class="gn-link">Compare</a>
+    <a href="/stress-test.html" class="gn-link">Stress Test</a>
+    <a href="/market.html" class="gn-link">Market Summary</a>
+    <a href="/watchlist.html" class="gn-link active">Watchlist</a>
+    <a href="/methodology.html" class="gn-link">Methodology</a>
+  </div>
+</nav>
+
+<div class="page-body">
+  <div class="page-eyebrow">Watchlist</div>
+  <h1 class="page-title">Your Risk Watchlist</h1>
+  <p class="page-sub">Track the risk profile of assets you care about. Add tickers, monitor their scores, and share your watchlist via link.</p>
+
+  <div class="wl-add" id="addWrap">
+    <input type="text" id="addInput" placeholder="Search and add assets to your watchlist..." autocomplete="off">
+    <div class="search-dropdown" id="addDrop"></div>
+  </div>
+
+  <div id="watchlistArea">
+    <div class="wl-empty">
+      <div>Add assets above to build your watchlist.</div>
+      <div class="wl-empty-sub">Your watchlist is saved in this browser and can be shared via link.</div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div class="site-footer-logo">Glo<span>Risk</span></div>
+    <p>GloRisk is a free research tool. Not financial advice.</p>
+  </div>
+</footer>
+
+<script type="module">
+import { getMoodBand, IND_ORDER, MAX_SCORE } from '/js/riskEngine.js';
+
+let allCoins = [];
+let watchlist = []; // array of ticker strings
+
+function gloriskScore(mood) { return Math.min(95, Math.max(10, 100 - mood.score * 5)); }
+function formatPrice(p) {
+  if (p == null) return '\u2014';
+  if (p < 1) return '$' + p.toFixed(4);
+  return '$' + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function getCoin(ticker) { return allCoins.find(c => c.ticker === ticker); }
+
+function saveWatchlist() {
+  localStorage.setItem('glorisk-watchlist', JSON.stringify(watchlist));
+  updateUrl();
+}
+function loadWatchlist() {
+  // Check URL first
+  const params = new URLSearchParams(window.location.search);
+  const urlList = params.get('w');
+  if (urlList) {
+    watchlist = urlList.split(',').filter(t => t.trim());
+    localStorage.setItem('glorisk-watchlist', JSON.stringify(watchlist));
+    return;
+  }
+  try { watchlist = JSON.parse(localStorage.getItem('glorisk-watchlist') || '[]'); } catch { watchlist = []; }
+}
+function updateUrl() {
+  if (watchlist.length) {
+    const url = new URL(window.location);
+    url.searchParams.set('w', watchlist.join(','));
+    history.replaceState(null, '', url);
+  } else {
+    const url = new URL(window.location);
+    url.searchParams.delete('w');
+    history.replaceState(null, '', url);
+  }
+}
+
+function render() {
+  const area = document.getElementById('watchlistArea');
+  if (!watchlist.length) {
+    area.innerHTML = '<div class="wl-empty"><div>Add assets above to build your watchlist.</div><div class="wl-empty-sub">Your watchlist is saved in this browser and can be shared via link.</div></div>';
+    return;
+  }
+
+  const rows = watchlist.map((ticker, i) => {
+    const coin = getCoin(ticker);
+    if (!coin) return '';
+    const score = gloriskScore(coin.mood);
+    const band = getMoodBand(coin.mood.label);
+    const change = coin.priceChange || 0;
+    const changeCls = change >= 0 ? 'pos' : 'neg';
+
+    // Score direction
+    const sh = coin.scoreHistory?.['1m'];
+    let arrow = '';
+    if (sh) {
+      const diff = score - gloriskScore(sh);
+      if (diff > 0) arrow = ' <span style="color:var(--green)">\u2191</span>';
+      else if (diff < 0) arrow = ' <span style="color:var(--red)">\u2193</span>';
+    }
+
+    return `<tr>
+      <td>
+        <a href="/index.html?asset=${encodeURIComponent(ticker)}" class="wl-ticker">${ticker}</a>
+        <div class="wl-name">${coin.company}</div>
+      </td>
+      <td><span class="wl-score" style="color:${band.color}">${score}</span>${arrow}</td>
+      <td><span class="mood-pill ${band.cls}" style="font-size:0.62rem">${band.displayLabel}</span></td>
+      <td>${formatPrice(coin.price)}</td>
+      <td class="card-change ${changeCls}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</td>
+      <td><button class="wl-remove" data-idx="${i}" title="Remove">\u00d7</button></td>
+    </tr>`;
+  }).filter(Boolean).join('');
+
+  const shareUrl = window.location.origin + '/watchlist.html?w=' + watchlist.join(',');
+
+  area.innerHTML = `
+    <table class="wl-table">
+      <thead><tr><th>Asset</th><th>Score</th><th>Status</th><th>Price</th><th>30D</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <div class="wl-actions">
+      <button class="ra-btn" id="wlShare" title="Copy shareable link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Share Watchlist
+      </button>
+      <button class="ra-btn" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Export PDF
+      </button>
+    </div>
+
+    <div class="wl-share-url" id="shareUrlBox">${shareUrl}</div>
+  `;
+
+  // Wire remove buttons
+  area.querySelectorAll('.wl-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      watchlist.splice(parseInt(btn.dataset.idx), 1);
+      saveWatchlist();
+      render();
+    });
+  });
+
+  // Wire share button
+  document.getElementById('wlShare')?.addEventListener('click', () => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      const btn = document.getElementById('wlShare');
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+      const urlBox = document.getElementById('shareUrlBox');
+      if (urlBox) urlBox.style.display = 'block';
+      setTimeout(() => { btn.innerHTML = orig; }, 2000);
+    });
+  });
+}
+
+// Search
+function wireSearch() {
+  const input = document.getElementById('addInput');
+  const drop = document.getElementById('addDrop');
+  let timer, results = [];
+
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    const q = input.value.trim().toLowerCase();
+    if (!q) { drop.classList.remove('open'); return; }
+    timer = setTimeout(() => {
+      results = allCoins.filter(c => c.ticker.toLowerCase().includes(q) || c.company.toLowerCase().includes(q)).slice(0, 8);
+      drop.innerHTML = results.length
+        ? results.map((c, i) => `<div class="dd-item" data-idx="${i}"><div class="dd-ticker">${c.ticker}</div><div class="dd-name">${c.company}</div></div>`).join('')
+        : '<div class="dd-empty">No assets found</div>';
+      drop.classList.add('open');
+    }, 150);
+  });
+
+  drop.addEventListener('click', e => {
+    const item = e.target.closest('.dd-item');
+    if (!item) return;
+    const coin = results[parseInt(item.dataset.idx)];
+    if (coin && !watchlist.includes(coin.ticker)) {
+      watchlist.push(coin.ticker);
+      saveWatchlist();
+      render();
+    }
+    input.value = '';
+    drop.classList.remove('open');
+  });
+
+  document.addEventListener('click', e => {
+    if (!input.contains(e.target) && !drop.contains(e.target)) drop.classList.remove('open');
+  });
+}
+
+async function init() {
+  const res = await fetch('/data/coins.json');
+  const data = await res.json();
+  allCoins = data.coins;
+  loadWatchlist();
+  wireSearch();
+  render();
+}
+
+init().catch(console.error);
+</script>
+
+<!-- Global mobile bottom nav -->
+<div class="global-mobile-nav">
+  <a href="/" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span>Search</span></a>
+  <a href="/#browse" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Browse</span></a>
+  <a href="/compare.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-9 9"/><path d="M3 21l9-9"/></svg><span>Compare</span></a>
+  <a href="/stress-test.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg><span>Stress</span></a>
+  <a href="/market.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span>Summary</span></a>
+</div>
+
+</body>
+</html>
