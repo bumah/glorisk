@@ -180,11 +180,11 @@ function render() {
         <a href="/index.html?asset=${encodeURIComponent(ticker)}" class="wl-ticker">${ticker}</a>
         <div class="wl-name">${coin.company}</div>
       </td>
-      <td><span class="wl-score" style="color:${band.color}">${score}</span>${arrow}</td>
       <td>
         <span class="mood-pill ${band.cls}" style="font-size:0.62rem">${band.displayLabel}</span>
         <div class="wl-breakdown"><span class="cic-g">${g}G</span> <span class="cic-a">${a}A</span> <span class="cic-r">${r}R</span></div>
       </td>
+      <td><span class="wl-score" style="color:${band.color}">${score}</span>${arrow}</td>
       <td style="color:${prev1mColor}">${prev1m !== null ? prev1m : '\u2014'}</td>
       <td>${formatPrice(coin.price)}</td>
       <td class="card-change ${changeCls}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</td>
@@ -196,7 +196,7 @@ function render() {
 
   area.innerHTML = `
     <table class="wl-table">
-      <thead><tr><th>Asset</th><th>Score</th><th>Status</th><th>1M Ago</th><th>Price</th><th>30D</th><th></th></tr></thead>
+      <thead><tr><th>Asset</th><th>Status</th><th>Score</th><th>1M Ago</th><th>Price</th><th>30D</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
 
