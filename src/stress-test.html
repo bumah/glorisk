@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GloRisk — Portfolio Stress Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+body { background: var(--bg); color: var(--text); }
+.page-nav { position: sticky; top: 0; z-index: 50; background: rgba(10,12,15,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 14px 2rem; display: flex; align-items: center; gap: 1rem; }
+.page-nav .logo-text { font-size: 1.1rem; }
+.page-nav a { font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+.page-nav a:hover { color: var(--accent); }
+.page-nav .nav-right { margin-left: auto; display: flex; gap: 1rem; }
+.page-body { max-width: 1000px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+.page-eyebrow { font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); margin-bottom: 0.5rem; opacity: 0.8; }
+.page-title { font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 1.8rem); font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.3rem; }
+.page-sub { font-size: 0.85rem; color: var(--muted); font-weight: 300; margin-bottom: 2rem; }
+
+/* Add asset */
+.st-add { position: relative; margin-bottom: 1.5rem; }
+.st-add input { width: 100%; background: var(--surface); border: 1.5px solid var(--border2); border-radius: var(--radius-sm); padding: 12px 16px; font-family: var(--font-body); font-size: 0.9rem; color: var(--text); outline: none; caret-color: var(--accent); }
+.st-add input:focus { border-color: var(--accent); }
+.st-add input::placeholder { color: var(--muted); }
+.st-add .search-dropdown { top: calc(100% + 4px); }
+
+/* Presets */
+.st-presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2rem; }
+.st-preset { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 16px; cursor: pointer; transition: all 0.15s; }
+.st-preset:hover { border-color: var(--accent); color: var(--text); }
+.st-preset.active { border-color: var(--accent); background: rgba(0,212,255,0.08); }
+.st-preset-name { font-family: var(--font-display); font-size: 0.82rem; font-weight: 600; color: var(--text); }
+.st-preset-desc { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+
+/* Portfolio table */
+.st-table-wrap { overflow-x: auto; margin-bottom: 2rem; }
+.st-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.8rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.st-table th { background: var(--surface2); font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 10px 12px; text-align: right; border-bottom: 1px solid var(--border); }
+.st-table th:first-child { text-align: left; }
+.st-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: right; font-family: var(--font-mono); font-size: 0.78rem; }
+.st-table tr:last-child td { border-bottom: none; }
+.st-table td:first-child { text-align: left; font-weight: 500; color: var(--accent); }
+.st-table tr:hover td { background: var(--surface2); }
+.st-table tr.total-row td { font-weight: 700; border-top: 2px solid var(--border2); background: var(--surface2); }
+.st-table .cell-loss { color: var(--red); }
+.st-table .cell-new { color: var(--muted); }
+.st-shock-input { width: 60px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 4px 6px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text); text-align: right; outline: none; }
+.st-shock-input:focus { border-color: var(--accent); }
+.st-val-input { width: 90px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 4px 6px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text); text-align: right; outline: none; }
+.st-val-input:focus { border-color: var(--accent); }
+.st-remove { background: none; border: none; color: var(--muted2); cursor: pointer; font-size: 1rem; padding: 2px 6px; transition: color 0.15s; }
+.st-remove:hover { color: var(--red); }
+
+/* Impact summary */
+.st-impact { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2rem; }
+.st-impact-title { font-family: var(--font-display); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 1rem; }
+.st-impact-big { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; }
+.st-impact-text { font-size: 0.88rem; color: var(--muted); line-height: 1.7; font-weight: 300; }
+.st-impact-text strong { color: var(--text); font-weight: 500; }
+
+/* Chart */
+.st-chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 2rem; }
+
+/* Actions */
+.st-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2rem; }
+
+/* Empty state */
+.st-empty { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.9rem; }
+
+/* Print */
+@media print {
+  body { background: #fff; color: #111; }
+  .page-nav, .st-add, .st-presets, .st-actions, .st-remove { display: none !important; }
+  .st-table, .st-impact, .st-chart-wrap { background: #fff; border-color: #ddd; }
+  .page-body::after { content: 'glorisk.com'; display: block; text-align: center; color: #999; font-size: 0.75rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd; }
+}
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a href="/index.html"><div class="logo-text">Glo<span style="color:var(--accent)">Risk</span></div></a>
+  <div class="nav-right">
+    <a href="/index.html">Browse Assets</a>
+    <a href="/market.html">Market Summary</a>
+    <a href="/compare.html">Compare</a>
+  </div>
+</nav>
+
+<div class="page-body">
+  <div class="page-eyebrow">Stress Test</div>
+  <h1 class="page-title">Portfolio Scenario Analysis</h1>
+  <p class="page-sub">Build a portfolio, apply price shocks, and see the impact on your holdings.</p>
+
+  <div class="st-add" id="addWrap">
+    <input type="text" id="addInput" placeholder="Search and add assets to your portfolio..." autocomplete="off">
+    <div class="search-dropdown" id="addDrop"></div>
+  </div>
+
+  <div class="st-presets" id="presets">
+    <div class="st-preset" data-preset="global">
+      <div class="st-preset-name">Global -10%</div>
+      <div class="st-preset-desc">All assets</div>
+    </div>
+    <div class="st-preset" data-preset="us">
+      <div class="st-preset-name">US Stocks -10%</div>
+      <div class="st-preset-desc">S&amp;P 500 only</div>
+    </div>
+    <div class="st-preset" data-preset="tech">
+      <div class="st-preset-name">Tech -20%</div>
+      <div class="st-preset-desc">Tech stocks &amp; ETFs</div>
+    </div>
+    <div class="st-preset" data-preset="crypto">
+      <div class="st-preset-name">Crypto -30%</div>
+      <div class="st-preset-desc">All crypto</div>
+    </div>
+    <div class="st-preset" data-preset="custom">
+      <div class="st-preset-name">Custom %</div>
+      <div class="st-preset-desc">Set your own</div>
+    </div>
+    <div class="st-preset" data-preset="reset">
+      <div class="st-preset-name">Reset</div>
+      <div class="st-preset-desc">Clear all shocks</div>
+    </div>
+  </div>
+
+  <div id="portfolioArea">
+    <div class="st-empty">Add assets above to build your portfolio.</div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div class="site-footer-logo">Glo<span>Risk</span></div>
+    <p>GloRisk is a free research tool. Not financial advice.</p>
+  </div>
+</footer>
+
+<script type="module">
+import { getMoodBand, IND_ORDER, MAX_SCORE } from '/js/riskEngine.js';
+
+let allCoins = [];
+let portfolio = []; // [{ticker, value, shock}]
+const TECH_TICKERS = ['MSFT','META','TSLA','GOOG','NVDA','AMZN','AAPL','XLK','VGT','IYW'];
+const STOCK_GROUPS = ['SP500','FTSE100','Nikkei225','HSI'];
+
+function gloriskScore(mood) { return Math.min(95, Math.max(10, 100 - mood.score * 5)); }
+function formatMoney(v) { return '$' + Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
+function getCoin(ticker) { return allCoins.find(c => c.ticker === ticker); }
+
+function savePortfolio() {
+  localStorage.setItem('glorisk-portfolio', JSON.stringify(portfolio));
+}
+function loadPortfolio() {
+  try { portfolio = JSON.parse(localStorage.getItem('glorisk-portfolio') || '[]'); } catch { portfolio = []; }
+}
+
+function render() {
+  const area = document.getElementById('portfolioArea');
+  if (!portfolio.length) {
+    area.innerHTML = '<div class="st-empty">Add assets above to build your portfolio.</div>';
+    return;
+  }
+
+  const totalBefore = portfolio.reduce((s, p) => s + p.value, 0);
+  const rows = portfolio.map((p, i) => {
+    const coin = getCoin(p.ticker);
+    const score = coin ? gloriskScore(coin.mood) : '—';
+    const band = coin ? getMoodBand(coin.mood.label) : null;
+    const scoreColor = band ? band.color : 'var(--muted)';
+    const loss = p.value * (p.shock / 100);
+    const newVal = p.value + loss;
+    return `<tr>
+      <td>${p.ticker} <button class="st-remove" data-idx="${i}" title="Remove">\u00d7</button></td>
+      <td><input class="st-val-input" type="number" data-idx="${i}" data-field="value" value="${p.value}" min="0" step="100"></td>
+      <td style="color:${scoreColor}">${score}</td>
+      <td><input class="st-shock-input" type="number" data-idx="${i}" data-field="shock" value="${p.shock}" step="1">%</td>
+      <td class="cell-loss">${loss < 0 ? '-' : '+'}${formatMoney(loss)}</td>
+      <td class="cell-new">${formatMoney(newVal)}</td>
+    </tr>`;
+  }).join('');
+
+  const totalLoss = portfolio.reduce((s, p) => s + p.value * (p.shock / 100), 0);
+  const totalAfter = totalBefore + totalLoss;
+  const totalPct = totalBefore > 0 ? ((totalLoss / totalBefore) * 100).toFixed(1) : '0';
+
+  // Impact narrative
+  const sorted = [...portfolio].map(p => ({ ...p, loss: p.value * (p.shock / 100) })).sort((a, b) => a.loss - b.loss);
+  const biggest = sorted.filter(p => p.loss < 0).slice(0, 2).map(p => `${p.ticker} (${p.loss < 0 ? '-' : '+'}${formatMoney(p.loss)})`).join(', ');
+
+  area.innerHTML = `
+    <div class="st-table-wrap">
+      <table class="st-table">
+        <thead><tr><th>Asset</th><th>Value ($)</th><th>Score</th><th>Shock</th><th>Loss/Gain</th><th>New Value</th></tr></thead>
+        <tbody>
+          ${rows}
+          <tr class="total-row">
+            <td>TOTAL</td>
+            <td>${formatMoney(totalBefore)}</td>
+            <td></td>
+            <td></td>
+            <td class="cell-loss">${totalLoss < 0 ? '-' : '+'}${formatMoney(totalLoss)} (${totalPct}%)</td>
+            <td>${formatMoney(totalAfter)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="st-impact">
+      <div class="st-impact-title">Impact Summary</div>
+      <div class="st-impact-big" style="color:${totalLoss < 0 ? 'var(--red)' : 'var(--green)'}">
+        ${totalLoss < 0 ? '-' : '+'}${formatMoney(totalLoss)} (${totalPct}%)
+      </div>
+      <div class="st-impact-text">
+        Portfolio value ${totalLoss < 0 ? 'drops' : 'rises'} from <strong>${formatMoney(totalBefore)}</strong> to <strong>${formatMoney(totalAfter)}</strong>.
+        ${biggest ? ` Biggest impact: ${biggest}.` : ''}
+      </div>
+    </div>
+
+    <div class="st-chart-wrap">
+      <canvas id="impactChart" style="max-height:200px"></canvas>
+    </div>
+
+    <div class="st-actions">
+      <button class="ra-btn" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Export PDF
+      </button>
+    </div>
+  `;
+
+  // Wire inputs
+  area.querySelectorAll('.st-shock-input, .st-val-input').forEach(inp => {
+    inp.addEventListener('change', () => {
+      const idx = parseInt(inp.dataset.idx);
+      const field = inp.dataset.field;
+      portfolio[idx][field] = parseFloat(inp.value) || 0;
+      savePortfolio();
+      render();
+    });
+  });
+
+  // Wire remove
+  area.querySelectorAll('.st-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      portfolio.splice(parseInt(btn.dataset.idx), 1);
+      savePortfolio();
+      render();
+    });
+  });
+
+  // Chart
+  buildImpactChart();
+}
+
+function buildImpactChart() {
+  const ctx = document.getElementById('impactChart')?.getContext('2d');
+  if (!ctx || !portfolio.length) return;
+
+  const labels = portfolio.map(p => p.ticker);
+  const losses = portfolio.map(p => p.value * (p.shock / 100));
+  const colors = losses.map(l => l < 0 ? '#ef4444' : l > 0 ? '#22c55e' : '#3a4250');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Impact ($)',
+        data: losses,
+        backgroundColor: colors,
+        borderRadius: 4,
+      }],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => (ctx.raw < 0 ? '-' : '+') + '$' + Math.abs(ctx.raw).toLocaleString() } } },
+      scales: {
+        x: { grid: { color: '#1e2530' }, ticks: { color: '#5a6470', font: { family: 'DM Mono', size: 10 } } },
+        y: { grid: { color: '#1e2530' }, ticks: { color: '#5a6470', font: { family: 'DM Mono', size: 10 }, callback: v => (v < 0 ? '-$' : '$') + Math.abs(v).toLocaleString() } },
+      },
+    },
+  });
+}
+
+// Search wiring
+function wireSearch() {
+  const input = document.getElementById('addInput');
+  const drop = document.getElementById('addDrop');
+  let timer, results = [];
+
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    const q = input.value.trim().toLowerCase();
+    if (!q) { drop.classList.remove('open'); return; }
+    timer = setTimeout(() => {
+      results = allCoins.filter(c => c.ticker.toLowerCase().includes(q) || c.company.toLowerCase().includes(q)).slice(0, 8);
+      drop.innerHTML = results.length
+        ? results.map((c, i) => `<div class="dd-item" data-idx="${i}"><div class="dd-ticker">${c.ticker}</div><div class="dd-name">${c.company}</div></div>`).join('')
+        : '<div class="dd-empty">No assets found</div>';
+      drop.classList.add('open');
+    }, 150);
+  });
+
+  drop.addEventListener('click', e => {
+    const item = e.target.closest('.dd-item');
+    if (!item) return;
+    const coin = results[parseInt(item.dataset.idx)];
+    if (coin && !portfolio.find(p => p.ticker === coin.ticker)) {
+      portfolio.push({ ticker: coin.ticker, value: 10000, shock: 0 });
+      savePortfolio();
+      render();
+    }
+    input.value = '';
+    drop.classList.remove('open');
+  });
+
+  document.addEventListener('click', e => {
+    if (!input.contains(e.target) && !drop.contains(e.target)) drop.classList.remove('open');
+  });
+}
+
+// Presets
+function wirePresets() {
+  document.getElementById('presets').addEventListener('click', e => {
+    const preset = e.target.closest('.st-preset');
+    if (!preset) return;
+    const type = preset.dataset.preset;
+
+    if (type === 'reset') {
+      portfolio.forEach(p => p.shock = 0);
+    } else if (type === 'global') {
+      portfolio.forEach(p => p.shock = -10);
+    } else if (type === 'us') {
+      portfolio.forEach(p => {
+        const coin = getCoin(p.ticker);
+        p.shock = coin && STOCK_GROUPS.includes(coin.group) ? -10 : 0;
+      });
+    } else if (type === 'tech') {
+      portfolio.forEach(p => {
+        const coin = getCoin(p.ticker);
+        const isTech = TECH_TICKERS.includes(p.ticker) || (coin && coin.sector === 'Technology');
+        p.shock = isTech ? -20 : 0;
+      });
+    } else if (type === 'crypto') {
+      portfolio.forEach(p => {
+        const coin = getCoin(p.ticker);
+        p.shock = coin && coin.group === 'Crypto' ? -30 : 0;
+      });
+    } else if (type === 'custom') {
+      const pct = prompt('Enter shock percentage (negative = loss):', '-15');
+      if (pct !== null) portfolio.forEach(p => p.shock = parseFloat(pct) || 0);
+    }
+
+    // Toggle active
+    document.querySelectorAll('.st-preset').forEach(p => p.classList.remove('active'));
+    if (type !== 'reset' && type !== 'custom') preset.classList.add('active');
+
+    savePortfolio();
+    render();
+  });
+}
+
+// Init
+async function init() {
+  const res = await fetch('/data/coins.json');
+  const data = await res.json();
+  allCoins = data.coins;
+
+  loadPortfolio();
+  wireSearch();
+  wirePresets();
+  render();
+}
+
+init().catch(console.error);
+</script>
+
+</body>
+</html>

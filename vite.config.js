@@ -13,6 +13,7 @@ export default defineConfig({
         methodology: resolve(import.meta.dirname, 'src/methodology.html'),
         market: resolve(import.meta.dirname, 'src/market.html'),
         compare: resolve(import.meta.dirname, 'src/compare.html'),
+        stresstest: resolve(import.meta.dirname, 'src/stress-test.html'),
       },
     },
   },
