@@ -30,6 +30,7 @@ body { background: var(--bg); color: var(--text); }
 .wl-ticker { color: var(--accent); cursor: pointer; text-decoration: none; }
 .wl-ticker:hover { text-decoration: underline; }
 .wl-name { font-size: 0.72rem; color: var(--muted); }
+.wl-breakdown { font-family: var(--font-mono); font-size: 0.6rem; margin-top: 3px; }
 .wl-remove { background: none; border: none; color: var(--muted2); cursor: pointer; font-size: 1rem; padding: 2px 6px; transition: color 0.15s; }
 .wl-remove:hover { color: var(--red); }
 .wl-score { font-family: var(--font-display); font-weight: 800; font-size: 0.9rem; }
@@ -165,13 +166,26 @@ function render() {
       else if (diff < 0) arrow = ' <span style="color:var(--red)">\u2193</span>';
     }
 
+    // Indicator breakdown
+    const g = IND_ORDER.filter(k => coin.indicators[k]?.color === 'green').length;
+    const a = IND_ORDER.filter(k => coin.indicators[k]?.color === 'amber').length;
+    const r = IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length;
+
+    // Last month score
+    const prev1m = sh ? gloriskScore(sh) : null;
+    const prev1mColor = sh ? getMoodBand(sh.label).color : '';
+
     return `<tr>
       <td>
         <a href="/index.html?asset=${encodeURIComponent(ticker)}" class="wl-ticker">${ticker}</a>
         <div class="wl-name">${coin.company}</div>
       </td>
       <td><span class="wl-score" style="color:${band.color}">${score}</span>${arrow}</td>
-      <td><span class="mood-pill ${band.cls}" style="font-size:0.62rem">${band.displayLabel}</span></td>
+      <td>
+        <span class="mood-pill ${band.cls}" style="font-size:0.62rem">${band.displayLabel}</span>
+        <div class="wl-breakdown"><span class="cic-g">${g}G</span> <span class="cic-a">${a}A</span> <span class="cic-r">${r}R</span></div>
+      </td>
+      <td style="color:${prev1mColor}">${prev1m !== null ? prev1m : '\u2014'}</td>
       <td>${formatPrice(coin.price)}</td>
       <td class="card-change ${changeCls}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</td>
       <td><button class="wl-remove" data-idx="${i}" title="Remove">\u00d7</button></td>
@@ -182,7 +196,7 @@ function render() {
 
   area.innerHTML = `
     <table class="wl-table">
-      <thead><tr><th>Asset</th><th>Score</th><th>Status</th><th>Price</th><th>30D</th><th></th></tr></thead>
+      <thead><tr><th>Asset</th><th>Score</th><th>Status</th><th>1M Ago</th><th>Price</th><th>30D</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
 

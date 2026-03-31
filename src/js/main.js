@@ -494,6 +494,7 @@ function renderReport(coin) {
         <div class="hero-badges">
           <span class="rsb ${rsbCls}">${band.displayLabel ?? mood.label}</span>
           <span class="asset-type-pill">${assetTypeLabel(coin.group)}</span>
+          <span class="card-ind-counts" style="font-size:0.68rem"><span class="cic-g">${IND_ORDER.filter(k => coin.indicators[k]?.color === 'green').length}G</span> <span class="cic-a">${IND_ORDER.filter(k => coin.indicators[k]?.color === 'amber').length}A</span> <span class="cic-r">${IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length}R</span></span>
         </div>
       </div>
       <div class="hero-price-block">
