@@ -625,10 +625,29 @@ function renderReport(coin) {
 
 /* ── Save any element as image with watermark ─────────────────────── */
 
+// Convert canvas elements to img before html2canvas capture
+function convertCanvasesToImages(sourceEl, clonedEl) {
+  const origCanvases = sourceEl.querySelectorAll('canvas');
+  const clonedCanvases = clonedEl.querySelectorAll('canvas');
+  clonedCanvases.forEach((clonedCanvas, i) => {
+    const origCanvas = origCanvases[i];
+    if (origCanvas) {
+      const img = document.createElement('img');
+      img.src = origCanvas.toDataURL('image/png');
+      img.style.cssText = clonedCanvas.style.cssText || '';
+      img.style.width = '100%';
+      img.style.maxHeight = clonedCanvas.style.maxHeight || '240px';
+      clonedCanvas.replaceWith(img);
+    }
+  });
+}
+
 async function saveElementAsImage(el, filename) {
   const tempDiv = document.createElement('div');
   tempDiv.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:900px;padding:2rem;background:#0a0c0f;color:#e8edf2;font-family:Inter,sans-serif;';
-  tempDiv.appendChild(el.cloneNode(true));
+  const clone = el.cloneNode(true);
+  convertCanvasesToImages(el, clone);
+  tempDiv.appendChild(clone);
   tempDiv.querySelectorAll('.save-img-btn, .section-share').forEach(b => b.remove());
   const wm = document.createElement('div');
   wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:0.75rem;border-top:1px solid #1e2530;margin-top:1rem;';
@@ -658,7 +677,11 @@ async function captureReportImage(coin) {
 
   const tempDiv = document.createElement('div');
   tempDiv.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:900px;padding:2rem;background:#0a0c0f;color:#e8edf2;font-family:Inter,sans-serif;';
-  elements.forEach(el => tempDiv.appendChild(el.cloneNode(true)));
+  elements.forEach(el => {
+    const clone = el.cloneNode(true);
+    convertCanvasesToImages(el, clone);
+    tempDiv.appendChild(clone);
+  });
   tempDiv.querySelectorAll('.report-actions').forEach(el => el.remove());
   const wm = document.createElement('div');
   wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:1rem;border-top:1px solid #1e2530;margin-top:1.5rem;';
@@ -726,9 +749,12 @@ function wireReportActions(coin, shareText, shareUrl) {
     watermark.style.cssText = 'font-family:Bricolage Grotesque,sans-serif;font-size:0.75rem;color:#3a4250;text-align:center;padding-top:1rem;border-top:1px solid #1e2530;margin-top:1.5rem;';
     watermark.textContent = 'glorisk.com \u00b7 glorisk.com';
 
-    elements.forEach(el => tempDiv.appendChild(el.cloneNode(true)));
+    elements.forEach(el => {
+      const clone = el.cloneNode(true);
+      convertCanvasesToImages(el, clone);
+      tempDiv.appendChild(clone);
+    });
     tempDiv.appendChild(watermark);
-    // Remove action buttons from the clone
     tempDiv.querySelectorAll('.report-actions').forEach(el => el.remove());
     document.body.appendChild(tempDiv);
 
@@ -776,7 +802,9 @@ function wireReportActions(coin, shareText, shareUrl) {
     header.style.cssText = 'font-family:Bricolage Grotesque,sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:1rem;color:#e8edf2;';
     header.textContent = `${coin.ticker} \u2014 Full Analysis (GloRisk Score: ${gloriskScore(coin.mood)})`;
     tempDiv.appendChild(header);
-    tempDiv.appendChild(analysisEl.cloneNode(true));
+    const analysisClone = analysisEl.cloneNode(true);
+    convertCanvasesToImages(analysisEl, analysisClone);
+    tempDiv.appendChild(analysisClone);
     // Watermark
     const wm = document.createElement('div');
     wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:1rem;border-top:1px solid #1e2530;margin-top:1rem;';
