@@ -932,6 +932,26 @@ body {
 }
 .ra-btn svg { flex-shrink: 0; }
 
+/* Save as image button (used on charts + tables) */
+.save-img-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.save-img-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.save-img-btn svg { width: 14px; height: 14px; }
+
 /* Section share button */
 .section-share {
   display: inline-flex;

@@ -603,6 +603,50 @@ function renderReport(coin) {
 
   // Wire share/export buttons
   wireReportActions(coin, shareText, shareUrl);
+
+  // Add save-as-image buttons to charts
+  setTimeout(() => {
+    document.querySelectorAll('.chart-wrap .chart-header').forEach(header => {
+      if (header.querySelector('.save-img-btn')) return;
+      const btn = document.createElement('button');
+      btn.className = 'save-img-btn';
+      btn.title = 'Save as image';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const wrap = header.closest('.chart-wrap');
+        const name = header.querySelector('.chart-title')?.textContent?.trim() || 'glorisk-chart';
+        saveElementAsImage(wrap, name.replace(/[^a-zA-Z0-9]/g, '-') + '.png');
+      });
+      header.appendChild(btn);
+    });
+  }, 100);
+}
+
+/* ── Save any element as image with watermark ─────────────────────── */
+
+async function saveElementAsImage(el, filename) {
+  const tempDiv = document.createElement('div');
+  tempDiv.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:900px;padding:2rem;background:#0a0c0f;color:#e8edf2;font-family:Inter,sans-serif;';
+  tempDiv.appendChild(el.cloneNode(true));
+  tempDiv.querySelectorAll('.save-img-btn, .section-share').forEach(b => b.remove());
+  const wm = document.createElement('div');
+  wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:0.75rem;border-top:1px solid #1e2530;margin-top:1rem;';
+  wm.textContent = 'glorisk.com';
+  tempDiv.appendChild(wm);
+  document.body.appendChild(tempDiv);
+  try {
+    const canvas = await html2canvas(tempDiv, { backgroundColor: '#0a0c0f', scale: 2 });
+    document.body.removeChild(tempDiv);
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  } catch { document.body.removeChild(tempDiv); }
 }
 
 /* ── Image capture helper ──────────────────────────────────────────── */
