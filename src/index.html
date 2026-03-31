@@ -84,6 +84,91 @@
 .ml-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .scroll-hint { margin-top: 3rem; font-size: 0.75rem; color: var(--muted2); letter-spacing: 0.1em; }
 
+/* Solutions section */
+.solutions-section {
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  padding: 4rem 1.5rem;
+}
+.solutions-inner { max-width: 1100px; margin: 0 auto; }
+.solutions-header { text-align: center; margin-bottom: 2.5rem; }
+.solutions-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+  opacity: 0.8;
+}
+.solutions-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.solutions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.sol-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.sol-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  background: var(--surface2);
+}
+.sol-card--soon {
+  opacity: 0.5;
+  cursor: default;
+}
+.sol-card--soon:hover { transform: none; border-color: var(--border); background: var(--surface); }
+.sol-icon {
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+.sol-name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.sol-desc {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.55;
+  font-weight: 300;
+  flex: 1;
+}
+.sol-soon-badge {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--amber);
+  background: rgba(245,158,11,0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+@media (max-width: 768px) {
+  .solutions-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .solutions-grid { grid-template-columns: 1fr; }
+}
+
 /* Browse */
 #browseSection { background: var(--bg); }
 #browse { padding: 3rem 1.5rem 4rem; max-width: 1200px; margin: 0 auto; }
@@ -181,6 +266,46 @@
       <div class="ml-item"><div class="ml-dot" style="background:#ef4444"></div>Critical</div>
     </div>
     <div class="scroll-hint">↓ browse all assets</div>
+  </div>
+</div>
+
+<!-- ── SOLUTIONS ──────────────────────────────────────────────────── -->
+<div class="solutions-section">
+  <div class="solutions-inner">
+    <div class="solutions-header">
+      <div class="solutions-eyebrow">Risk Intelligence Tools</div>
+      <div class="solutions-title">Everything you need to understand risk</div>
+    </div>
+    <div class="solutions-grid">
+      <a href="/compare.html" class="sol-card">
+        <div class="sol-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-9 9"/><path d="M3 21l9-9"/></svg>
+        </div>
+        <div class="sol-name">Compare</div>
+        <div class="sol-desc">Side-by-side analysis of any two assets with overlaid score history and indicator breakdown.</div>
+      </a>
+      <a href="/stress-test.html" class="sol-card">
+        <div class="sol-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div class="sol-name">Stress Test</div>
+        <div class="sol-desc">Build a portfolio, apply price shocks, and see the impact with preset or custom scenarios.</div>
+      </a>
+      <a href="/market.html" class="sol-card">
+        <div class="sol-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        </div>
+        <div class="sol-name">Market Summary</div>
+        <div class="sol-desc">Weekly risk overview for Magnificent 7, Crypto Majors, Indices, and worst performers.</div>
+      </a>
+      <div class="sol-card sol-card--soon">
+        <div class="sol-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/><circle cx="12" cy="15" r="1"/></svg>
+        </div>
+        <div class="sol-name">Portfolio Monitor <span class="sol-soon-badge">Coming Soon</span></div>
+        <div class="sol-desc">Track your portfolio's risk profile over time with automated alerts when scores change.</div>
+      </div>
+    </div>
   </div>
 </div>
 
