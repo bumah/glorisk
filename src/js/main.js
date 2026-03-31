@@ -687,18 +687,18 @@ function wireReportActions(coin, shareText, shareUrl) {
     window.print();
   });
 
-  // Share on X/Twitter — capture image to clipboard, then open compose
-  document.getElementById('btnShareX')?.addEventListener('click', async () => {
-    await captureReportImage(coin);
+  // Share on X/Twitter — open compose first (must be sync), then capture image to clipboard
+  document.getElementById('btnShareX')?.addEventListener('click', () => {
     const url = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`;
     window.open(url, '_blank', 'width=550,height=420');
+    captureReportImage(coin).catch(() => {});
   });
 
   // Share on LinkedIn
-  document.getElementById('btnShareLi')?.addEventListener('click', async () => {
-    await captureReportImage(coin);
+  document.getElementById('btnShareLi')?.addEventListener('click', () => {
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
     window.open(url, '_blank', 'width=550,height=520');
+    captureReportImage(coin).catch(() => {});
   });
 
   // Copy link
