@@ -12,6 +12,7 @@ export default defineConfig({
         main: resolve(import.meta.dirname, 'src/index.html'),
         methodology: resolve(import.meta.dirname, 'src/methodology.html'),
         market: resolve(import.meta.dirname, 'src/market.html'),
+        compare: resolve(import.meta.dirname, 'src/compare.html'),
       },
     },
   },
