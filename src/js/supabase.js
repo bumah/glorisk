@@ -34,6 +34,14 @@ export async function signOut() {
   return { error };
 }
 
+// Reset password
+export async function resetPassword(email) {
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/watchlist.html',
+  });
+  return { data, error };
+}
+
 // Listen for auth changes
 export function onAuthChange(callback) {
   return supabase.auth.onAuthStateChange((event, session) => {

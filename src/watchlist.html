@@ -114,6 +114,8 @@ body { background: var(--bg); color: var(--text); }
       <input type="password" id="authPass" placeholder="Password" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-size:0.85rem;margin-bottom:12px;outline:none">
       <div id="authError" style="color:var(--red);font-size:0.75rem;margin-bottom:8px;display:none"></div>
       <button class="search-btn" id="btnSignIn" style="width:100%;margin-bottom:8px">Sign In</button>
+      <div style="text-align:right;margin-bottom:10px"><a href="#" id="btnForgot" style="color:var(--accent);font-size:0.72rem;text-decoration:none;opacity:0.8">Forgot password?</a></div>
+      <div id="resetSuccess" style="color:var(--green);font-size:0.75rem;margin-bottom:8px;display:none;text-align:center"></div>
       <button class="ra-btn" id="btnSignUp" style="width:100%;justify-content:center">Create Account</button>
       <div style="font-size:0.68rem;color:var(--muted);margin-top:10px;text-align:center">Your watchlist syncs across all your devices.</div>
     </div>
@@ -144,7 +146,7 @@ body { background: var(--bg); color: var(--text); }
 
 <script type="module">
 import { getMoodBand, IND_ORDER, MAX_SCORE } from '/js/riskEngine.js';
-import { supabase, getUser, signIn, signUp, signOut, onAuthChange, getWatchlist, saveWatchlistCloud } from '/js/supabase.js';
+import { supabase, getUser, signIn, signUp, signOut, resetPassword, onAuthChange, getWatchlist, saveWatchlistCloud } from '/js/supabase.js';
 
 let allCoins = [];
 let watchlist = []; // array of ticker strings
@@ -460,6 +462,30 @@ function wireAuth() {
   });
   document.getElementById('authClose')?.addEventListener('click', () => {
     modal.style.display = 'none';
+  });
+
+  document.getElementById('btnForgot')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('authEmail2').value.trim();
+    const errEl = document.getElementById('authError');
+    const successEl = document.getElementById('resetSuccess');
+    errEl.style.display = 'none';
+    successEl.style.display = 'none';
+
+    if (!email) {
+      errEl.textContent = 'Enter your email address first.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const { error } = await resetPassword(email);
+    if (error) {
+      errEl.textContent = error.message;
+      errEl.style.display = 'block';
+    } else {
+      successEl.textContent = 'Password reset link sent! Check your email.';
+      successEl.style.display = 'block';
+    }
   });
 
   document.getElementById('btnSignIn')?.addEventListener('click', async () => {

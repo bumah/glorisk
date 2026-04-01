@@ -28,7 +28,11 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+}
 
 body {
   background: var(--bg);
@@ -38,7 +42,10 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
+  overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
+  position: relative;
+  width: 100%;
 }
 
 /* ── Mood pill ───────────────────────────────────────────────────────────── */
