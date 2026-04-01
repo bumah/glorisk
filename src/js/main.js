@@ -1261,61 +1261,106 @@ function generateSummary(coin) {
   if (!aiText) return;
 
   const ind = coin.indicators;
+  const prev = coin.scoreHistory?.['1m']?.indicators; // 1M-ago indicator snapshot
   const displayLabel = getMoodBand(coin.mood.label).displayLabel ?? coin.mood.label;
   const ps = gloriskScore(coin.mood);
-  const price = formatPrice(coin.price);
-  const ticker = coin.ticker;
+  const prevScore = coin.scoreHistory?.['1m'] ? gloriskScore(coin.scoreHistory['1m']) : null;
+  const prevLabel = coin.scoreHistory?.['1m'] ? (getMoodBand(coin.scoreHistory['1m'].label).displayLabel ?? coin.scoreHistory['1m'].label) : null;
 
-  // Opening line
-  let html = `<p><strong>${coin.company}</strong> is rated <strong>${displayLabel}</strong> with a GloRisk Score of <strong>${ps}</strong>.</p>`;
+  // Colour rank for comparison: green=0, amber=1, red=2
+  const colorRank = { green: 0, amber: 1, red: 2 };
+  const indNames = {
+    volatility: 'Daily Volatility', volSpike: 'Volatility Spike', vsPeak: 'Distance from Peak',
+    shortTrend: '50-Day Trend', longTrend: '200-Day Trend', maCross: 'Trend Direction',
+    return1M: '30-Day Return', return1Y: '12-Month Return', range52W: 'Position in Range', cagr3Y: '3-Year Growth',
+  };
 
-  // Build risk details from amber + red indicators only
-  const riskLines = [];
-
-  if (ind.vsPeak && ind.vsPeak.color !== 'green') {
-    riskLines.push(`The current price (${price}) is <strong>${ind.vsPeak.label}</strong> below the 3-year peak \u2014 ${ind.vsPeak.color === 'red' ? 'a deep drawdown that has not recovered' : 'a noticeable pullback from peak value'}.`);
+  // Opening line with score + direction
+  let html = `<p><strong>${coin.company}</strong> is rated <strong>${displayLabel}</strong> with a GloRisk Score of <strong>${ps}</strong>`;
+  if (prevScore !== null) {
+    const diff = ps - prevScore;
+    if (diff > 0) html += ` <span style="color:var(--green)">\u2191${diff} pts</span> from ${prevScore}`;
+    else if (diff < 0) html += ` <span style="color:var(--red)">\u2193${Math.abs(diff)} pts</span> from ${prevScore}`;
+    else html += `, unchanged from last month`;
+    if (prevLabel && prevLabel !== displayLabel) {
+      html += ` (was <strong>${prevLabel}</strong>)`;
+    }
   }
+  html += `.</p>`;
 
-  if (ind.shortTrend && ind.shortTrend.color !== 'green') {
-    riskLines.push(`The price is <strong>${ind.shortTrend.label}</strong> below the 50-day average \u2014 ${ind.shortTrend.color === 'red' ? 'well below the short-term trend' : 'slightly below the short-term trend'}.`);
-  }
+  // Compare current vs 1M-ago indicators
+  if (prev) {
+    const improved = [], deteriorated = [], unchanged = [];
 
-  if (ind.longTrend && ind.longTrend.color !== 'green') {
-    riskLines.push(`The price is <strong>${ind.longTrend.label}</strong> below the 200-day average \u2014 ${ind.longTrend.color === 'red' ? 'a significant long-term gap' : 'the long-term trend is weakening'}.`);
-  }
+    for (const key of IND_ORDER) {
+      const curr = ind[key];
+      const p = prev[key];
+      if (!curr || !p) continue;
+      const name = indNames[key] || key;
+      const currRank = colorRank[curr.color] ?? 1;
+      const prevRank = colorRank[p.color] ?? 1;
 
-  if (ind.maCross && ind.maCross.color === 'red') {
-    riskLines.push(`The 50-day average has dropped below the 200-day average \u2014 a <strong>Death Cross</strong>, signalling the overall trend is firmly downward.`);
-  }
+      if (currRank < prevRank) {
+        // Improved (lower rank = healthier)
+        improved.push({ name, from: p, to: curr });
+      } else if (currRank > prevRank) {
+        // Deteriorated
+        deteriorated.push({ name, from: p, to: curr });
+      } else {
+        unchanged.push({ name, color: curr.color, label: curr.label });
+      }
+    }
 
-  if (ind.return1M && ind.return1M.color !== 'green') {
-    riskLines.push(`Over the past 30 days, the price has fallen <strong>${ind.return1M.label}</strong> \u2014 ${ind.return1M.color === 'red' ? 'sharp recent selling pressure' : 'a modest short-term decline'}.`);
-  }
+    // Deteriorated indicators
+    if (deteriorated.length) {
+      const lines = deteriorated.map(d =>
+        `<strong>${d.name}</strong> moved from ${d.from.label} to ${d.to.label}`
+      );
+      html += `<p><span style="color:var(--red)">\u25cf Deteriorated (${deteriorated.length}):</span> ${lines.join('; ')}.</p>`;
+    }
 
-  if (ind.return1Y && ind.return1Y.color !== 'green') {
-    riskLines.push(`The 12-month return is <strong>${ind.return1Y.label}</strong> \u2014 ${ind.return1Y.color === 'red' ? 'a sustained annual decline' : 'a moderate decline over the year'}.`);
-  }
+    // Improved indicators
+    if (improved.length) {
+      const lines = improved.map(d =>
+        `<strong>${d.name}</strong> moved from ${d.from.label} to ${d.to.label}`
+      );
+      html += `<p><span style="color:var(--green)">\u25cf Improved (${improved.length}):</span> ${lines.join('; ')}.</p>`;
+    }
 
-  if (ind.range52W && ind.range52W.color !== 'green') {
-    riskLines.push(`The price sits at just <strong>${ind.range52W.label}</strong> of its 52-week range \u2014 ${ind.range52W.color === 'red' ? 'near the yearly low' : 'in the lower half of the range'}.`);
-  }
+    // Unchanged summary
+    if (unchanged.length) {
+      const greenCount = unchanged.filter(u => u.color === 'green').length;
+      const amberCount = unchanged.filter(u => u.color === 'amber').length;
+      const redCount   = unchanged.filter(u => u.color === 'red').length;
+      const parts = [];
+      if (greenCount) parts.push(`<span style="color:var(--green)">${greenCount} green</span>`);
+      if (amberCount) parts.push(`<span style="color:var(--amber)">${amberCount} amber</span>`);
+      if (redCount)   parts.push(`<span style="color:var(--red)">${redCount} red</span>`);
+      html += `<p><span style="color:var(--muted)">\u25cf Unchanged (${unchanged.length}):</span> ${parts.join(', ')} \u2014 ${unchanged.map(u => u.name).join(', ')}.</p>`;
+    }
 
-  if (ind.volatility && ind.volatility.color !== 'green') {
-    riskLines.push(`Daily volatility is elevated at <strong>${ind.volatility.label}</strong> annualised \u2014 ${ind.volatility.color === 'red' ? 'large unpredictable swings' : 'moderate price swings'}.`);
-  }
-
-  if (ind.volSpike && ind.volSpike.color !== 'green') {
-    riskLines.push(`Recent volatility is <strong>${ind.volSpike.label}</strong> the historical average \u2014 ${ind.volSpike.color === 'red' ? 'a significant spike in activity' : 'slightly elevated activity'}.`);
-  }
-
-  if (ind.cagr3Y && ind.cagr3Y.color === 'red') {
-    riskLines.push(`The 3-year growth rate is <strong>${ind.cagr3Y.label}</strong> \u2014 the asset has destroyed value over three years.`);
-  }
-
-  if (riskLines.length > 0) {
-    html += `<p>${riskLines.join(' ')}</p>`;
+    // Net assessment
+    if (!deteriorated.length && !improved.length) {
+      html += `<p>The risk profile is unchanged from last month across all 10 indicators.</p>`;
+    } else if (deteriorated.length > improved.length) {
+      html += `<p>Overall, the risk profile has <strong>deteriorated</strong> this month with ${deteriorated.length} indicator${deteriorated.length > 1 ? 's' : ''} worsening vs ${improved.length} improving.</p>`;
+    } else if (improved.length > deteriorated.length) {
+      html += `<p>Overall, the risk profile has <strong>improved</strong> this month with ${improved.length} indicator${improved.length > 1 ? 's' : ''} improving vs ${deteriorated.length} worsening.</p>`;
+    } else {
+      html += `<p>The risk profile is <strong>mixed</strong> this month \u2014 ${improved.length} indicator${improved.length > 1 ? 's' : ''} improved and ${deteriorated.length} worsened.</p>`;
+    }
   } else {
-    html += `<p>No significant risk signals are currently active. The asset is showing stability across all indicators tracked.</p>`;
+    // No previous data — fall back to current-state summary
+    const g = IND_ORDER.filter(k => ind[k]?.color === 'green').length;
+    const a = IND_ORDER.filter(k => ind[k]?.color === 'amber').length;
+    const r = IND_ORDER.filter(k => ind[k]?.color === 'red').length;
+    html += `<p>Currently showing <span style="color:var(--green)">${g} green</span>, <span style="color:var(--amber)">${a} amber</span>, and <span style="color:var(--red)">${r} red</span> indicators across the 10 risk metrics tracked.</p>`;
+
+    if (r === 0 && a === 0) {
+      html += `<p>No risk signals are active. The asset is showing stability across all indicators.</p>`;
+    } else if (r >= 5) {
+      html += `<p>Multiple risk signals are elevated. The asset is under significant stress.</p>`;
+    }
   }
 
   aiText.innerHTML = html;

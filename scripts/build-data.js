@@ -232,13 +232,18 @@ function processFile(csvFile, group, exchange, nameResolver, usedTickers) {
     // Historical scores — 1 month ago (T-30) and 1 year ago (T-252)
     const scoreHistory = {};
 
-    // Score 30 days ago
+    // Score 30 days ago — include indicator colors for month-on-month comparison
     if (prices.length >= 252 + 30) {
       const pricesT30 = prices.slice(-(252 + 30), -30);
       const catAT30   = computeCategoryA(prices.slice(0, -30));
       const { indicators: indT30 } = computeIndicatorsFromPrices(pricesT30, catAT30);
       const moodT30 = computeMood(indT30);
-      scoreHistory['1m'] = { score: moodT30.score, pct: moodT30.pct, label: moodT30.label };
+      // Store compact indicator snapshot: { key: { color, label } }
+      const indSnap = {};
+      for (const key of IND_ORDER) {
+        if (indT30[key]) indSnap[key] = { color: indT30[key].color, label: indT30[key].label };
+      }
+      scoreHistory['1m'] = { score: moodT30.score, pct: moodT30.pct, label: moodT30.label, indicators: indSnap };
     }
 
     // Score 252 days ago (1 year)
