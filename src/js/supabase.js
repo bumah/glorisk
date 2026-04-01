@@ -16,15 +16,14 @@ export async function getUser() {
   return user;
 }
 
-// Sign up with email
-export async function signUp(email, password) {
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  return { data, error };
-}
-
-// Sign in with email
-export async function signIn(email, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+// Sign in with Google OAuth
+export async function signInWithGoogle() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin + '/watchlist.html',
+    },
+  });
   return { data, error };
 }
 
@@ -32,14 +31,6 @@ export async function signIn(email, password) {
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
   return { error };
-}
-
-// Reset password
-export async function resetPassword(email) {
-  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://glorisk.com/watchlist.html',
-  });
-  return { data, error };
 }
 
 // Listen for auth changes

@@ -91,31 +91,17 @@ body { background: var(--bg); color: var(--text); }
 
   <!-- Auth modal -->
   <div id="authModal" class="wl-auth-modal" style="display:none">
-    <div class="wl-auth-box">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+    <div class="wl-auth-box" style="text-align:center">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
         <div style="font-family:var(--font-display);font-weight:700;font-size:1rem">Sign In</div>
         <button id="authClose" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">&times;</button>
       </div>
-      <input type="email" id="authEmail2" placeholder="Email" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-size:0.85rem;margin-bottom:8px;outline:none">
-      <input type="password" id="authPass" placeholder="Password" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-size:0.85rem;margin-bottom:12px;outline:none">
-      <div id="authError" style="color:var(--red);font-size:0.75rem;margin-bottom:8px;display:none"></div>
-      <button class="search-btn" id="btnSignIn" style="width:100%;margin-bottom:8px">Sign In</button>
-      <div style="text-align:right;margin-bottom:10px"><a href="#" id="btnForgot" style="color:var(--accent);font-size:0.72rem;text-decoration:none;opacity:0.8">Forgot password?</a></div>
-      <div id="resetSuccess" style="color:var(--green);font-size:0.75rem;margin-bottom:8px;display:none;text-align:center"></div>
-      <button class="ra-btn" id="btnSignUp" style="width:100%;justify-content:center">Create Account</button>
-      <div style="font-size:0.68rem;color:var(--muted);margin-top:10px;text-align:center">Your watchlist syncs across all your devices.</div>
-    </div>
-  </div>
-
-  <!-- Reset password modal -->
-  <div id="resetModal" class="wl-auth-modal" style="display:none">
-    <div class="wl-auth-box">
-      <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;margin-bottom:1rem">Set New Password</div>
-      <input type="password" id="newPass" placeholder="New password" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-size:0.85rem;margin-bottom:8px;outline:none">
-      <input type="password" id="confirmPass" placeholder="Confirm password" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-size:0.85rem;margin-bottom:12px;outline:none">
-      <div id="resetError" style="color:var(--red);font-size:0.75rem;margin-bottom:8px;display:none"></div>
-      <div id="resetDone" style="color:var(--green);font-size:0.75rem;margin-bottom:8px;display:none"></div>
-      <button class="search-btn" id="btnSetPass" style="width:100%">Update Password</button>
+      <button id="btnGoogleSignIn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 20px;background:#fff;border:1px solid #ddd;border-radius:8px;font-family:var(--font-body);font-size:0.88rem;font-weight:500;color:#333;cursor:pointer;transition:all 0.15s">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+      <div id="authError" style="color:var(--red);font-size:0.75rem;margin-top:8px;display:none"></div>
+      <div style="font-size:0.68rem;color:var(--muted);margin-top:1.25rem">Your watchlist syncs across all your devices.</div>
     </div>
   </div>
 
@@ -145,32 +131,13 @@ body { background: var(--bg); color: var(--text); }
 
 <script type="module">
 import { getMoodBand, IND_ORDER, MAX_SCORE } from '/js/riskEngine.js';
-import { supabase, getUser, signIn, signUp, signOut, resetPassword, onAuthChange, getWatchlist, saveWatchlistCloud } from '/js/supabase.js';
+import { supabase, getUser, signInWithGoogle, signOut, onAuthChange, getWatchlist, saveWatchlistCloud } from '/js/supabase.js';
 
 let allCoins = [];
 let watchlist = []; // array of ticker strings
 let currentUser = null;
 let changesData = null; // from changes.json
 let alertsDismissed = false;
-let isPasswordRecovery = false;
-
-// Register auth listener IMMEDIATELY so we don't miss PASSWORD_RECOVERY event
-// (Supabase processes URL hash tokens on client init, before our init() runs)
-onAuthChange((user, event) => {
-  if (event === 'PASSWORD_RECOVERY') {
-    isPasswordRecovery = true;
-    document.getElementById('resetModal').style.display = 'flex';
-  }
-});
-
-// Also check URL hash directly as fallback (Supabase puts type=recovery in hash)
-if (window.location.hash && window.location.hash.includes('type=recovery')) {
-  isPasswordRecovery = true;
-  // Give Supabase client a moment to process the tokens, then show modal
-  setTimeout(() => {
-    document.getElementById('resetModal').style.display = 'flex';
-  }, 500);
-}
 
 function gloriskScore(mood) { return Math.min(95, Math.max(10, 100 - mood.score * 5)); }
 function formatPrice(p) {
@@ -482,131 +449,28 @@ function wireAuth() {
     modal.style.display = 'none';
   });
 
-  document.getElementById('btnForgot')?.addEventListener('click', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('authEmail2').value.trim();
+  // Google Sign In button
+  document.getElementById('btnGoogleSignIn')?.addEventListener('click', async () => {
     const errEl = document.getElementById('authError');
-    const successEl = document.getElementById('resetSuccess');
     errEl.style.display = 'none';
-    successEl.style.display = 'none';
-
-    if (!email) {
-      errEl.textContent = 'Enter your email address first.';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    const { error } = await resetPassword(email);
+    const { error } = await signInWithGoogle();
     if (error) {
       errEl.textContent = error.message;
       errEl.style.display = 'block';
-    } else {
-      successEl.textContent = 'Password reset link sent! Check your email.';
-      successEl.style.display = 'block';
     }
+    // Supabase redirects to Google — page will reload after auth
   });
 
-  document.getElementById('btnSignIn')?.addEventListener('click', async () => {
-    const email = document.getElementById('authEmail2').value.trim();
-    const pass = document.getElementById('authPass').value;
-    const errEl = document.getElementById('authError');
-    errEl.style.display = 'none';
-
-    const { data, error } = await signIn(email, pass);
-    if (error) {
-      errEl.textContent = error.message;
-      errEl.style.display = 'block';
-    } else {
-      modal.style.display = 'none';
-      currentUser = data.user;
-      updateAuthUI();
-      // Sync: merge localStorage into cloud
+  // Listen for auth changes (sign in after OAuth redirect, sign out)
+  onAuthChange(async (user) => {
+    currentUser = user;
+    updateAuthUI();
+    if (user) {
+      // Sync: merge localStorage into cloud on first sign-in
       if (watchlist.length) await saveWatchlistCloud(watchlist);
       await loadWatchlist();
       render();
       renderAlerts();
-    }
-  });
-
-  document.getElementById('btnSignUp')?.addEventListener('click', async () => {
-    const email = document.getElementById('authEmail2').value.trim();
-    const pass = document.getElementById('authPass').value;
-    const errEl = document.getElementById('authError');
-    errEl.style.display = 'none';
-
-    if (pass.length < 6) {
-      errEl.textContent = 'Password must be at least 6 characters.';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    const { data, error } = await signUp(email, pass);
-    if (error) {
-      errEl.textContent = error.message;
-      errEl.style.display = 'block';
-    } else {
-      errEl.style.display = 'none';
-      if (data.session) {
-        // Signed in immediately (no email confirmation required)
-        modal.style.display = 'none';
-        currentUser = data.user;
-        updateAuthUI();
-        if (watchlist.length) await saveWatchlistCloud(watchlist);
-      } else {
-        // Email confirmation required — show success in modal
-        const successEl = document.getElementById('resetSuccess');
-        successEl.textContent = 'Account created! Check your email to confirm, then sign in.';
-        successEl.style.display = 'block';
-      }
-    }
-  });
-
-  // Listen for auth changes (sign in, sign out, token refresh)
-  // Note: PASSWORD_RECOVERY is handled by the early listener at the top of the script
-  onAuthChange(async (user, event) => {
-    if (event === 'PASSWORD_RECOVERY') return; // handled above
-    currentUser = user;
-    updateAuthUI();
-    if (user) {
-      await loadWatchlist();
-      render();
-      renderAlerts();
-    }
-  });
-
-  // Wire set new password button
-  document.getElementById('btnSetPass')?.addEventListener('click', async () => {
-    const newPass = document.getElementById('newPass').value;
-    const confirmPass = document.getElementById('confirmPass').value;
-    const errEl = document.getElementById('resetError');
-    const doneEl = document.getElementById('resetDone');
-    errEl.style.display = 'none';
-    doneEl.style.display = 'none';
-
-    if (newPass.length < 6) {
-      errEl.textContent = 'Password must be at least 6 characters.';
-      errEl.style.display = 'block';
-      return;
-    }
-    if (newPass !== confirmPass) {
-      errEl.textContent = 'Passwords do not match.';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    const { error } = await supabase.auth.updateUser({ password: newPass });
-    if (error) {
-      errEl.textContent = error.message;
-      errEl.style.display = 'block';
-    } else {
-      doneEl.textContent = 'Password updated! You are now signed in.';
-      doneEl.style.display = 'block';
-      document.getElementById('newPass').value = '';
-      document.getElementById('confirmPass').value = '';
-      setTimeout(() => {
-        document.getElementById('resetModal').style.display = 'none';
-        window.location.hash = '';
-      }, 2000);
     }
   });
 
