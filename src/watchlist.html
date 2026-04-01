@@ -31,8 +31,8 @@ body { background: var(--bg); color: var(--text); }
 .wl-ticker:hover { text-decoration: underline; }
 .wl-name { font-size: 0.72rem; color: var(--muted); }
 .wl-breakdown { font-family: var(--font-mono); font-size: 0.6rem; margin-top: 3px; }
-.wl-remove { background: none; border: none; color: var(--muted2); cursor: pointer; font-size: 1rem; padding: 2px 6px; transition: color 0.15s; }
-.wl-remove:hover { color: var(--red); }
+.wl-remove { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 6px 10px; transition: all 0.15s; min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center; }
+.wl-remove:hover { color: var(--red); border-color: var(--red); background: rgba(239,68,68,0.1); }
 .wl-score { font-family: var(--font-display); font-weight: 800; font-size: 0.9rem; }
 
 /* Auth modal */
@@ -335,7 +335,7 @@ function render() {
       <td style="color:${prev1mColor}">${prev1m !== null ? prev1m : '\u2014'}</td>
       <td>${formatPrice(coin.price)}</td>
       <td class="card-change ${changeCls}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</td>
-      <td><button class="wl-remove" data-idx="${i}" title="Remove">\u00d7</button></td>
+      <td><button class="wl-remove" data-idx="${i}" title="Remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></td>
     </tr>`;
   }).filter(Boolean).join('');
 
