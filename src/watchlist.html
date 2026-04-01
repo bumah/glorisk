@@ -60,7 +60,7 @@ body { background: var(--bg); color: var(--text); }
 
 /* Print */
 @media print {
-  .global-nav, .wl-add, .wl-actions, .wl-remove, .global-mobile-nav { display: none !important; }
+  .global-nav, .wl-add, .wl-actions, .wl-remove, .global-mobile-nav, .wl-alerts { display: none !important; }
   .wl-table { background: #fff; border-color: #ddd; }
   body { background: #fff; color: #111; }
   .page-body::after { content: 'glorisk.com'; display: block; text-align: center; color: #999; font-size: 0.75rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd; }
@@ -72,7 +72,8 @@ body { background: var(--bg); color: var(--text); }
 <nav class="global-nav">
   <a href="/" class="gn-logo">Glo<span>Risk</span></a>
   <div class="gn-links">
-    <a href="/" class="gn-link">Browse</a>
+    <a href="/" class="gn-link">Home</a>
+    <a href="/browse.html" class="gn-link">Browse</a>
     <a href="/watchlist.html" class="gn-link active">Watchlist</a>
     <a href="/compare.html" class="gn-link">Compare</a>
     <a href="/stress-test.html" class="gn-link">Stress Test</a>
@@ -118,6 +119,9 @@ body { background: var(--bg); color: var(--text); }
     </div>
   </div>
 
+  <!-- Alerts -->
+  <div id="alertsArea"></div>
+
   <div class="wl-add" id="addWrap">
     <input type="text" id="addInput" placeholder="Search and add assets to your watchlist..." autocomplete="off">
     <div class="search-dropdown" id="addDrop"></div>
@@ -145,6 +149,8 @@ import { supabase, getUser, signIn, signUp, signOut, onAuthChange, getWatchlist,
 let allCoins = [];
 let watchlist = []; // array of ticker strings
 let currentUser = null;
+let changesData = null; // from changes.json
+let alertsDismissed = false;
 
 function gloriskScore(mood) { return Math.min(95, Math.max(10, 100 - mood.score * 5)); }
 function formatPrice(p) {
@@ -195,6 +201,107 @@ function updateUrl() {
   }
 }
 
+function colorDot(color) {
+  const cssColor = color === 'green' ? 'var(--green)' : color === 'amber' ? 'var(--amber)' : 'var(--red)';
+  return `<span class="alert-ind-dot" style="background:${cssColor}"></span>`;
+}
+
+function renderAlerts() {
+  const area = document.getElementById('alertsArea');
+  if (!changesData?.changes || alertsDismissed || !watchlist.length) {
+    area.innerHTML = '';
+    return;
+  }
+
+  // Filter changes to only watchlist tickers
+  const relevant = [];
+  for (const ticker of watchlist) {
+    if (changesData.changes[ticker]) {
+      relevant.push({ ticker, ...changesData.changes[ticker] });
+    }
+  }
+
+  if (!relevant.length) {
+    area.innerHTML = '';
+    return;
+  }
+
+  // Check dismissed state in localStorage
+  const dismissKey = `glorisk-alerts-dismissed-${changesData.built}`;
+  if (localStorage.getItem(dismissKey)) {
+    area.innerHTML = '';
+    return;
+  }
+
+  const cards = relevant.map(ch => {
+    const lines = [];
+
+    // Status change
+    if (ch.statusChange) {
+      const toClass = ch.statusChange.to === 'Very Stable' || ch.statusChange.to === 'Stable'
+        ? 'alert-to--green'
+        : ch.statusChange.to === 'Unstable' ? 'alert-to--amber'
+        : 'alert-to--red';
+      lines.push(`<div class="alert-line">Status changed from <span class="alert-from">${ch.statusChange.from}</span> <span class="alert-arrow">\u2192</span> <span class="${toClass}">${ch.statusChange.to}</span></div>`);
+    }
+
+    // Score change
+    if (ch.scoreChange) {
+      const dir = ch.scoreChange.to > ch.scoreChange.from ? 'up' : 'down';
+      const cls = dir === 'up' ? 'alert-score-up' : 'alert-score-down';
+      const arrow = dir === 'up' ? '\u2191' : '\u2193';
+      const diff = Math.abs(ch.scoreChange.to - ch.scoreChange.from);
+      lines.push(`<div class="alert-line">GloRisk Score <span class="${cls}">${arrow} ${ch.scoreChange.from} \u2192 ${ch.scoreChange.to}</span> (${dir === 'up' ? '+' : '-'}${diff} pts)</div>`);
+    }
+
+    // Indicator changes
+    if (ch.indicatorChanges) {
+      for (const ind of ch.indicatorChanges) {
+        lines.push(`<div class="alert-line">${colorDot(ind.toColor)} <strong>${ind.name}</strong> switched from ${ind.fromLabel} to ${ind.toLabel}</div>`);
+      }
+    }
+
+    // Determine card accent
+    let cardCls = 'alert-card';
+    if (ch.scoreChange) {
+      cardCls += ch.scoreChange.to > ch.scoreChange.from ? ' alert-card--upgrade' : ' alert-card--downgrade';
+    } else if (ch.statusChange) {
+      const betterStatuses = ['Very Stable', 'Stable'];
+      cardCls += betterStatuses.includes(ch.statusChange.to) ? ' alert-card--upgrade' : ' alert-card--downgrade';
+    } else {
+      cardCls += ' alert-card--mixed';
+    }
+
+    return `<div class="${cardCls}">
+      <div class="alert-card-top">
+        <a href="/browse.html?asset=${encodeURIComponent(ch.ticker)}" class="alert-ticker">${ch.ticker}</a>
+        <span class="alert-name">${ch.company || ''}</span>
+      </div>
+      <div class="alert-details">${lines.join('')}</div>
+    </div>`;
+  }).join('');
+
+  area.innerHTML = `
+    <div class="wl-alerts">
+      <div class="wl-alerts-header">
+        <div class="wl-alerts-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Watchlist Alerts
+          <span class="wl-alerts-badge">${relevant.length}</span>
+        </div>
+        <button class="wl-alerts-dismiss" id="btnDismissAlerts">Dismiss</button>
+      </div>
+      ${cards}
+    </div>
+  `;
+
+  document.getElementById('btnDismissAlerts')?.addEventListener('click', () => {
+    localStorage.setItem(dismissKey, '1');
+    alertsDismissed = true;
+    area.innerHTML = '';
+  });
+}
+
 function render() {
   const area = document.getElementById('watchlistArea');
   if (!watchlist.length) {
@@ -230,7 +337,7 @@ function render() {
 
     return `<tr>
       <td>
-        <a href="/index.html?asset=${encodeURIComponent(ticker)}" class="wl-ticker">${ticker}</a>
+        <a href="/browse.html?asset=${encodeURIComponent(ticker)}" class="wl-ticker">${ticker}</a>
         <div class="wl-name">${coin.company}</div>
       </td>
       <td>
@@ -273,6 +380,7 @@ function render() {
       watchlist.splice(parseInt(btn.dataset.idx), 1);
       saveWatchlist();
       render();
+      renderAlerts();
     });
   });
 
@@ -316,6 +424,7 @@ function wireSearch() {
       watchlist.push(coin.ticker);
       saveWatchlist();
       render();
+      renderAlerts();
     }
     input.value = '';
     drop.classList.remove('open');
@@ -371,6 +480,7 @@ function wireAuth() {
       if (watchlist.length) await saveWatchlistCloud(watchlist);
       await loadWatchlist();
       render();
+      renderAlerts();
     }
   });
 
@@ -417,14 +527,23 @@ function wireAuth() {
     if (user) {
       await loadWatchlist();
       render();
+      renderAlerts();
     }
   });
 }
 
 async function init() {
-  const res = await fetch('/data/coins.json');
-  const data = await res.json();
+  // Load coins and changes in parallel
+  const [coinsRes, changesRes] = await Promise.all([
+    fetch('/data/coins.json'),
+    fetch('/data/changes.json').catch(() => null),
+  ]);
+  const data = await coinsRes.json();
   allCoins = data.coins;
+
+  if (changesRes?.ok) {
+    try { changesData = await changesRes.json(); } catch { changesData = null; }
+  }
 
   // Check auth state
   currentUser = await getUser();
@@ -434,6 +553,7 @@ async function init() {
   await loadWatchlist();
   wireSearch();
   render();
+  renderAlerts();
 }
 
 init().catch(console.error);
@@ -441,7 +561,7 @@ init().catch(console.error);
 
 <!-- Global mobile bottom nav -->
 <div class="global-mobile-nav">
-  <a href="/" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Browse</span></a>
+  <a href="/browse.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Browse</span></a>
   <a href="/watchlist.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span>Watchlist</span></a>
   <a href="#" class="gmn-item" id="gmn-analyse" onclick="document.querySelector('.analyse-sheet')?.classList.toggle('open');return false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg><span>Analyse</span></a>
   <a href="/market.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span>Summary</span></a>

@@ -7,11 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/css/styles.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-/* ── Page-specific styles ─────────────────────────────────────────────── */
-
-/* Landing */
+/* ── Landing styles ──────────────────────────────────────────────── */
 #landing {
   min-height: 80vh;
   display: flex;
@@ -54,19 +51,82 @@
 .logo-mark .logo-text { font-size: 1.8rem; }
 .landing-headline {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-size: clamp(1rem, 2.2vw, 1.3rem);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+.rotating-wrap {
+  height: clamp(3rem, 7vw, 4.5rem);
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+.rotating-word {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 7vw, 4.2rem);
   font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -1.5px;
-  margin-bottom: 0.75rem;
+  letter-spacing: -2px;
+  color: var(--accent);
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.rotating-word.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+.rotating-word.exit {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+.rotating-word.final {
+  text-shadow: 0 0 40px rgba(0,212,255,0.3);
 }
 .landing-sub {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--muted);
   font-weight: 300;
-  margin-bottom: 2.5rem;
-  letter-spacing: 0.02em;
+  margin-bottom: 2rem;
+  letter-spacing: 0.04em;
 }
+.landing-sub span { color: var(--text); font-weight: 500; }
+.landing-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 1.5rem;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, var(--accent), #0066ff);
+  border: none;
+  border-radius: var(--radius);
+  color: #000;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  opacity: 0;
+  transform: translateY(10px);
+}
+.landing-cta.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.landing-cta:hover {
+  filter: brightness(1.15);
+  transform: translateY(-2px);
+}
+.landing-cta svg { flex-shrink: 0; }
 .search-wrap { max-width: 600px; margin: 0 auto; }
 .landing-hint {
   margin-top: 1rem;
@@ -84,7 +144,7 @@
 .ml-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .scroll-hint { margin-top: 3rem; font-size: 0.75rem; color: var(--muted2); letter-spacing: 0.1em; }
 
-/* Solutions section */
+/* Solutions section — 3-column grid for 6 cards */
 .solutions-section {
   background: var(--bg);
   border-top: 1px solid var(--border);
@@ -109,7 +169,7 @@
 }
 .solutions-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 }
 .sol-card {
@@ -128,11 +188,6 @@
   transform: translateY(-3px);
   background: var(--surface2);
 }
-.sol-card--soon {
-  opacity: 0.5;
-  cursor: default;
-}
-.sol-card--soon:hover { transform: none; border-color: var(--border); background: var(--surface); }
 .sol-icon {
   color: var(--accent);
   margin-bottom: 1rem;
@@ -150,114 +205,16 @@
   font-weight: 300;
   flex: 1;
 }
-.sol-soon-badge {
-  font-family: var(--font-mono);
-  font-size: 0.55rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--amber);
-  background: rgba(245,158,11,0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-left: 6px;
-  vertical-align: middle;
-}
-@media (max-width: 768px) {
-  .solutions-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 480px) {
-  .solutions-grid { grid-template-columns: 1fr; }
-}
-
-/* Report tools bar (desktop) */
-.report-tools-bar {
-  display: flex;
-  gap: 4px;
-  padding: 6px 24px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-}
-.rtb-link {
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  color: var(--muted);
-  text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  transition: all 0.15s;
-}
-.rtb-link:hover { color: var(--accent); background: var(--surface2); }
-.rtb-soon { opacity: 0.4; cursor: default; }
-.rtb-soon:hover { color: var(--muted); background: none; }
 
 @media (max-width: 768px) {
-  .report-tools-bar { display: none; }
   #landing { min-height: auto; padding-bottom: 1rem; }
   .landing-headline { font-size: clamp(1.4rem, 4vw, 2rem); }
   .solutions-section { padding: 2rem 1rem; }
+  .solutions-grid { grid-template-columns: repeat(2, 1fr); }
   .scroll-hint { display: none; }
 }
-
-/* Browse */
-#browseSection { background: var(--bg); }
-#browse { padding: 3rem 1.5rem 4rem; max-width: 1200px; margin: 0 auto; }
-.browse-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
-}
-.browse-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
-.browse-layout { display: flex; gap: 2rem; align-items: flex-start; }
-.cards-area { flex: 1; min-width: 0; }
-.cards-count { font-size: 0.8rem; color: var(--muted); font-family: var(--font-mono); margin-bottom: 1rem; }
-.cards-count span { color: var(--text); font-weight: 500; }
-.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-
-/* Report page */
-#report { display: none; }
-.report-nav {
-  position: sticky; top: 0; z-index: 50;
-  background: rgba(10,12,15,0.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-  padding: 12px 24px;
-  display: flex; align-items: center; gap: 16px;
-}
-.nav-logo {
-  display: flex; align-items: center; gap: 8px;
-  cursor: pointer; flex-shrink: 0; text-decoration: none;
-}
-.nav-logo .logo-text { font-size: 1.1rem; }
-.nav-search-wrap { flex: 1; max-width: 480px; position: relative; }
-.back-link {
-  display: inline-flex; align-items: center; gap: 6px;
-  color: var(--muted); font-size: 0.8rem; text-decoration: none;
-  cursor: pointer; transition: color 0.15s; margin-left: auto;
-}
-.back-link:hover { color: var(--accent); }
-.report-body { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
-
-/* Report hero */
-.report-hero {
-  display: flex; align-items: flex-start; gap: 24px;
-  margin-bottom: 2rem; padding-bottom: 2rem;
-  border-bottom: 1px solid var(--border);
-}
-.hero-info { flex: 1; }
-.hero-ticker { font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 4px; }
-.hero-name { font-size: 1rem; color: var(--muted); margin-bottom: 10px; }
-.hero-badges { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.hero-price-block { text-align: right; flex-shrink: 0; }
-.hero-price { font-family: var(--font-mono); font-size: 1.8rem; font-weight: 500; letter-spacing: -0.5px; }
-.hero-change { font-family: var(--font-mono); font-size: 0.85rem; margin-top: 4px; }
-.hero-change.pos { color: var(--green); }
-.hero-change.neg { color: var(--red); }
-.hero-asof { font-size: 0.7rem; color: var(--muted); margin-top: 6px; font-family: var(--font-mono); }
-
-/* Loading state */
-.loading-state {
-  display: flex; align-items: center; justify-content: center;
-  min-height: 200px; color: var(--muted); font-family: var(--font-mono);
-  font-size: 0.85rem; gap: 10px;
+@media (max-width: 480px) {
+  .solutions-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -266,11 +223,16 @@
 <nav class="global-nav" id="mainNav">
   <a href="/" class="gn-logo">Glo<span>Risk</span></a>
   <div class="gn-links">
-    <a href="/" class="gn-link active">Browse</a>
+    <a href="/" class="gn-link active">Home</a>
+    <a href="/browse.html" class="gn-link">Browse</a>
+    <a href="/watchlist.html" class="gn-link">Watchlist</a>
     <a href="/compare.html" class="gn-link">Compare</a>
     <a href="/stress-test.html" class="gn-link">Stress Test</a>
     <a href="/market.html" class="gn-link">Market Summary</a>
     <a href="/methodology.html" class="gn-link">Methodology</a>
+  </div>
+  <div class="gn-right" id="gnAuth">
+    <a href="/watchlist.html" class="gn-signin" id="gnSignIn">Sign In</a>
   </div>
 </nav>
 
@@ -284,19 +246,32 @@
       <div class="logo-text">Glo<span>Risk</span></div>
     </div>
 
-    <h1 class="landing-headline">Assess, compare, and monitor risk<br>across 1000+ global assets.</h1>
-    <p class="landing-sub" id="landingSub">Loading… <a href="/methodology.html" style="color:var(--accent);text-decoration:none;opacity:0.7">Read GloRisk methodology →</a></p>
+    <h1 class="landing-headline">Risk Intelligence For Your</h1>
+    <div class="rotating-wrap" id="rotatingWrap">
+      <div class="rotating-word active" data-idx="0">STOCKS</div>
+      <div class="rotating-word" data-idx="1">CRYPTO</div>
+      <div class="rotating-word" data-idx="2">ETFs</div>
+      <div class="rotating-word" data-idx="3">INDICES</div>
+      <div class="rotating-word" data-idx="4">PORTFOLIO</div>
+    </div>
+    <p class="landing-sub"><span>Analyze.</span> <span>Compare.</span> <span>Monitor.</span><br>1,000+ assets tracked.</p>
+    <p class="landing-sub" id="landingSub" style="margin-top:-0.5rem">Loading&hellip;</p>
 
     <div class="search-wrap">
       <div class="search-bar">
         <input type="text" class="search-input" id="landingInput"
-          placeholder="Search Bitcoin, ETH, Solana…" autocomplete="off" />
+          placeholder="Search Bitcoin, ETH, Solana&hellip;" autocomplete="off" />
       </div>
       <div class="search-dropdown" id="landingDropdown"></div>
-      <button class="search-btn search-btn--standalone" id="landingBtn" disabled>Report →</button>
+      <button class="search-btn search-btn--standalone" id="landingBtn" disabled>Report &rarr;</button>
     </div>
 
-    <p class="landing-hint" id="landingHint">Loading assets… · <a href="#browse">Browse all ↓</a> · <a href="/market.html">Market Summary →</a></p>
+    <p class="landing-hint" id="landingHint">Loading assets&hellip; &middot; <a href="/browse.html">Browse all &darr;</a> &middot; <a href="/market.html">Market Summary &rarr;</a></p>
+
+    <a href="/watchlist.html" class="landing-cta" id="landingCta">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      Build Your Risk Watchlist &rarr;
+    </a>
 
     <div class="mood-legend">
       <div class="ml-item"><div class="ml-dot" style="background:#60a5fa"></div>Very Stable</div>
@@ -305,7 +280,7 @@
       <div class="ml-item"><div class="ml-dot" style="background:#f97316"></div>Stressed</div>
       <div class="ml-item"><div class="ml-dot" style="background:#ef4444"></div>Critical</div>
     </div>
-    <div class="scroll-hint">↓ browse all assets</div>
+    <a href="/browse.html" class="scroll-hint" style="text-decoration:none;color:var(--muted2)">&darr; browse all assets</a>
   </div>
 </div>
 
@@ -317,6 +292,27 @@
       <div class="solutions-title">Everything you need to understand risk</div>
     </div>
     <div class="solutions-grid">
+      <div class="sol-card" id="solSearch" style="cursor:pointer">
+        <div class="sol-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </div>
+        <div class="sol-name">Search</div>
+        <div class="sol-desc">Find any asset instantly. Type a ticker or company name and get a full risk report with indicators, charts, and analysis.</div>
+      </div>
+      <a href="/browse.html" class="sol-card">
+        <div class="sol-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="sol-name">Browse</div>
+        <div class="sol-desc">Explore 1000+ assets across stocks, crypto, ETFs, and indices. Filter by risk level, sort, and drill into any asset.</div>
+      </a>
+      <a href="/watchlist.html" class="sol-card">
+        <div class="sol-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="sol-name">Watchlist</div>
+        <div class="sol-desc">Track assets you care about. Monitor scores, prices, and risk status. Share your watchlist via link.</div>
+      </a>
       <a href="/compare.html" class="sol-card">
         <div class="sol-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-9 9"/><path d="M3 21l9-9"/></svg>
@@ -338,190 +334,9 @@
         <div class="sol-name">Market Summary</div>
         <div class="sol-desc">Weekly risk overview for Magnificent 7, Crypto Majors, Indices, and worst performers.</div>
       </a>
-      <a href="/watchlist.html" class="sol-card">
-        <div class="sol-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <div class="sol-name">Watchlist</div>
-        <div class="sol-desc">Track assets you care about. Monitor scores, prices, and risk status. Share your watchlist via link.</div>
-      </a>
     </div>
   </div>
 </div>
-
-<!-- ── BROWSE GRID ─────────────────────────────────────────────────── -->
-<div id="browseSection">
-  <div id="browse">
-    <div class="browse-header">
-      <div class="browse-title">Browse Assets</div>
-      <select class="sort-select" id="sortSelect">
-        <option value="default">Default order</option>
-        <option value="risk-high">Highest Risk</option>
-        <option value="risk-low">Lowest Risk</option>
-        <option value="price-high">Price: High → Low</option>
-        <option value="price-low">Price: Low → High</option>
-        <option value="change">Biggest Movers</option>
-      </select>
-    </div>
-
-    <!-- Asset type tabs -->
-    <div class="type-tabs" id="typeTabs">
-      <button class="type-tab active" data-type="all">All <span class="type-tab-count" id="cnt-all">—</span></button>
-      <button class="type-tab" data-type="Stocks">Stocks <span class="type-tab-count" id="cnt-stocks">—</span></button>
-      <button class="type-tab" data-type="Crypto">Crypto <span class="type-tab-count" id="cnt-crypto">—</span></button>
-      <button class="type-tab" data-type="SectorETFs">ETFs <span class="type-tab-count" id="cnt-etfs">—</span></button>
-      <button class="type-tab" data-type="Index">Indices <span class="type-tab-count" id="cnt-index">—</span></button>
-    </div>
-    <!-- Stock sub-tabs (visible when Stocks is selected) -->
-    <div class="sub-tabs" id="subTabs" style="display:none">
-      <button class="sub-tab active" data-sub="all">All Stocks</button>
-      <button class="sub-tab" data-sub="Mag7">Magnificent 7</button>
-      <button class="sub-tab" data-sub="SP500">S&amp;P 500 <span class="type-tab-count" id="cnt-sp500">—</span></button>
-      <button class="sub-tab" data-sub="FTSE100">FTSE 100 <span class="type-tab-count" id="cnt-ftse">—</span></button>
-      <button class="sub-tab" data-sub="Nikkei225">Nikkei 225 <span class="type-tab-count" id="cnt-nikkei">—</span></button>
-      <button class="sub-tab" data-sub="HSI">Hang Seng <span class="type-tab-count" id="cnt-hsi">—</span></button>
-    </div>
-    <!-- Crypto sub-tabs (visible when Crypto is selected) -->
-    <div class="sub-tabs" id="cryptoSubTabs" style="display:none">
-      <button class="sub-tab active" data-sub="all">All Crypto</button>
-      <button class="sub-tab" data-sub="Majors">Majors</button>
-    </div>
-    <!-- ETF sub-tabs (visible when ETFs is selected) -->
-    <div class="sub-tabs-wrap" id="etfSubWrap" style="display:none">
-      <div class="sub-tabs" id="etfSectorTabs">
-        <button class="sub-tab active" data-sub="all">All ETFs</button>
-        <button class="sub-tab" data-sub="sector:Technology">Technology</button>
-        <button class="sub-tab" data-sub="sector:Healthcare">Healthcare</button>
-        <button class="sub-tab" data-sub="sector:Financials">Financials</button>
-        <button class="sub-tab" data-sub="sector:Energy">Energy</button>
-        <button class="sub-tab" data-sub="sector:Industrials">Industrials</button>
-        <button class="sub-tab" data-sub="sector:Materials">Materials</button>
-        <button class="sub-tab" data-sub="sector:Utilities">Utilities</button>
-        <button class="sub-tab" data-sub="sector:Real Estate">Real Estate</button>
-        <button class="sub-tab" data-sub="sector:Consumer Discretionary">Consumer Disc.</button>
-        <button class="sub-tab" data-sub="sector:Consumer Staples">Consumer Staples</button>
-        <button class="sub-tab" data-sub="sector:Communication Services">Comms</button>
-      </div>
-      <div class="sub-tabs" id="etfIssuerTabs">
-        <span class="sub-tabs-label">Issuer:</span>
-        <button class="sub-tab active" data-issuer="all">All</button>
-        <button class="sub-tab" data-issuer="Vanguard">Vanguard</button>
-        <button class="sub-tab" data-issuer="iShares">iShares</button>
-        <button class="sub-tab" data-issuer="SPDR">SPDR</button>
-      </div>
-    </div>
-
-    <div class="browse-layout">
-      <div class="filter-sidebar">
-        <div class="filter-group">
-          <div class="filter-group-title">
-            Risk Level
-            <span class="filter-clear" id="clearFilters">Clear all</span>
-          </div>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="mood-filter" value="Very Healthy" checked>
-              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#60a5fa"></div>Very Stable</span>
-            </div>
-            <span class="filter-count" id="cnt-very-healthy">0</span>
-          </label>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="mood-filter" value="Healthy" checked>
-              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#22c55e"></div>Stable</span>
-            </div>
-            <span class="filter-count" id="cnt-healthy">0</span>
-          </label>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="mood-filter" value="Unsettled" checked>
-              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#f59e0b"></div>Unstable</span>
-            </div>
-            <span class="filter-count" id="cnt-unsettled">0</span>
-          </label>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="mood-filter" value="Stressed" checked>
-              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#f97316"></div>Stressed</span>
-            </div>
-            <span class="filter-count" id="cnt-stressed">0</span>
-          </label>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="mood-filter" value="Critical" checked>
-              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#ef4444"></div>Critical</span>
-            </div>
-            <span class="filter-count" id="cnt-critical">0</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="cards-area">
-        <div class="cards-count" id="cardsCount"></div>
-        <div class="cards-grid" id="cardsGrid">
-          <div class="loading-state" style="grid-column:1/-1">
-            <div class="ai-spinner"></div>
-            Calculating risk indicators…
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ── REPORT PAGE ─────────────────────────────────────────────────── -->
-<div id="report">
-  <nav class="report-nav">
-    <div class="nav-logo" id="navLogo">
-      <div class="logo-text">Glo<span>Risk</span></div>
-    </div>
-    <div class="nav-search-wrap">
-      <div class="nav-search-bar">
-        <input type="text" class="nav-search-input" id="navInput"
-          placeholder="Search another asset…" autocomplete="off" />
-        <button class="nav-search-btn" id="navBtn" disabled>Go</button>
-      </div>
-      <div class="search-dropdown" id="navDropdown"></div>
-    </div>
-    <span class="back-link" id="backLink">← Back</span>
-  </nav>
-  <div class="report-tools-bar">
-    <a href="/compare.html" class="rtb-link" id="rtbCompare">Compare</a>
-    <a href="/stress-test.html" class="rtb-link" id="rtbStress">Stress Test</a>
-    <a href="/market.html" class="rtb-link">Market Summary</a>
-    <span class="rtb-link rtb-soon">Portfolio Monitor</span>
-  </div>
-
-  <div class="report-body page-fade" id="reportBody">
-    <!-- populated by JS -->
-  </div>
-</div>
-
-<!-- Global mobile bottom nav -->
-<div class="global-mobile-nav">
-  <a href="/" class="gmn-item active">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-    <span>Search</span>
-  </a>
-  <a href="#browse" class="gmn-item" onclick="document.getElementById('navLogo')?.click()">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-    <span>Browse</span>
-  </a>
-  <a href="/compare.html" class="gmn-item">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-9 9"/><path d="M3 21l9-9"/></svg>
-    <span>Compare</span>
-  </a>
-  <a href="/stress-test.html" class="gmn-item">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-    <span>Stress</span>
-  </a>
-  <a href="/market.html" class="gmn-item">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
-    <span>Summary</span>
-  </a>
-</div>
-
-<script type="module" src="/js/main.js"></script>
 
 <footer class="site-footer" id="siteFooter">
   <div class="site-footer-inner">
@@ -532,5 +347,153 @@
   </div>
 </footer>
 
+<script type="module">
+import { loadData, searchCoins } from '/js/data.js';
+import { getMoodBand } from '/js/riskEngine.js';
+
+// Backward compat: redirect /?asset=BTC to /browse.html?asset=BTC
+const assetParam = new URLSearchParams(window.location.search).get('asset');
+if (assetParam) {
+  window.location.replace('/browse.html?asset=' + encodeURIComponent(assetParam));
+}
+
+let selectedCoin = null;
+
+// Rotating headline animation
+(function() {
+  const words = document.querySelectorAll('.rotating-word');
+  const cta = document.getElementById('landingCta');
+  let current = 0;
+  const total = words.length;
+  const delay = 2200; // ms between rotations
+
+  function next() {
+    if (current >= total - 1) {
+      // Final word — add glow and show CTA
+      words[current].classList.add('final');
+      setTimeout(() => cta?.classList.add('visible'), 800);
+      return; // stop cycling
+    }
+    const prev = words[current];
+    prev.classList.remove('active');
+    prev.classList.add('exit');
+    current++;
+    const now = words[current];
+    now.classList.add('active');
+    // Clean up exit class after transition
+    setTimeout(() => prev.classList.remove('exit'), 500);
+    setTimeout(next, delay);
+  }
+  setTimeout(next, delay);
+})();
+
+async function init() {
+  const data = await loadData();
+  const allCoins = data.coins;
+
+  // Update landing sub with date
+  const asOfDate = new Date(data.asOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  document.getElementById('landingSub').innerHTML =
+    `Data as of ${asOfDate} \u00b7 <a href="/methodology.html" style="color:var(--accent);text-decoration:none;opacity:0.7">Methodology \u2192</a>`;
+  document.getElementById('landingHint').innerHTML =
+    `${allCoins.length} assets \u00b7 <a href="/browse.html">Browse all \u2192</a> \u00b7 <a href="/market.html">Market Summary \u2192</a>`;
+
+  // Wire search
+  const input = document.getElementById('landingInput');
+  const dropdown = document.getElementById('landingDropdown');
+  const btn = document.getElementById('landingBtn');
+  let results = [];
+  let activeIdx = -1;
+  let timer;
+
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    const q = input.value.trim();
+    if (!q) { dropdown.classList.remove('open'); btn.disabled = true; selectedCoin = null; return; }
+    timer = setTimeout(async () => {
+      results = await searchCoins(q);
+      activeIdx = -1;
+      dropdown.innerHTML = buildDropdownHTML(results);
+      dropdown.classList.add('open');
+    }, 150);
+  });
+
+  input.addEventListener('keydown', e => {
+    if (!dropdown.classList.contains('open') || !results.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, results.length - 1); highlightItem(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); highlightItem(); }
+    else if (e.key === 'Enter' && activeIdx >= 0) { e.preventDefault(); select(results[activeIdx]); }
+    else if (e.key === 'Escape') { dropdown.classList.remove('open'); }
+  });
+
+  dropdown.addEventListener('click', e => {
+    const item = e.target.closest('.dd-item');
+    if (!item) return;
+    const c = results[parseInt(item.dataset.idx, 10)];
+    if (c) select(c);
+  });
+
+  document.addEventListener('click', e => {
+    if (!input.contains(e.target) && !dropdown.contains(e.target))
+      dropdown.classList.remove('open');
+  });
+
+  btn.addEventListener('click', () => {
+    if (selectedCoin) window.location.href = '/browse.html?asset=' + encodeURIComponent(selectedCoin.ticker);
+  });
+
+  // Search card focuses input
+  document.getElementById('solSearch')?.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => input.focus(), 400);
+  });
+
+  function select(coin) {
+    selectedCoin = coin;
+    window.location.href = '/browse.html?asset=' + encodeURIComponent(coin.ticker);
+  }
+
+  function highlightItem() {
+    dropdown.querySelectorAll('.dd-item').forEach((el, i) => {
+      el.classList.toggle('active', i === activeIdx);
+    });
+  }
+
+  function buildDropdownHTML(coins) {
+    if (!coins.length) return '<div class="dd-empty">No assets found</div>';
+    return coins.map((c, i) => {
+      const b = getMoodBand(c.mood.label);
+      return `<div class="dd-item" data-idx="${i}">
+        <div class="dd-ticker">${c.ticker}</div>
+        <div class="dd-name">${c.company}</div>
+        <div class="dd-mood"><span class="mood-pill ${b.cls}">${b.displayLabel ?? c.mood.label}</span></div>
+      </div>`;
+    }).join('');
+  }
+}
+
+init().catch(console.error);
+</script>
+
+<!-- Global mobile bottom nav -->
+<div class="global-mobile-nav">
+  <a href="/browse.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Browse</span></a>
+  <a href="/watchlist.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span>Watchlist</span></a>
+  <a href="#" class="gmn-item" id="gmn-analyse" onclick="document.querySelector('.analyse-sheet')?.classList.toggle('open');return false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg><span>Analyse</span></a>
+  <a href="/market.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span>Summary</span></a>
+  <a href="/watchlist.html" class="gmn-item" id="gmn-me"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Me</span></a>
+</div>
+
+<!-- Analyse popup sheet -->
+<div class="analyse-sheet" id="analyseSheet">
+  <a href="/compare.html">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-9 9"/><path d="M3 21l9-9"/></svg>
+    Compare
+  </a>
+  <a href="/stress-test.html">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    Stress Test
+  </a>
+</div>
 </body>
 </html>

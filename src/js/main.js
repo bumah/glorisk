@@ -68,11 +68,13 @@ async function init() {
   const data = await loadData();
   allCoins   = data.coins;
 
-  // Update landing sub — date + market summary link
+  // Update landing sub — date + market summary link (only on pages with landing)
   const asOfDate = new Date(data.asOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-  document.getElementById('landingSub').innerHTML =
+  const landingSub = document.getElementById('landingSub');
+  if (landingSub) landingSub.innerHTML =
     `Data as of ${asOfDate}. <a href="/market.html" style="color:var(--accent);text-decoration:none;opacity:0.7">Read latest market summary \u2192</a>`;
-  document.getElementById('landingHint').innerHTML =
+  const landingHint = document.getElementById('landingHint');
+  if (landingHint) landingHint.innerHTML =
     `${allCoins.length} assets \u00b7 <a href="/methodology.html" style="color:var(--accent);text-decoration:none;opacity:0.7">GloRisk methodology \u2192</a>`;
 
   updateCounts();
@@ -86,7 +88,9 @@ async function init() {
     if (coin) showReport(coin);
   }
 
-  initSearch('landingInput', 'landingDropdown', 'landingBtn');
+  if (document.getElementById('landingInput')) {
+    initSearch('landingInput', 'landingDropdown', 'landingBtn');
+  }
   initSearch('navInput', 'navDropdown', 'navBtn');
 
   document.querySelectorAll('.mood-filter').forEach(el =>
@@ -377,23 +381,29 @@ function renderCards() {
 /* ── Page transitions ──────────────────────────────────────────────── */
 
 function showLanding() {
-  document.getElementById('landing').style.display        = 'flex';
+  const landing = document.getElementById('landing');
+  if (landing) landing.style.display = 'flex';
   document.getElementById('browseSection').style.display  = 'block';
   document.getElementById('report').style.display         = 'none';
-  document.getElementById('siteFooter').style.display     = 'block';
+  const footer = document.getElementById('siteFooter');
+  if (footer) footer.style.display = 'block';
   const solSection = document.querySelector('.solutions-section');
   if (solSection) solSection.style.display = '';
-  document.getElementById('landingInput').value           = '';
-  document.getElementById('landingBtn').disabled          = true;
+  const landingInput = document.getElementById('landingInput');
+  if (landingInput) { landingInput.value = ''; }
+  const landingBtn = document.getElementById('landingBtn');
+  if (landingBtn) { landingBtn.disabled = true; }
   selectedCoin = null;
   if (chartInst) { chartInst.destroy(); chartInst = null; }
 }
 
 function showReport(coin) {
-  document.getElementById('landing').style.display        = 'none';
+  const landing = document.getElementById('landing');
+  if (landing) landing.style.display = 'none';
   document.getElementById('browseSection').style.display  = 'none';
   document.getElementById('report').style.display         = 'block';
-  document.getElementById('siteFooter').style.display     = 'none';
+  const footer = document.getElementById('siteFooter');
+  if (footer) footer.style.display = 'none';
   const solSection = document.querySelector('.solutions-section');
   if (solSection) solSection.style.display = 'none';
   document.getElementById('navInput').value               = '';
@@ -484,7 +494,7 @@ function renderReport(coin) {
   const displayLabel = band.displayLabel ?? mood.label;
   const ps = gloriskScore(mood);
   const shareText = `${coin.ticker} (${coin.company}) is rated ${displayLabel} with a GloRisk Score of ${ps} on GloRisk.`;
-  const shareUrl = window.location.origin + '/?asset=' + encodeURIComponent(coin.ticker);
+  const shareUrl = window.location.origin + '/browse.html?asset=' + encodeURIComponent(coin.ticker);
 
   body.innerHTML = `
     <div class="report-hero">

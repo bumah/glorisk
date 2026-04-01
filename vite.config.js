@@ -10,6 +10,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(import.meta.dirname, 'src/index.html'),
+        browse: resolve(import.meta.dirname, 'src/browse.html'),
         methodology: resolve(import.meta.dirname, 'src/methodology.html'),
         market: resolve(import.meta.dirname, 'src/market.html'),
         compare: resolve(import.meta.dirname, 'src/compare.html'),

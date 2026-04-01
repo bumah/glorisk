@@ -80,7 +80,8 @@ body { background: var(--bg); color: var(--text); }
 <nav class="global-nav">
   <a href="/" class="gn-logo">Glo<span>Risk</span></a>
   <div class="gn-links">
-    <a href="/" class="gn-link">Browse</a>
+    <a href="/" class="gn-link">Home</a>
+    <a href="/browse.html" class="gn-link">Browse</a>
     <a href="/watchlist.html" class="gn-link">Watchlist</a>
     <a href="/compare.html" class="gn-link active">Compare</a>
     <a href="/stress-test.html" class="gn-link">Stress Test</a>
@@ -385,7 +386,7 @@ init().catch(console.error);
 
 <!-- Global mobile bottom nav -->
 <div class="global-mobile-nav">
-  <a href="/" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Browse</span></a>
+  <a href="/browse.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Browse</span></a>
   <a href="/watchlist.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span>Watchlist</span></a>
   <a href="#" class="gmn-item" id="gmn-analyse" onclick="document.querySelector('.analyse-sheet')?.classList.toggle('open');return false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg><span>Analyse</span></a>
   <a href="/market.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span>Summary</span></a>

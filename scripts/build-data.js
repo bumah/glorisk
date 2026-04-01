@@ -18,6 +18,9 @@ import {
   computeIndicatorsFromPrices,
   computeMood,
   sma,
+  IND_ORDER,
+  IND_META,
+  MOOD_BANDS,
 } from '../src/js/riskEngine.js';
 
 const __dirname  = path.dirname(fileURLToPath(import.meta.url));
@@ -305,6 +308,74 @@ function processFile(csvFile, group, exchange, nameResolver, usedTickers) {
   return coins;
 }
 
+/* ── Change detection — compare current vs previous build ────────────── */
+
+function detectChanges(newCoins, previousCatalog) {
+  if (!previousCatalog?.coins?.length) return null;
+
+  const prevMap = {};
+  for (const c of previousCatalog.coins) {
+    prevMap[c.ticker] = c;
+  }
+
+  const changes = {};
+  let changeCount = 0;
+
+  for (const curr of newCoins) {
+    const prev = prevMap[curr.ticker];
+    if (!prev) continue; // new asset, skip
+
+    const assetChanges = {};
+
+    // 1. Status (mood label) change
+    if (prev.mood?.label && curr.mood?.label && prev.mood.label !== curr.mood.label) {
+      const prevBand = MOOD_BANDS.find(b => b.label === prev.mood.label) || MOOD_BANDS[2];
+      const currBand = MOOD_BANDS.find(b => b.label === curr.mood.label) || MOOD_BANDS[2];
+      assetChanges.statusChange = {
+        from: prevBand.displayLabel,
+        to:   currBand.displayLabel,
+      };
+    }
+
+    // 2. GloRisk score change (only if >= 5 point shift)
+    const prevScore = Math.min(95, Math.max(10, 100 - (prev.mood?.score ?? 0) * 5));
+    const currScore = Math.min(95, Math.max(10, 100 - (curr.mood?.score ?? 0) * 5));
+    if (Math.abs(currScore - prevScore) >= 5) {
+      assetChanges.scoreChange = { from: prevScore, to: currScore };
+    }
+
+    // 3. Indicator color changes (green->red, red->green, etc.)
+    const indChanges = [];
+    for (const key of IND_ORDER) {
+      const prevInd = prev.indicators?.[key];
+      const currInd = curr.indicators?.[key];
+      if (prevInd?.color && currInd?.color && prevInd.color !== currInd.color) {
+        indChanges.push({
+          key,
+          name: IND_META[key]?.label || key,
+          fromColor: prevInd.color,
+          toColor:   currInd.color,
+          fromLabel: prevInd.label || '',
+          toLabel:   currInd.label || '',
+        });
+      }
+    }
+    if (indChanges.length) assetChanges.indicatorChanges = indChanges;
+
+    // Only record if something actually changed
+    if (Object.keys(assetChanges).length > 0) {
+      changes[curr.ticker] = {
+        company: curr.company,
+        group:   curr.group,
+        ...assetChanges,
+      };
+      changeCount++;
+    }
+  }
+
+  return changeCount > 0 ? changes : null;
+}
+
 /* ── Main ─────────────────────────────────────────────────────────────────── */
 
 function main() {
@@ -312,6 +383,16 @@ function main() {
 
   // Ensure output directories exist
   fs.mkdirSync(ASSETS_DIR, { recursive: true });
+
+  // Load previous catalog for change detection
+  const catalogPath = path.join(PUBLIC_DATA, 'coins.json');
+  let previousCatalog = null;
+  if (fs.existsSync(catalogPath)) {
+    try {
+      previousCatalog = JSON.parse(fs.readFileSync(catalogPath, 'utf8'));
+      console.log(`  Loaded previous build (${previousCatalog.total} assets, as of ${previousCatalog.asOf})`);
+    } catch { previousCatalog = null; }
+  }
 
   // Clean previous asset files
   const existingAssets = fs.readdirSync(ASSETS_DIR).filter(f => f.endsWith('.json'));
@@ -358,13 +439,25 @@ function main() {
     coins: allCoins,
   };
 
-  const catalogPath = path.join(PUBLIC_DATA, 'coins.json');
   fs.writeFileSync(catalogPath, JSON.stringify(output));
+
+  // Detect and write changes
+  const changes = detectChanges(allCoins, previousCatalog);
+  const changesPath = path.join(PUBLIC_DATA, 'changes.json');
+  const changesOutput = {
+    asOf:         output.asOf,
+    previousAsOf: previousCatalog?.asOf || null,
+    built:        output.built,
+    changes:      changes || {},
+  };
+  fs.writeFileSync(changesPath, JSON.stringify(changesOutput));
+  const numChanges = changes ? Object.keys(changes).length : 0;
+  console.log(`\n✓ Change detection: ${numChanges} asset(s) with changes → public/data/changes.json`);
 
   const sizeKB     = (fs.statSync(catalogPath).size / 1024).toFixed(0);
   const assetCount = fs.readdirSync(ASSETS_DIR).filter(f => f.endsWith('.json')).length;
 
-  console.log(`\n✓ Built ${allCoins.length} assets → public/data/coins.json (${sizeKB} KB)`);
+  console.log(`✓ Built ${allCoins.length} assets → public/data/coins.json (${sizeKB} KB)`);
   console.log(`✓ ${assetCount} per-asset JSON files → public/data/assets/`);
 
   // Summary by group
