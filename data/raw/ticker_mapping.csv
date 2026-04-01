@@ -3,35 +3,130 @@ Ticker,Name,Sector,Group,Exchange,Provider
 ^FTSE,FTSE 100 Index,Broad Market,Index,UK,
 ^HSI,Hang Seng Index,Broad Market,Index,HK,
 ^N225,Nikkei 225 Index,Broad Market,Index,JP,
-XLK,Technology Select Sector SPDR Fund,Technology,SectorETFs,US,SPDR
-XLV,Health Care Select Sector SPDR Fund,Health Care,SectorETFs,US,SPDR
-XLF,Financial Select Sector SPDR Fund,Financials,SectorETFs,US,SPDR
-XLY,Consumer Discretionary Select Sector SPDR Fund,Consumer Discretionary,SectorETFs,US,SPDR
-XLP,Consumer Staples Select Sector SPDR Fund,Consumer Staples,SectorETFs,US,SPDR
-XLE,Energy Select Sector SPDR Fund,Energy,SectorETFs,US,SPDR
-XLI,Industrial Select Sector SPDR Fund,Industrials,SectorETFs,US,SPDR
-XLU,Utilities Select Sector SPDR Fund,Utilities,SectorETFs,US,SPDR
-XLB,Materials Select Sector SPDR Fund,Materials,SectorETFs,US,SPDR
-XLRE,Real Estate Select Sector SPDR Fund,Real Estate,SectorETFs,US,SPDR
-XLC,Communication Services Select Sector SPDR Fund,Communication Services,SectorETFs,US,SPDR
-VGT,Vanguard Information Technology ETF,Technology,SectorETFs,US,Vanguard
-VHT,Vanguard Health Care ETF,Health Care,SectorETFs,US,Vanguard
-VFH,Vanguard Financials ETF,Financials,SectorETFs,US,Vanguard
-VCR,Vanguard Consumer Discretionary ETF,Consumer Discretionary,SectorETFs,US,Vanguard
-VDE,Vanguard Energy ETF,Energy,SectorETFs,US,Vanguard
-VIS,Vanguard Industrials ETF,Industrials,SectorETFs,US,Vanguard
-VPU,Vanguard Utilities ETF,Utilities,SectorETFs,US,Vanguard
-VAW,Vanguard Materials ETF,Materials,SectorETFs,US,Vanguard
-VNQ,Vanguard Real Estate ETF,Real Estate,SectorETFs,US,Vanguard
-IYW,iShares U.S. Technology ETF,Technology,SectorETFs,US,iShares
-IYH,iShares U.S. Healthcare ETF,Health Care,SectorETFs,US,iShares
-IYF,iShares U.S. Financials ETF,Financials,SectorETFs,US,iShares
-IYC,iShares U.S. Consumer Discretionary ETF,Consumer Discretionary,SectorETFs,US,iShares
-IYE,iShares U.S. Energy ETF,Energy,SectorETFs,US,iShares
-IYJ,iShares U.S. Industrials ETF,Industrials,SectorETFs,US,iShares
-IDU,iShares U.S. Utilities ETF,Utilities,SectorETFs,US,iShares
-IYM,iShares U.S. Basic Materials ETF,Materials,SectorETFs,US,iShares
-IYR,iShares U.S. Real Estate ETF,Real Estate,SectorETFs,US,iShares
+XLK,Technology Select Sector SPDR Fund,Technology,ETFs,US,SPDR
+XLV,Health Care Select Sector SPDR Fund,Health Care,ETFs,US,SPDR
+XLF,Financial Select Sector SPDR Fund,Financials,ETFs,US,SPDR
+XLY,Consumer Discretionary Select Sector SPDR Fund,Consumer Discretionary,ETFs,US,SPDR
+XLP,Consumer Staples Select Sector SPDR Fund,Consumer Staples,ETFs,US,SPDR
+XLE,Energy Select Sector SPDR Fund,Energy,ETFs,US,SPDR
+XLI,Industrial Select Sector SPDR Fund,Industrials,ETFs,US,SPDR
+XLU,Utilities Select Sector SPDR Fund,Utilities,ETFs,US,SPDR
+XLB,Materials Select Sector SPDR Fund,Materials,ETFs,US,SPDR
+XLRE,Real Estate Select Sector SPDR Fund,Real Estate,ETFs,US,SPDR
+XLC,Communication Services Select Sector SPDR Fund,Communication Services,ETFs,US,SPDR
+VGT,Vanguard Information Technology ETF,Technology,ETFs,US,Vanguard
+VHT,Vanguard Health Care ETF,Health Care,ETFs,US,Vanguard
+VFH,Vanguard Financials ETF,Financials,ETFs,US,Vanguard
+VCR,Vanguard Consumer Discretionary ETF,Consumer Discretionary,ETFs,US,Vanguard
+VDE,Vanguard Energy ETF,Energy,ETFs,US,Vanguard
+VIS,Vanguard Industrials ETF,Industrials,ETFs,US,Vanguard
+VPU,Vanguard Utilities ETF,Utilities,ETFs,US,Vanguard
+VAW,Vanguard Materials ETF,Materials,ETFs,US,Vanguard
+VNQ,Vanguard Real Estate ETF,Real Estate,ETFs,US,Vanguard
+IYW,iShares U.S. Technology ETF,Technology,ETFs,US,iShares
+IYH,iShares U.S. Healthcare ETF,Health Care,ETFs,US,iShares
+IYF,iShares U.S. Financials ETF,Financials,ETFs,US,iShares
+IYC,iShares U.S. Consumer Discretionary ETF,Consumer Discretionary,ETFs,US,iShares
+IYE,iShares U.S. Energy ETF,Energy,ETFs,US,iShares
+IYJ,iShares U.S. Industrials ETF,Industrials,ETFs,US,iShares
+IDU,iShares U.S. Utilities ETF,Utilities,ETFs,US,iShares
+IYM,iShares U.S. Basic Materials ETF,Materials,ETFs,US,iShares
+IYR,iShares U.S. Real Estate ETF,Real Estate,ETFs,US,iShares
+AAVE-USD,Aave,Cryptocurrency,Crypto,Global,
+ADA-USD,Cardano,Cryptocurrency,Crypto,Global,
+ALGO-USD,Algorand,Cryptocurrency,Crypto,Global,
+APT-USD,Aptos,Cryptocurrency,Crypto,Global,
+AR-USD,Arweave,Cryptocurrency,Crypto,Global,
+ARB-USD,Arbitrum,Cryptocurrency,Crypto,Global,
+ATOM-USD,Cosmos,Cryptocurrency,Crypto,Global,
+AVAX-USD,Avalanche,Cryptocurrency,Crypto,Global,
+BCH-USD,Bitcoin Cash,Cryptocurrency,Crypto,Global,
+BNB-USD,Binance Coin,Cryptocurrency,Crypto,Global,
+BONK-USD,Bonk,Cryptocurrency,Crypto,Global,
+BTC-USD,Bitcoin,Cryptocurrency,Crypto,Global,
+DOGE-USD,Dogecoin,Cryptocurrency,Crypto,Global,
+DOT-USD,Polkadot,Cryptocurrency,Crypto,Global,
+EGLD-USD,MultiversX,Cryptocurrency,Crypto,Global,
+ETC-USD,Ethereum Classic,Cryptocurrency,Crypto,Global,
+ETH-USD,Ethereum,Cryptocurrency,Crypto,Global,
+FET-USD,Fetch.ai,Cryptocurrency,Crypto,Global,
+FIL-USD,Filecoin,Cryptocurrency,Crypto,Global,
+FTM-USD,Fantom,Cryptocurrency,Crypto,Global,
+GRT-USD,The Graph,Cryptocurrency,Crypto,Global,
+HBAR-USD,Hedera,Cryptocurrency,Crypto,Global,
+ICP-USD,Internet Computer,Cryptocurrency,Crypto,Global,
+IMX-USD,Immutable,Cryptocurrency,Crypto,Global,
+INJ-USD,Injective,Cryptocurrency,Crypto,Global,
+LDO-USD,Lido DAO,Cryptocurrency,Crypto,Global,
+LINK-USD,Chainlink,Cryptocurrency,Crypto,Global,
+LTC-USD,Litecoin,Cryptocurrency,Crypto,Global,
+MKR-USD,Maker,Cryptocurrency,Crypto,Global,
+NEAR-USD,NEAR Protocol,Cryptocurrency,Crypto,Global,
+OP-USD,Optimism,Cryptocurrency,Crypto,Global,
+PEPE-USD,Pepe,Cryptocurrency,Crypto,Global,
+QNT-USD,Quant,Cryptocurrency,Crypto,Global,
+RNDR-USD,Render,Cryptocurrency,Crypto,Global,
+RUNE-USD,THORChain,Cryptocurrency,Crypto,Global,
+SEI-USD,Sei,Cryptocurrency,Crypto,Global,
+SHIB-USD,Shiba Inu,Cryptocurrency,Crypto,Global,
+SOL-USD,Solana,Cryptocurrency,Crypto,Global,
+STX-USD,Stacks,Cryptocurrency,Crypto,Global,
+SUI-USD,Sui,Cryptocurrency,Crypto,Global,
+TAO-USD,Bittensor,Cryptocurrency,Crypto,Global,
+TIA-USD,Celestia,Cryptocurrency,Crypto,Global,
+TON-USD,Toncoin,Cryptocurrency,Crypto,Global,
+TRX-USD,TRON,Cryptocurrency,Crypto,Global,
+UNI-USD,Uniswap,Cryptocurrency,Crypto,Global,
+VET-USD,VeChain,Cryptocurrency,Crypto,Global,
+WIF-USD,dogwifhat,Cryptocurrency,Crypto,Global,
+XLM-USD,Stellar,Cryptocurrency,Crypto,Global,
+XMR-USD,Monero,Cryptocurrency,Crypto,Global,
+XRP-USD,XRP,Cryptocurrency,Crypto,Global,
+AKT-USD,Akash Network,Cryptocurrency,Crypto,Global,
+APE-USD,ApeCoin,Cryptocurrency,Crypto,Global,
+AXS-USD,Axie Infinity,Cryptocurrency,Crypto,Global,
+BAT-USD,Basic Attention Token,Cryptocurrency,Crypto,Global,
+BLUR-USD,Blur,Cryptocurrency,Crypto,Global,
+CELO-USD,Celo,Cryptocurrency,Crypto,Global,
+CFX-USD,Conflux,Cryptocurrency,Crypto,Global,
+CHZ-USD,Chiliz,Cryptocurrency,Crypto,Global,
+CKB-USD,Nervos Network,Cryptocurrency,Crypto,Global,
+COMP-USD,Compound,Cryptocurrency,Crypto,Global,
+CRV-USD,Curve DAO,Cryptocurrency,Crypto,Global,
+DASH-USD,Dash,Cryptocurrency,Crypto,Global,
+DYDX-USD,dYdX,Cryptocurrency,Crypto,Global,
+ENJ-USD,Enjin Coin,Cryptocurrency,Crypto,Global,
+EOS-USD,EOS,Cryptocurrency,Crypto,Global,
+FLOKI-USD,Floki,Cryptocurrency,Crypto,Global,
+FLOW-USD,Flow,Cryptocurrency,Crypto,Global,
+FXS-USD,Frax Share,Cryptocurrency,Crypto,Global,
+GALA-USD,Gala,Cryptocurrency,Crypto,Global,
+GMX-USD,GMX,Cryptocurrency,Crypto,Global,
+GNO-USD,Gnosis,Cryptocurrency,Crypto,Global,
+JASMY-USD,JasmyCoin,Cryptocurrency,Crypto,Global,
+JTO-USD,Jito,Cryptocurrency,Crypto,Global,
+JUP-USD,Jupiter,Cryptocurrency,Crypto,Global,
+KAVA-USD,Kava,Cryptocurrency,Crypto,Global,
+KSM-USD,Kusama,Cryptocurrency,Crypto,Global,
+MANA-USD,Decentraland,Cryptocurrency,Crypto,Global,
+MATIC-USD,Polygon,Cryptocurrency,Crypto,Global,
+MINA-USD,Mina Protocol,Cryptocurrency,Crypto,Global,
+ORDI-USD,ORDI,Cryptocurrency,Crypto,Global,
+PENDLE-USD,Pendle,Cryptocurrency,Crypto,Global,
+PYTH-USD,Pyth Network,Cryptocurrency,Crypto,Global,
+ROSE-USD,Oasis Network,Cryptocurrency,Crypto,Global,
+RPL-USD,Rocket Pool,Cryptocurrency,Crypto,Global,
+SAND-USD,The Sandbox,Cryptocurrency,Crypto,Global,
+SNX-USD,Synthetix,Cryptocurrency,Crypto,Global,
+THETA-USD,Theta Network,Cryptocurrency,Crypto,Global,
+WLD-USD,Worldcoin,Cryptocurrency,Crypto,Global,
+XTZ-USD,Tezos,Cryptocurrency,Crypto,Global,
+YFI-USD,yearn.finance,Cryptocurrency,Crypto,Global,
+ZEC-USD,Zcash,Cryptocurrency,Crypto,Global,
+GC=F,Gold Futures,Precious Metals,Commodities,Global,
+SI=F,Silver Futures,Precious Metals,Commodities,Global,
+CL=F,Crude Oil WTI Futures,Energy,Commodities,Global,
+BZ=F,Brent Crude Futures,Energy,Commodities,Global,
 A,,,SP500,US,
 AAL,,,SP500,US,
 AAPL,,,SP500,US,
