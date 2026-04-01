@@ -152,6 +152,25 @@ let watchlist = []; // array of ticker strings
 let currentUser = null;
 let changesData = null; // from changes.json
 let alertsDismissed = false;
+let isPasswordRecovery = false;
+
+// Register auth listener IMMEDIATELY so we don't miss PASSWORD_RECOVERY event
+// (Supabase processes URL hash tokens on client init, before our init() runs)
+onAuthChange((user, event) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    isPasswordRecovery = true;
+    document.getElementById('resetModal').style.display = 'flex';
+  }
+});
+
+// Also check URL hash directly as fallback (Supabase puts type=recovery in hash)
+if (window.location.hash && window.location.hash.includes('type=recovery')) {
+  isPasswordRecovery = true;
+  // Give Supabase client a moment to process the tokens, then show modal
+  setTimeout(() => {
+    document.getElementById('resetModal').style.display = 'flex';
+  }, 500);
+}
 
 function gloriskScore(mood) { return Math.min(95, Math.max(10, 100 - mood.score * 5)); }
 function formatPrice(p) {
@@ -526,28 +545,28 @@ function wireAuth() {
       errEl.textContent = error.message;
       errEl.style.display = 'block';
     } else {
-      errEl.textContent = '';
       errEl.style.display = 'none';
-      modal.style.display = 'none';
-      if (data.user) {
+      if (data.session) {
+        // Signed in immediately (no email confirmation required)
+        modal.style.display = 'none';
         currentUser = data.user;
         updateAuthUI();
         if (watchlist.length) await saveWatchlistCloud(watchlist);
       } else {
-        alert('Check your email to confirm your account, then sign in.');
+        // Email confirmation required — show success in modal
+        const successEl = document.getElementById('resetSuccess');
+        successEl.textContent = 'Account created! Check your email to confirm, then sign in.';
+        successEl.style.display = 'block';
       }
     }
   });
 
-  // Listen for auth changes (e.g., email confirmation, password recovery redirect)
+  // Listen for auth changes (sign in, sign out, token refresh)
+  // Note: PASSWORD_RECOVERY is handled by the early listener at the top of the script
   onAuthChange(async (user, event) => {
+    if (event === 'PASSWORD_RECOVERY') return; // handled above
     currentUser = user;
     updateAuthUI();
-    if (event === 'PASSWORD_RECOVERY') {
-      // Show the reset password modal
-      document.getElementById('resetModal').style.display = 'flex';
-      return;
-    }
     if (user) {
       await loadWatchlist();
       render();
