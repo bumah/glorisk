@@ -102,16 +102,63 @@ async function init() {
     renderCards();
   });
 
-  // Browse text filter
+  // Browse text filter with dropdown suggestions
   const browseFilterEl = document.getElementById('browseFilter');
-  if (browseFilterEl) {
+  const browseDrop = document.getElementById('browseDropdown');
+  if (browseFilterEl && browseDrop) {
     let filterTimer;
     browseFilterEl.addEventListener('input', () => {
       clearTimeout(filterTimer);
       filterTimer = setTimeout(() => {
         browseQuery = browseFilterEl.value.trim();
         renderCards();
+        // Show dropdown suggestions
+        const q = browseQuery.toLowerCase();
+        if (q.length >= 1) {
+          const matches = allCoins.filter(c =>
+            c.ticker.toLowerCase().includes(q) || c.company.toLowerCase().includes(q)
+          ).slice(0, 6);
+          if (matches.length) {
+            const b = (label) => getMoodBand(label);
+            browseDrop.innerHTML = matches.map((c, i) => {
+              const band = b(c.mood.label);
+              return `<div class="dd-item" data-idx="${i}" data-ticker="${c.ticker}">
+                <div class="dd-ticker">${c.ticker}</div>
+                <div class="dd-name">${c.company}</div>
+                <div class="dd-mood"><span class="mood-pill ${band.cls}" style="font-size:0.6rem">${band.displayLabel}</span></div>
+              </div>`;
+            }).join('');
+            browseDrop.classList.add('open');
+          } else {
+            browseDrop.classList.remove('open');
+          }
+        } else {
+          browseDrop.classList.remove('open');
+        }
       }, 150);
+    });
+
+    browseDrop.addEventListener('click', e => {
+      const item = e.target.closest('.dd-item');
+      if (!item) return;
+      const ticker = item.dataset.ticker;
+      const coin = allCoins.find(c => c.ticker === ticker);
+      if (coin) {
+        browseFilterEl.value = '';
+        browseQuery = '';
+        browseDrop.classList.remove('open');
+        showReport(coin);
+      }
+    });
+
+    browseFilterEl.addEventListener('focus', () => {
+      if (browseQuery.length >= 1 && browseDrop.innerHTML) browseDrop.classList.add('open');
+    });
+
+    document.addEventListener('click', e => {
+      if (!browseFilterEl.contains(e.target) && !browseDrop.contains(e.target)) {
+        browseDrop.classList.remove('open');
+      }
     });
   }
 
