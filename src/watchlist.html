@@ -76,12 +76,12 @@ body { background: var(--bg); color: var(--text); }
     <a href="/browse.html" class="gn-link">Browse</a>
     <a href="/watchlist.html" class="gn-link active">Watchlist</a>
     <a href="/compare.html" class="gn-link">Compare</a>
-    <a href="/stress-test.html" class="gn-link">Stress Test</a>
-    <a href="/market.html" class="gn-link">Market Summary</a>
+    <a href="/stress-test.html" class="gn-link">Stress</a>
+    <a href="/market.html" class="gn-link">Summary</a>
     <a href="/methodology.html" class="gn-link">Methodology</a>
   </div>
   <div class="gn-right" id="gnAuth">
-    <a href="/watchlist.html" class="gn-signin" id="gnSignIn">Sign In</a>
+    <a href="/watchlist.html#signin" class="gn-signin" id="gnSignIn">Sign In</a>
   </div>
 </nav>
 
@@ -93,8 +93,8 @@ body { background: var(--bg); color: var(--text); }
   <!-- Auth bar -->
   <div id="authBar" class="wl-auth-bar" style="display:none">
     <div id="authLoggedOut" style="display:none">
-      <span style="font-size:0.78rem;color:var(--muted)">Sign in to save your watchlist across devices</span>
-      <button class="ra-btn ra-btn--accent" id="btnShowAuth" style="margin-left:8px">Sign In</button>
+      <span style="font-size:0.78rem;color:var(--muted)">Sign in to save your watchlist across devices &mdash; </span>
+      <a href="#" id="btnShowAuth" style="color:var(--accent);font-size:0.78rem;text-decoration:none;font-weight:500">Sign In</a>
     </div>
     <div id="authLoggedIn" style="display:none">
       <span style="font-size:0.78rem;color:var(--green)">&#10003;</span>
@@ -530,6 +530,11 @@ function wireAuth() {
       renderAlerts();
     }
   });
+
+  // Auto-open modal if navigated with #signin hash
+  if (window.location.hash === '#signin' && !currentUser) {
+    modal.style.display = 'flex';
+  }
 }
 
 async function init() {
