@@ -35,8 +35,7 @@ body { background: var(--bg); color: var(--text); }
 .wl-remove:hover { color: var(--red); }
 .wl-score { font-family: var(--font-display); font-weight: 800; font-size: 0.9rem; }
 
-/* Auth bar */
-.wl-auth-bar { display: flex; align-items: center; margin-bottom: 1rem; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); flex-wrap: wrap; gap: 8px; }
+/* Auth modal */
 .wl-auth-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 1rem; }
 .wl-auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; width: 100%; max-width: 360px; }
 
@@ -90,19 +89,6 @@ body { background: var(--bg); color: var(--text); }
   <h1 class="page-title">Your Risk Watchlist</h1>
   <p class="page-sub">Track the risk profile of assets you care about. Add tickers, monitor their scores, and share your watchlist via link.</p>
 
-  <!-- Auth bar -->
-  <div id="authBar" class="wl-auth-bar" style="display:none">
-    <div id="authLoggedOut" style="display:none">
-      <span style="font-size:0.78rem;color:var(--muted)">Sign in to save your watchlist across devices &mdash; </span>
-      <a href="#" id="btnShowAuth" style="color:var(--accent);font-size:0.78rem;text-decoration:none;font-weight:500">Sign In</a>
-    </div>
-    <div id="authLoggedIn" style="display:none">
-      <span style="font-size:0.78rem;color:var(--green)">&#10003;</span>
-      <span style="font-size:0.78rem;color:var(--muted)" id="authEmail"></span>
-      <button class="ra-btn" id="btnSignOut" style="margin-left:8px;font-size:0.7rem">Sign Out</button>
-    </div>
-  </div>
-
   <!-- Auth modal -->
   <div id="authModal" class="wl-auth-modal" style="display:none">
     <div class="wl-auth-box">
@@ -140,6 +126,7 @@ body { background: var(--bg); color: var(--text); }
     <input type="text" id="addInput" placeholder="Search and add assets to your watchlist..." autocomplete="off">
     <div class="search-dropdown" id="addDrop"></div>
   </div>
+  <div id="authHint" style="font-size:0.72rem;color:var(--muted);margin-bottom:1.5rem;margin-top:-0.75rem"></div>
 
   <div id="watchlistArea">
     <div class="wl-empty">
@@ -450,28 +437,28 @@ function wireSearch() {
 }
 
 function updateAuthUI() {
-  const bar = document.getElementById('authBar');
-  const loggedOut = document.getElementById('authLoggedOut');
-  const loggedIn = document.getElementById('authLoggedIn');
-  const emailEl = document.getElementById('authEmail');
-
-  bar.style.display = 'flex';
+  const hint = document.getElementById('authHint');
+  if (!hint) return;
   if (currentUser) {
-    loggedOut.style.display = 'none';
-    loggedIn.style.display = 'flex';
-    emailEl.textContent = currentUser.email;
+    hint.innerHTML = `<span style="color:var(--green)">\u2713</span> Signed in as ${currentUser.email} \u00b7 <a href="#" id="btnSignOut2" style="color:var(--muted);font-size:0.72rem;text-decoration:none">Sign Out</a>`;
+    hint.querySelector('#btnSignOut2')?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await signOut();
+      currentUser = null;
+      updateAuthUI();
+    });
   } else {
-    loggedOut.style.display = 'flex';
-    loggedIn.style.display = 'none';
+    hint.innerHTML = `Your watchlist is saved temporarily in this browser. <a href="#" id="btnShowAuth" style="color:var(--accent);text-decoration:none;font-weight:500">Sign in</a> to save across all your devices.`;
+    hint.querySelector('#btnShowAuth')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('authModal').style.display = 'flex';
+    });
   }
 }
 
 function wireAuth() {
   const modal = document.getElementById('authModal');
 
-  document.getElementById('btnShowAuth')?.addEventListener('click', () => {
-    modal.style.display = 'flex';
-  });
   document.getElementById('authClose')?.addEventListener('click', () => {
     modal.style.display = 'none';
   });
@@ -550,12 +537,6 @@ function wireAuth() {
         alert('Check your email to confirm your account, then sign in.');
       }
     }
-  });
-
-  document.getElementById('btnSignOut')?.addEventListener('click', async () => {
-    await signOut();
-    currentUser = null;
-    updateAuthUI();
   });
 
   // Listen for auth changes (e.g., email confirmation, password recovery redirect)
