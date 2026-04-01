@@ -61,6 +61,7 @@ let favourites   = new Set();
 let activeType   = 'all';  // 'all', 'Stocks', 'Crypto', 'SectorETFs', 'Index'
 let activeSub    = 'all';  // 'all', 'SP500', 'FTSE100', 'Nikkei225', 'HSI', 'Mag7', 'Majors', 'sector:...'
 let activeIssuer = 'all';  // 'all', 'Vanguard', 'iShares', 'SPDR'
+let browseQuery  = '';     // text filter from browse search
 
 /* ── Init ──────────────────────────────────────────────────────────── */
 
@@ -100,6 +101,19 @@ async function init() {
     document.querySelectorAll('.mood-filter').forEach(el => el.checked = true);
     renderCards();
   });
+
+  // Browse text filter
+  const browseFilterEl = document.getElementById('browseFilter');
+  if (browseFilterEl) {
+    let filterTimer;
+    browseFilterEl.addEventListener('input', () => {
+      clearTimeout(filterTimer);
+      filterTimer = setTimeout(() => {
+        browseQuery = browseFilterEl.value.trim();
+        renderCards();
+      }, 150);
+    });
+  }
 
   // Asset type tabs
   document.getElementById('typeTabs').addEventListener('click', e => {
@@ -314,8 +328,10 @@ function renderCards() {
   const grid        = document.getElementById('cardsGrid');
   const countEl     = document.getElementById('cardsCount');
   const activeMoods = [...document.querySelectorAll('.mood-filter:checked')].map(el => el.value);
+  const q = browseQuery.toLowerCase();
   const coins       = getSortedCoins().filter(c =>
-    activeMoods.includes(c.mood.label) && matchesTypeFilter(c)
+    activeMoods.includes(c.mood.label) && matchesTypeFilter(c) &&
+    (!q || c.ticker.toLowerCase().includes(q) || c.company.toLowerCase().includes(q))
   );
 
   countEl.innerHTML = `Showing <span>${coins.length}</span> of ${allCoins.length} assets`;

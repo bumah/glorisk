@@ -118,6 +118,11 @@
 <!-- ── BROWSE GRID ─────────────────────────────────────────────────── -->
 <div id="browseSection">
   <div id="browse">
+    <div class="browse-search" style="margin-bottom:1rem">
+      <input type="text" id="browseFilter" class="search-input" placeholder="Filter by ticker or name&hellip;" autocomplete="off"
+        style="width:100%;background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:12px 16px;font-family:var(--font-body);font-size:0.9rem;color:var(--text);outline:none;caret-color:var(--accent)">
+    </div>
+
     <div class="browse-header">
       <div class="browse-title">Browse Assets</div>
       <select class="sort-select" id="sortSelect">
