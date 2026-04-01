@@ -37,7 +37,7 @@ export async function signOut() {
 // Reset password
 export async function resetPassword(email) {
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/watchlist.html',
+    redirectTo: 'https://glorisk.com/watchlist.html',
   });
   return { data, error };
 }
