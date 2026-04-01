@@ -121,6 +121,18 @@ body { background: var(--bg); color: var(--text); }
     </div>
   </div>
 
+  <!-- Reset password modal -->
+  <div id="resetModal" class="wl-auth-modal" style="display:none">
+    <div class="wl-auth-box">
+      <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;margin-bottom:1rem">Set New Password</div>
+      <input type="password" id="newPass" placeholder="New password" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-size:0.85rem;margin-bottom:8px;outline:none">
+      <input type="password" id="confirmPass" placeholder="Confirm password" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-size:0.85rem;margin-bottom:12px;outline:none">
+      <div id="resetError" style="color:var(--red);font-size:0.75rem;margin-bottom:8px;display:none"></div>
+      <div id="resetDone" style="color:var(--green);font-size:0.75rem;margin-bottom:8px;display:none"></div>
+      <button class="search-btn" id="btnSetPass" style="width:100%">Update Password</button>
+    </div>
+  </div>
+
   <!-- Alerts -->
   <div id="alertsArea"></div>
 
@@ -546,14 +558,55 @@ function wireAuth() {
     updateAuthUI();
   });
 
-  // Listen for auth changes (e.g., email confirmation redirect)
-  onAuthChange(async (user) => {
+  // Listen for auth changes (e.g., email confirmation, password recovery redirect)
+  onAuthChange(async (user, event) => {
     currentUser = user;
     updateAuthUI();
+    if (event === 'PASSWORD_RECOVERY') {
+      // Show the reset password modal
+      document.getElementById('resetModal').style.display = 'flex';
+      return;
+    }
     if (user) {
       await loadWatchlist();
       render();
       renderAlerts();
+    }
+  });
+
+  // Wire set new password button
+  document.getElementById('btnSetPass')?.addEventListener('click', async () => {
+    const newPass = document.getElementById('newPass').value;
+    const confirmPass = document.getElementById('confirmPass').value;
+    const errEl = document.getElementById('resetError');
+    const doneEl = document.getElementById('resetDone');
+    errEl.style.display = 'none';
+    doneEl.style.display = 'none';
+
+    if (newPass.length < 6) {
+      errEl.textContent = 'Password must be at least 6 characters.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (newPass !== confirmPass) {
+      errEl.textContent = 'Passwords do not match.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({ password: newPass });
+    if (error) {
+      errEl.textContent = error.message;
+      errEl.style.display = 'block';
+    } else {
+      doneEl.textContent = 'Password updated! You are now signed in.';
+      doneEl.style.display = 'block';
+      document.getElementById('newPass').value = '';
+      document.getElementById('confirmPass').value = '';
+      setTimeout(() => {
+        document.getElementById('resetModal').style.display = 'none';
+        window.location.hash = '';
+      }, 2000);
     }
   });
 
