@@ -329,6 +329,7 @@
 <script type="module">
 import { loadData, searchCoins } from '/js/data.js';
 import { getMoodBand } from '/js/riskEngine.js';
+import { getUser, signOut } from '/js/supabase.js';
 
 // Backward compat: redirect /?asset=BTC to /browse.html?asset=BTC
 const assetParam = new URLSearchParams(window.location.search).get('asset');
@@ -419,6 +420,19 @@ async function init() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => input.focus(), 400);
   });
+
+  // Update nav sign in/out button
+  const gnUser = await getUser();
+  const gnBtn = document.getElementById('gnSignIn');
+  if (gnBtn && gnUser) {
+    gnBtn.textContent = 'Sign Out';
+    gnBtn.href = '#';
+    gnBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await signOut();
+      window.location.reload();
+    });
+  }
 
   function select(coin) {
     selectedCoin = coin;

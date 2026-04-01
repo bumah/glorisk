@@ -167,6 +167,7 @@ body { background: var(--bg); color: var(--text); }
 
 <script type="module">
 import { IND_ORDER, IND_META, getMoodBand, MAX_SCORE } from '/js/riskEngine.js';
+import { getUser, signOut } from '/js/supabase.js';
 
 // Reduced set of indicators for the summary table
 const SUMMARY_INDS = ['volatility', 'vsPeak', 'shortTrend', 'longTrend', 'maCross', 'return1M'];
@@ -342,6 +343,18 @@ async function init() {
     buildTable('Technology ETFs', techCoins) +
     buildTable('Worst S&P 500 Performers', worstSP500(data.coins));
 
+  // Update nav sign in/out button
+  const gnUser = await getUser();
+  const gnBtn = document.getElementById('gnSignIn');
+  if (gnBtn && gnUser) {
+    gnBtn.textContent = 'Sign Out';
+    gnBtn.href = '#';
+    gnBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await signOut();
+      window.location.reload();
+    });
+  }
 }
 
 // Save section as image

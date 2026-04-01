@@ -424,6 +424,23 @@ body { background: var(--bg); color: var(--text); }
   </div>
 </footer>
 
+<script type="module">
+import { getUser, signOut } from '/js/supabase.js';
+(async () => {
+  const user = await getUser();
+  const btn = document.getElementById('gnSignIn');
+  if (btn && user) {
+    btn.textContent = 'Sign Out';
+    btn.href = '#';
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await signOut();
+      window.location.reload();
+    });
+  }
+})();
+</script>
+
 <!-- Global mobile bottom nav -->
 <div class="global-mobile-nav">
   <a href="/browse.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Browse</span></a>

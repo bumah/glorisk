@@ -440,6 +440,26 @@ function updateAuthUI() {
       document.getElementById('authModal').style.display = 'flex';
     });
   }
+
+  // Update nav sign in/out button
+  const gnBtn = document.getElementById('gnSignIn');
+  if (gnBtn) {
+    if (currentUser) {
+      gnBtn.textContent = 'Sign Out';
+      gnBtn.href = '#';
+      gnBtn.onclick = async (e) => {
+        e.preventDefault();
+        await signOut();
+        currentUser = null;
+        updateAuthUI();
+        window.location.reload();
+      };
+    } else {
+      gnBtn.textContent = 'Sign In';
+      gnBtn.href = '/watchlist.html#signin';
+      gnBtn.onclick = null;
+    }
+  }
 }
 
 function wireAuth() {

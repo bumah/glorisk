@@ -165,6 +165,7 @@ body { background: var(--bg); color: var(--text); }
 
 <script type="module">
 import { getMoodBand, IND_ORDER, MAX_SCORE } from '/js/riskEngine.js';
+import { getUser, signOut } from '/js/supabase.js';
 
 let allCoins = [];
 let portfolio = []; // [{ticker, value, shock}]
@@ -398,6 +399,19 @@ async function init() {
   wireSearch();
   wirePresets();
   render();
+
+  // Update nav sign in/out button
+  const gnUser = await getUser();
+  const gnBtn = document.getElementById('gnSignIn');
+  if (gnBtn && gnUser) {
+    gnBtn.textContent = 'Sign Out';
+    gnBtn.href = '#';
+    gnBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await signOut();
+      window.location.reload();
+    });
+  }
 }
 
 init().catch(console.error);

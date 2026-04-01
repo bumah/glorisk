@@ -9,6 +9,7 @@
 import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE } from './riskEngine.js';
 import { loadData, searchCoins, fetchAssetData } from './data.js';
 import html2canvas from 'html2canvas';
+import { getUser, signOut } from './supabase.js';
 
 /* ── Formatting ────────────────────────────────────────────────────── */
 
@@ -224,6 +225,19 @@ async function init() {
   });
   document.getElementById('backLink').addEventListener('click', showLanding);
   document.getElementById('navLogo').addEventListener('click', showLanding);
+
+  // Update nav sign in/out button
+  const gnUser = await getUser();
+  const gnBtn = document.getElementById('gnSignIn');
+  if (gnBtn && gnUser) {
+    gnBtn.textContent = 'Sign Out';
+    gnBtn.href = '#';
+    gnBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await signOut();
+      window.location.reload();
+    });
+  }
 }
 
 /* ── Search wiring ─────────────────────────────────────────────────── */
