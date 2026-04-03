@@ -1289,27 +1289,110 @@ async function loadDeepAnalysis(ticker) {
     if (!res.ok) throw new Error('not found');
     const data = await res.json();
 
-    // Convert markdown-ish content to HTML
-    let html = data.report
-      .replace(/### (.*)/g, '<h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin:1.25rem 0 0.5rem;color:var(--text)">$1</h3>')
-      .replace(/## (.*)/g, '<h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin:1.5rem 0 0.5rem;color:var(--text)">$1</h3>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/\n/g, '<br>')
-      .replace(/\| /g, '| ')
-      .replace(/\[(\d+)\]/g, '<sup style="color:var(--accent);font-size:0.6rem">[$1]</sup>');
+    // Parse markdown tables into styled HTML tables
+    function parseMarkdownTable(block) {
+      const rows = block.trim().split('\n').filter(r => r.trim());
+      if (rows.length < 2) return block;
+      const parseRow = r => r.split('|').map(c => c.trim()).filter(c => c);
+      const headers = parseRow(rows[0]);
+      // Skip separator row (row[1] is usually |---|---|)
+      const startIdx = rows[1]?.includes('---') ? 2 : 1;
+      const bodyRows = rows.slice(startIdx);
+      let t = '<div style="overflow-x:auto;margin:1rem 0"><table style="width:100%;border-collapse:separate;border-spacing:0;font-size:0.78rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden">';
+      t += '<thead><tr>';
+      headers.forEach(h => { t += `<th style="padding:10px 12px;text-align:left;font-family:var(--font-mono);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);background:var(--surface2);border-bottom:1px solid var(--border)">${h.replace(/\*\*/g,'')}</th>`; });
+      t += '</tr></thead><tbody>';
+      bodyRows.forEach(r => {
+        const cells = parseRow(r);
+        t += '<tr>';
+        cells.forEach((c, i) => {
+          let val = c.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+          // Color score cells
+          if (i === 1 && /^\d+$/.test(c.trim())) {
+            const n = parseInt(c);
+            const clr = n >= 8 ? 'var(--green)' : n >= 6 ? 'var(--amber)' : 'var(--red)';
+            val = `<span style="color:${clr};font-weight:600;font-family:var(--font-display)">${c}</span>`;
+          }
+          t += `<td style="padding:10px 12px;border-bottom:1px solid var(--border);${i === 0 ? 'font-weight:500;color:var(--text)' : 'color:var(--muted);font-weight:300'}">${val}</td>`;
+        });
+        t += '</tr>';
+      });
+      t += '</tbody></table></div>';
+      return t;
+    }
 
-    // Wrap in paragraphs
+    // Process the report content
+    const lines = data.report.split('\n');
+    let html = '';
+    let tableBuffer = [];
+    let inTable = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      const isTableRow = trimmed.startsWith('|') && trimmed.endsWith('|');
+
+      if (isTableRow) {
+        inTable = true;
+        tableBuffer.push(trimmed);
+        continue;
+      }
+      if (inTable) {
+        html += parseMarkdownTable(tableBuffer.join('\n'));
+        tableBuffer = [];
+        inTable = false;
+      }
+
+      if (!trimmed) {
+        html += '</p><p>';
+      } else if (trimmed.startsWith('### ')) {
+        html += `<h4 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;margin:1.5rem 0 0.5rem;color:var(--text);display:flex;align-items:center;gap:8px">${trimmed.slice(4)}</h4>`;
+      } else if (trimmed.startsWith('## ')) {
+        html += `<h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:800;margin:1.75rem 0 0.5rem;color:var(--text)">${trimmed.slice(3)}</h3>`;
+      } else if (trimmed.startsWith('- ')) {
+        html += `<div style="display:flex;gap:8px;margin:4px 0;font-size:0.88rem;line-height:1.6"><span style="color:var(--accent);flex-shrink:0">\u2022</span><span>${trimmed.slice(2)}</span></div>`;
+      } else {
+        html += trimmed + '<br>';
+      }
+    }
+    // Flush remaining table
+    if (tableBuffer.length) html += parseMarkdownTable(tableBuffer.join('\n'));
+
+    // Post-process inline formatting
+    html = html
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\[(\d+)\]/g, '<sup style="color:var(--accent);font-size:0.6rem;cursor:pointer" title="Source $1">[$1]</sup>')
+      // Style tier badges
+      .replace(/\u{1F7E2}\s*Tier 1[^<]*/gu, m => `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:6px;color:var(--green);font-weight:600;font-size:0.82rem;margin:4px 0">\u{1F7E2} ${m.slice(2)}</span>`)
+      .replace(/\u{1F7E1}\s*Tier 2[^<]*/gu, m => `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:6px;color:var(--amber);font-weight:600;font-size:0.82rem;margin:4px 0">\u{1F7E1} ${m.slice(2)}</span>`)
+      .replace(/\u{1F535}\s*Tier 3[^<]*/gu, m => `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.2);border-radius:6px;color:var(--blue);font-weight:600;font-size:0.82rem;margin:4px 0">\u{1F535} ${m.slice(2)}</span>`)
+      .replace(/\u{1F534}\s*Tier 4[^<]*/gu, m => `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:6px;color:var(--red);font-weight:600;font-size:0.82rem;margin:4px 0">\u{1F534} ${m.slice(2)}</span>`);
+
+    // Wrap in paragraph tags
     html = '<p>' + html + '</p>';
+    // Clean up empty paragraphs
+    html = html.replace(/<p>\s*<\/p>/g, '').replace(/<p><br>/g, '<p>').replace(/<br><\/p>/g, '</p>');
 
     textEl.innerHTML = html;
+
+    // Add clickable sources section
+    if (data.citations?.length) {
+      let sourcesHTML = '<div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border)">';
+      sourcesHTML += '<div style="font-family:var(--font-mono);font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:0.5rem">Sources</div>';
+      sourcesHTML += '<div style="display:flex;flex-direction:column;gap:4px">';
+      data.citations.forEach((url, i) => {
+        const domain = url.replace(/^https?:\/\//, '').split('/')[0];
+        sourcesHTML += `<a href="${url}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--muted);text-decoration:none;padding:4px 0;transition:color 0.15s"><span style="color:var(--accent);font-family:var(--font-mono);font-size:0.6rem;min-width:18px">[${i+1}]</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${domain}</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:0.4"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`;
+      });
+      sourcesHTML += '</div></div>';
+      textEl.innerHTML += sourcesHTML;
+    }
+
     box.style.display = 'block';
     if (emptyEl) emptyEl.style.display = 'none';
 
     // Meta line
     const genDate = data.generated ? new Date(data.generated).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-    const citations = data.citations?.length ? ` \u00b7 ${data.citations.length} sources` : '';
-    if (metaEl) metaEl.textContent = `Generated ${genDate}${citations} \u00b7 Powered by Perplexity AI`;
+    if (metaEl) metaEl.textContent = `Generated ${genDate} \u00b7 Powered by Perplexity AI`;
   } catch {
     // No report available for this ticker
     if (box) box.style.display = 'none';
