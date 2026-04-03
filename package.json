@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build:data": "node scripts/build-data.js",
+    "build:reports": "node scripts/build-reports.js",
     "build": "npm run build:data && vite build",
     "preview": "vite preview"
   },

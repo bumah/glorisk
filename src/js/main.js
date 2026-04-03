@@ -688,6 +688,22 @@ function renderReport(coin) {
     </div>
     <div class="full-analysis" id="fullAnalysis">${buildFullAnalysis(coin)}</div>
 
+    <!-- Deep Analysis (AI-generated, loaded from static JSON) -->
+    <div class="section-title" style="margin-top:2rem">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.6"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Deep Analysis
+    </div>
+    <div id="deepAnalysis" class="ai-box" style="display:none">
+      <div class="ai-badge"><div class="ai-dot"></div>Investment Research</div>
+      <div class="ai-text" id="deepAnalysisText"></div>
+      <div style="margin-top:1rem;font-size:0.62rem;color:var(--muted);font-family:var(--font-mono)">
+        <span id="deepAnalysisMeta"></span>
+      </div>
+    </div>
+    <div id="deepAnalysisEmpty" style="padding:1rem;color:var(--muted);font-size:0.82rem;display:none">
+      Deep analysis report is not yet available for this asset.
+    </div>
+
     <!-- Indicator Definitions -->
     <div class="section-title" style="margin-top:2rem">Risk Indicator Definitions</div>
     <div class="ind-defs-table">${indDefsHTML}</div>
@@ -702,6 +718,9 @@ function renderReport(coin) {
 
   // Rule-based summary
   generateSummary(coin);
+
+  // Load deep analysis report (pre-generated static JSON)
+  loadDeepAnalysis(coin.ticker);
 
   // Wire share/export buttons
   wireReportActions(coin, shareText, shareUrl);
@@ -1255,6 +1274,48 @@ function buildFullAnalysis(coin) {
 }
 
 /* ── Risk Summary (rule-based) ─────────────────────────────────────── */
+
+/* ── Deep Analysis (pre-generated Perplexity reports) ──────────────── */
+
+async function loadDeepAnalysis(ticker) {
+  const box      = document.getElementById('deepAnalysis');
+  const textEl   = document.getElementById('deepAnalysisText');
+  const metaEl   = document.getElementById('deepAnalysisMeta');
+  const emptyEl  = document.getElementById('deepAnalysisEmpty');
+  if (!box || !textEl) return;
+
+  try {
+    const res = await fetch(`/data/reports/${encodeURIComponent(ticker)}.json`);
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+
+    // Convert markdown-ish content to HTML
+    let html = data.report
+      .replace(/### (.*)/g, '<h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin:1.25rem 0 0.5rem;color:var(--text)">$1</h3>')
+      .replace(/## (.*)/g, '<h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin:1.5rem 0 0.5rem;color:var(--text)">$1</h3>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>')
+      .replace(/\| /g, '| ')
+      .replace(/\[(\d+)\]/g, '<sup style="color:var(--accent);font-size:0.6rem">[$1]</sup>');
+
+    // Wrap in paragraphs
+    html = '<p>' + html + '</p>';
+
+    textEl.innerHTML = html;
+    box.style.display = 'block';
+    if (emptyEl) emptyEl.style.display = 'none';
+
+    // Meta line
+    const genDate = data.generated ? new Date(data.generated).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    const citations = data.citations?.length ? ` \u00b7 ${data.citations.length} sources` : '';
+    if (metaEl) metaEl.textContent = `Generated ${genDate}${citations} \u00b7 Powered by Perplexity AI`;
+  } catch {
+    // No report available for this ticker
+    if (box) box.style.display = 'none';
+    if (emptyEl) emptyEl.style.display = 'block';
+  }
+}
 
 function generateSummary(coin) {
   const aiText = document.getElementById('aiText');
