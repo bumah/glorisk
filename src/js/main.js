@@ -1275,7 +1275,123 @@ function buildFullAnalysis(coin) {
 
 /* ── Risk Summary (rule-based) ─────────────────────────────────────── */
 
-/* ── Deep Analysis (pre-generated Perplexity reports) ──────────────── */
+/* ── Deep Analysis — data extraction ───────────────────────────────── */
+
+function extractReportData(report) {
+  // 1. Extract factor scores from markdown table
+  const scores = [];
+  for (const line of report.split('\n')) {
+    const m = line.match(/\|\s*\*?\*?\d+\.\s*.+?\*?\*?\s*\|\s*(\d+)\s*\|/);
+    if (m) scores.push(parseInt(m[1]));
+  }
+  const internal = scores.length >= 5 ? scores.slice(0, 5) : [];
+  const external = scores.length >= 10 ? scores.slice(5, 10) : [];
+  const intAvg = internal.length ? +(internal.reduce((a, b) => a + b, 0) / internal.length).toFixed(1) : null;
+  const extAvg = external.length ? +(external.reduce((a, b) => a + b, 0) / external.length).toFixed(1) : null;
+  const overall = intAvg !== null && extAvg !== null ? +((intAvg + extAvg) / 2).toFixed(1) : null;
+
+  // 2. Extract tier classification
+  const tierMatch = report.match(/([\u{1F7E2}\u{1F7E1}\u{1F535}\u{1F534}])\s*\*?\*?Tier\s+(\d)\s+([^*()\n]+)/u);
+  const tier = tierMatch ? { number: parseInt(tierMatch[2]), label: tierMatch[3].trim().replace(/\*\*/g, '') } : null;
+
+  // 3. Extract risk & opportunity items
+  const riskSection = report.split(/###\s*Risk\s*&?\s*Opportunity\s*Analysis/i)[1]?.split(/###/)[0] || '';
+  const tailwinds = [];
+  const risks = [];
+  for (const line of riskSection.split('\n').filter(l => l.trim())) {
+    const itemMatch = line.match(/(?:^-\s*)?\*\*(.+?)\*\*[:\s]*(.+)/);
+    if (!itemMatch) continue;
+    const fullTitle = itemMatch[1].trim();
+    const rawDesc = itemMatch[2].trim().replace(/\[\d+\]/g, '').replace(/\s{2,}/g, ' ');
+    const lower = fullTitle.toLowerCase();
+    if (lower.includes('risk') || lower.includes('headwind') || lower.includes('threat')) {
+      risks.push({ title: fullTitle.replace(/^key\s+(risks?)[:\s]*/i, ''), desc: rawDesc });
+    } else {
+      tailwinds.push({ title: fullTitle.replace(/^key\s+(tailwinds?|catalysts?)[:\s]*/i, ''), desc: rawDesc });
+    }
+  }
+
+  return { intAvg, extAvg, overall, tier, tailwinds, risks, scores };
+}
+
+/* ── Deep Analysis — custom components ────────────────────────────── */
+
+function buildScoreCardsHTML(intAvg, extAvg, overall) {
+  if (intAvg === null) return '';
+  const card = (label, value) =>
+    `<div class="da-score-card">
+      <div class="da-score-label">${label}</div>
+      <div class="da-score-value">${value}<span class="da-score-max"> / 10</span></div>
+    </div>`;
+  return `<div class="da-scores">${card('INTERNAL STRENGTH', intAvg)}${card('EXTERNAL STRENGTH', extAvg)}${card('OVERALL RATING', overall)}</div>`;
+}
+
+function buildMatrixHTML(tier, ticker, intAvg, extAvg) {
+  if (!tier) return '';
+  const cells = [
+    { num: 3, label: 'Tier 3', sub: 'Defensive Holding', color: 'blue' },
+    { num: 1, label: 'Tier 1', sub: 'Pack Leader', color: 'green' },
+    { num: 4, label: 'Tier 4', sub: 'Weak/Speculative', color: 'red' },
+    { num: 2, label: 'Tier 2', sub: 'Momentum Stock', color: 'amber' },
+  ];
+  // Compute point position inside active cell (percentage)
+  const clamp = (v, lo, hi) => Math.max(10, Math.min(90, ((v - lo) / (hi - lo)) * 100));
+  // Grid layout: col0 = low internal (0-7), col1 = high internal (7-10)
+  //              row0 = high external (7-10), row1 = low external (0-7)
+  let pointStyle = '';
+  if (intAvg !== null && extAvg !== null) {
+    const inRight = intAvg >= 7;
+    const exTop   = extAvg >= 7;
+    const xPct = inRight ? clamp(intAvg, 7, 10) : clamp(intAvg, 0, 7);
+    const yPct = exTop   ? (100 - clamp(extAvg, 7, 10)) : (100 - clamp(extAvg, 0, 7));
+    pointStyle = `left:${xPct}%;top:${yPct}%`;
+  }
+
+  let grid = '';
+  for (const c of cells) {
+    const active = c.num === tier.number;
+    grid += `<div class="da-mc ${active ? 'da-mc-active' : ''} da-mc-${c.color}">
+      <div class="da-mc-dot da-dot-${c.color}"></div>
+      <div class="da-mc-tier">${c.label}</div>
+      <div class="da-mc-sub">${c.sub}</div>
+      ${active ? `<div class="da-mc-point" style="${pointStyle}">\u25C6 <span>${ticker}</span></div>` : ''}
+    </div>`;
+  }
+
+  return `<div class="da-matrix">
+    <div class="da-matrix-inner">
+      <div class="da-matrix-ylabel">E X T E R N A L &ensp; S T R E N G T H &ensp; \u2192</div>
+      <div class="da-matrix-grid">${grid}</div>
+    </div>
+    <div class="da-matrix-xlabel">I N T E R N A L &ensp; S T R E N G T H &ensp; \u2192</div>
+  </div>`;
+}
+
+function buildRiskOpportunityHTML(tailwinds, risks) {
+  if (!tailwinds.length && !risks.length) return '';
+  const renderItems = items => items.map(item =>
+    `<div class="da-ro-item">${item.title ? `<strong>${item.title}:</strong> ` : ''}${item.desc}</div>`
+  ).join('');
+
+  return `<div class="da-risk">
+    <div class="da-risk-header">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      RISK & OPPORTUNITY ANALYSIS
+    </div>
+    <div class="da-risk-grid">
+      <div class="da-risk-col">
+        <div class="da-risk-col-title da-risk-tw">\u25B2 TAILWINDS & CATALYSTS</div>
+        ${renderItems(tailwinds)}
+      </div>
+      <div class="da-risk-col">
+        <div class="da-risk-col-title da-risk-rk">\u25BC KEY RISKS</div>
+        ${renderItems(risks)}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Deep Analysis — main loader ──────────────────────────────────── */
 
 async function loadDeepAnalysis(ticker) {
   const box      = document.getElementById('deepAnalysis');
@@ -1289,13 +1405,15 @@ async function loadDeepAnalysis(ticker) {
     if (!res.ok) throw new Error('not found');
     const data = await res.json();
 
+    // Extract structured data for custom components
+    const rd = extractReportData(data.report);
+
     // Parse markdown tables into styled HTML tables
     function parseMarkdownTable(block) {
       const rows = block.trim().split('\n').filter(r => r.trim());
       if (rows.length < 2) return block;
       const parseRow = r => r.split('|').map(c => c.trim()).filter(c => c);
       const headers = parseRow(rows[0]);
-      // Skip separator row (row[1] is usually |---|---|)
       const startIdx = rows[1]?.includes('---') ? 2 : 1;
       const bodyRows = rows.slice(startIdx);
       let t = '<div style="overflow-x:auto;margin:1rem 0"><table style="width:100%;border-collapse:separate;border-spacing:0;font-size:0.78rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden">';
@@ -1307,7 +1425,6 @@ async function loadDeepAnalysis(ticker) {
         t += '<tr>';
         cells.forEach((c, i) => {
           let val = c.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-          // Color score cells
           if (i === 1 && /^\d+$/.test(c.trim())) {
             const n = parseInt(c);
             const clr = n >= 8 ? 'var(--green)' : n >= 6 ? 'var(--amber)' : 'var(--red)';
@@ -1321,55 +1438,71 @@ async function loadDeepAnalysis(ticker) {
       return t;
     }
 
-    // Process the report content
-    const lines = data.report.split('\n');
-    let html = '';
-    let tableBuffer = [];
-    let inTable = false;
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      const isTableRow = trimmed.startsWith('|') && trimmed.endsWith('|');
-
-      if (isTableRow) {
-        inTable = true;
-        tableBuffer.push(trimmed);
-        continue;
+    // Parse a markdown content block (non-header lines)
+    function parseMarkdownBlock(content) {
+      const lines = content.split('\n');
+      let h = '';
+      let tableBuffer = [];
+      let inTable = false;
+      for (const line of lines) {
+        const trimmed = line.trim();
+        const isTableRow = trimmed.startsWith('|') && trimmed.endsWith('|');
+        if (isTableRow) { inTable = true; tableBuffer.push(trimmed); continue; }
+        if (inTable) { h += parseMarkdownTable(tableBuffer.join('\n')); tableBuffer = []; inTable = false; }
+        if (!trimmed) { h += '</p><p>'; }
+        else if (trimmed.startsWith('- ')) { h += `<div style="display:flex;gap:8px;margin:4px 0;font-size:0.88rem;line-height:1.6"><span style="color:var(--accent);flex-shrink:0">\u2022</span><span>${trimmed.slice(2)}</span></div>`; }
+        else { h += trimmed + '<br>'; }
       }
-      if (inTable) {
-        html += parseMarkdownTable(tableBuffer.join('\n'));
-        tableBuffer = [];
-        inTable = false;
-      }
+      if (tableBuffer.length) h += parseMarkdownTable(tableBuffer.join('\n'));
+      return h;
+    }
 
-      if (!trimmed) {
-        html += '</p><p>';
-      } else if (trimmed.startsWith('### ')) {
-        html += `<h4 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;margin:1.5rem 0 0.5rem;color:var(--text);display:flex;align-items:center;gap:8px">${trimmed.slice(4)}</h4>`;
-      } else if (trimmed.startsWith('## ')) {
-        html += `<h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:800;margin:1.75rem 0 0.5rem;color:var(--text)">${trimmed.slice(3)}</h3>`;
-      } else if (trimmed.startsWith('- ')) {
-        html += `<div style="display:flex;gap:8px;margin:4px 0;font-size:0.88rem;line-height:1.6"><span style="color:var(--accent);flex-shrink:0">\u2022</span><span>${trimmed.slice(2)}</span></div>`;
+    // Split report into sections by ### headers
+    const sections = [];
+    let curSection = { title: '', content: '' };
+    for (const line of data.report.split('\n')) {
+      const hMatch = line.match(/^###?\s+(.+)/);
+      if (hMatch) {
+        if (curSection.title || curSection.content.trim()) sections.push(curSection);
+        curSection = { title: hMatch[1].trim(), content: '' };
       } else {
-        html += trimmed + '<br>';
+        curSection.content += line + '\n';
       }
     }
-    // Flush remaining table
-    if (tableBuffer.length) html += parseMarkdownTable(tableBuffer.join('\n'));
+    if (curSection.title || curSection.content.trim()) sections.push(curSection);
+
+    // Build HTML, replacing structured sections with custom components
+    let html = '';
+    for (const section of sections) {
+      if (section.title.match(/internal\s+vs\.?\s+external/i)) {
+        html += buildScoreCardsHTML(rd.intAvg, rd.extAvg, rd.overall);
+        continue;
+      }
+      if (section.title.match(/matrix\s+placement/i)) {
+        html += buildMatrixHTML(rd.tier, ticker, rd.intAvg, rd.extAvg);
+        continue;
+      }
+      if (section.title.match(/risk\s*&?\s*opportunity/i)) {
+        html += buildRiskOpportunityHTML(rd.tailwinds, rd.risks);
+        continue;
+      }
+      // Regular section
+      if (section.title) {
+        html += `<h4 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;margin:1.5rem 0 0.5rem;color:var(--text);display:flex;align-items:center;gap:8px">${section.title}</h4>`;
+      }
+      html += parseMarkdownBlock(section.content);
+    }
 
     // Post-process inline formatting
     html = html
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\[(\d+)\]/g, '<sup style="color:var(--accent);font-size:0.6rem;cursor:pointer" title="Source $1">[$1]</sup>')
-      // Style tier badges
       .replace(/\u{1F7E2}\s*Tier 1[^<]*/gu, m => `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:6px;color:var(--green);font-weight:600;font-size:0.82rem;margin:4px 0">\u{1F7E2} ${m.slice(2)}</span>`)
       .replace(/\u{1F7E1}\s*Tier 2[^<]*/gu, m => `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:6px;color:var(--amber);font-weight:600;font-size:0.82rem;margin:4px 0">\u{1F7E1} ${m.slice(2)}</span>`)
       .replace(/\u{1F535}\s*Tier 3[^<]*/gu, m => `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.2);border-radius:6px;color:var(--blue);font-weight:600;font-size:0.82rem;margin:4px 0">\u{1F535} ${m.slice(2)}</span>`)
       .replace(/\u{1F534}\s*Tier 4[^<]*/gu, m => `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:6px;color:var(--red);font-weight:600;font-size:0.82rem;margin:4px 0">\u{1F534} ${m.slice(2)}</span>`);
 
-    // Wrap in paragraph tags
     html = '<p>' + html + '</p>';
-    // Clean up empty paragraphs
     html = html.replace(/<p>\s*<\/p>/g, '').replace(/<p><br>/g, '<p>').replace(/<br><\/p>/g, '</p>');
 
     textEl.innerHTML = html;

@@ -1054,6 +1054,197 @@ body {
   @page { margin: 1.5cm; }
 }
 
+/* ── Deep Analysis components ────────────────────────────────────────────── */
+
+/* Score cards row */
+.da-scores {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+.da-score-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+.da-score-label {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+.da-score-value {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.da-score-max {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+
+/* 2×2 Tier Matrix */
+.da-matrix {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem 2rem 1.5rem;
+  margin: 1.5rem 0;
+}
+.da-matrix-inner {
+  display: flex;
+  gap: 0;
+}
+.da-matrix-ylabel {
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.15em;
+  color: var(--muted2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: 12px;
+  flex-shrink: 0;
+}
+.da-matrix-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 3px;
+  flex: 1;
+  aspect-ratio: 2 / 1.1;
+}
+.da-mc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  position: relative;
+  background: var(--surface2);
+  border-radius: 4px;
+  transition: border-color 0.2s;
+  border: 2px solid transparent;
+}
+.da-mc-active.da-mc-green  { border-color: var(--green); background: rgba(34,197,94,0.04); }
+.da-mc-active.da-mc-amber  { border-color: var(--amber); background: rgba(245,158,11,0.04); }
+.da-mc-active.da-mc-blue   { border-color: var(--blue); background: rgba(96,165,250,0.04); }
+.da-mc-active.da-mc-red    { border-color: var(--red); background: rgba(239,68,68,0.04); }
+.da-mc-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-bottom: 6px;
+}
+.da-dot-green { background: var(--green); }
+.da-dot-amber { background: var(--amber); }
+.da-dot-blue  { background: var(--blue); }
+.da-dot-red   { background: var(--red); }
+.da-mc-tier {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.da-mc-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 300;
+}
+.da-mc-point {
+  position: absolute;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.da-mc-point span {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.da-matrix-xlabel {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.15em;
+  color: var(--muted2);
+  margin-top: 12px;
+}
+
+/* Risk & Opportunity */
+.da-risk {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+.da-risk-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.da-risk-header svg { opacity: 0.5; }
+.da-risk-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+.da-risk-col-title {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.75rem;
+}
+.da-risk-tw { color: var(--green); }
+.da-risk-rk { color: var(--red); }
+.da-ro-item {
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: var(--muted);
+  font-weight: 300;
+  margin-bottom: 0.75rem;
+}
+.da-ro-item strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Deep Analysis responsive */
+@media (max-width: 768px) {
+  .da-scores { grid-template-columns: 1fr; gap: 0.5rem; }
+  .da-score-value { font-size: 2rem; }
+  .da-matrix { padding: 1rem; }
+  .da-matrix-ylabel { display: none; }
+  .da-matrix-grid { aspect-ratio: auto; }
+  .da-mc { padding: 1rem 0.5rem; }
+  .da-mc-tier { font-size: 0.9rem; }
+  .da-risk-grid { grid-template-columns: 1fr; gap: 1rem; }
+}
+
 /* ── Report disclaimer ───────────────────────────────────────────────────── */
 .report-disclaimer {
   margin-top: 1.5rem;

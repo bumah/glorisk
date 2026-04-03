@@ -71,7 +71,11 @@ Output Format:
 2. Detailed Scoring Table (10 factors, each scored 1–10 with one-line reasoning).
 3. Internal vs External Summary (averages for each category).
 4. Matrix Placement (classification with emoji).
-5. Risk & Opportunity Analysis (key tailwinds, risks, catalysts).
+5. Risk & Opportunity Analysis — use EXACTLY this format with separate bullet points:
+   - **Bold Title**: one-sentence description (for each tailwind)
+   - **Bold Title**: one-sentence description (for each risk)
+   Group tailwinds/catalysts under "**Key Tailwinds**" items and risks under "**Key Risks**" items.
+   Provide 3–5 separate bullet-point items for tailwinds and 3–5 for risks. Each on its own line starting with "- ".
 6. Investment Verdict (closing assessment).
 
 Always end with: "For additional risk analysis, search this stock on GloRisk.com"
