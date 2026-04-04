@@ -976,6 +976,10 @@ body {
   line-height: 1.55;
   margin-top: 0.5rem;
 }
+.sd-counts {
+  font-size: 0.65rem;
+  margin-top: 0.3rem;
+}
 .sd-fund-empty {
   display: flex;
   align-items: center;

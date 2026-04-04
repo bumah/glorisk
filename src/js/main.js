@@ -546,19 +546,6 @@ function buildDualSummary(coin) {
   const amberCount = IND_ORDER.filter(k => coin.indicators[k]?.color === 'amber').length;
   const redCount   = IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length;
 
-  // Score delta
-  let deltaHTML = '';
-  const sh1m = coin.scoreHistory?.['1m'];
-  if (sh1m) {
-    const prev = gloriskScore(sh1m);
-    const diff = ps - prev;
-    if (diff !== 0) {
-      const cls = diff > 0 ? 'sh-up' : 'sh-down';
-      const arrow = diff > 0 ? '\u2191' : '\u2193';
-      deltaHTML = `<div class="sd-delta ${cls}">${arrow}${Math.abs(diff)} from ${prev} (1M)</div>`;
-    }
-  }
-
   return `
     <div class="summary-dual">
       <div class="summary-col summary-tech">
@@ -571,9 +558,8 @@ function buildDualSummary(coin) {
         <div class="sd-bar"><div class="sd-bar-fill" style="width:${ps}%;background:${band.color}"></div></div>
         <div class="sd-meta">
           <span class="rsb ${moodRsbClass(mood.label)}" style="font-size:0.68rem;padding:3px 10px">${band.displayLabel ?? mood.label}</span>
-          <span class="card-ind-counts" style="font-size:0.62rem"><span class="cic-g">${greenCount}G</span> <span class="cic-a">${amberCount}A</span> <span class="cic-r">${redCount}R</span></span>
         </div>
-        ${deltaHTML}
+        <div class="sd-counts"><span class="cic-g">${greenCount}G</span> <span class="cic-a">${amberCount}A</span> <span class="cic-r">${redCount}R</span></div>
       </div>
       <div class="summary-col summary-fund" id="fundCol">
         <div class="sd-label">FUNDAMENTAL</div>
@@ -629,8 +615,7 @@ function renderReport(coin) {
         <div class="hero-name">${coin.company}</div>
         <div class="hero-badges">
           <span class="rsb ${rsbCls}">${band.displayLabel ?? mood.label}</span>
-          <span class="asset-type-pill">${assetTypeLabel(coin.group)}</span>
-          <span class="card-ind-counts" style="font-size:0.68rem"><span class="cic-g">${IND_ORDER.filter(k => coin.indicators[k]?.color === 'green').length}G</span> <span class="cic-a">${IND_ORDER.filter(k => coin.indicators[k]?.color === 'amber').length}A</span> <span class="cic-r">${IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length}R</span></span>
+          <span class="rsb" id="heroTierBadge" style="display:none"></span>
         </div>
       </div>
       <div class="hero-price-block">
@@ -1463,14 +1448,23 @@ async function loadDeepAnalysis(ticker) {
     // Extract structured data for custom components
     const rd = extractReportData(data.report);
 
+    // Populate hero tier badge
+    const heroTierBadge = document.getElementById('heroTierBadge');
+    const tierRsbMap = { 1: 'rsb-green', 2: 'rsb-amber', 3: 'rsb-blue', 4: 'rsb-red' };
+    const tierLabels = { 1: 'Pack Leader', 2: 'Momentum Stock', 3: 'Defensive Holding', 4: 'Weak/Speculative' };
+    if (heroTierBadge && rd.tier) {
+      const tierRsb = tierRsbMap[rd.tier.number] || '';
+      heroTierBadge.className = `rsb ${tierRsb}`;
+      heroTierBadge.textContent = tierLabels[rd.tier.number] || rd.tier.label;
+      heroTierBadge.style.display = '';
+    }
+
     // Populate fundamental column in dual summary header
     const fundCol = document.getElementById('fundCol');
     if (fundCol && rd.overall !== null) {
       const scoreClr = v => v >= 8 ? 'var(--green)' : v >= 5 ? 'var(--amber)' : 'var(--red)';
-      const tierRsbMap = { 1: 'rsb-green', 2: 'rsb-amber', 3: 'rsb-blue', 4: 'rsb-red' };
-      const tierLabels = { 1: 'Pack Leader', 2: 'Momentum Stock', 3: 'Defensive Holding', 4: 'Weak/Speculative' };
-      const tierRsb = rd.tier ? tierRsbMap[rd.tier.number] || '' : '';
-      const tierLabel = rd.tier ? (tierLabels[rd.tier.number] || rd.tier.label) : '';
+      const fundTierRsb = rd.tier ? tierRsbMap[rd.tier.number] || '' : '';
+      const fundTierLabel = rd.tier ? (tierLabels[rd.tier.number] || rd.tier.label) : '';
 
       const barPct = (rd.overall / 10) * 100;
       fundCol.innerHTML = `
@@ -1481,7 +1475,7 @@ async function loadDeepAnalysis(ticker) {
           <span class="sd-max">/ 10</span>
         </div>
         <div class="sd-bar"><div class="sd-bar-fill" style="width:${barPct}%;background:${scoreClr(rd.overall)}"></div></div>
-        ${rd.tier ? `<div class="sd-meta"><span class="rsb ${tierRsb}" style="font-size:0.68rem;padding:3px 10px">${tierLabel}</span></div>` : ''}
+        ${rd.tier ? `<div class="sd-meta"><span class="rsb ${fundTierRsb}" style="font-size:0.68rem;padding:3px 10px">${fundTierLabel}</span></div>` : ''}
         <div class="sd-sub">Int <span style="color:${scoreClr(rd.intAvg)}">${rd.intAvg}</span> \u00b7 Ext <span style="color:${scoreClr(rd.extAvg)}">${rd.extAvg}</span></div>
       `;
     }
