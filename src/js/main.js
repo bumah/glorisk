@@ -1436,7 +1436,7 @@ function extractReportData(report) {
   // 1. Extract factor scores from markdown table
   const scores = [];
   for (const line of report.split('\n')) {
-    const m = line.match(/\|\s*\*?\*?\d+\.\s*.+?\*?\*?\s*\|\s*(\d+)\s*\|/);
+    const m = line.match(/\|\s*\*?\*?\d+\.\s*.+?\*?\*?\s*\|\s*(\d+)(?:\/10)?\s*\|/);
     if (m) scores.push(parseInt(m[1]));
   }
   const internal = scores.length >= 5 ? scores.slice(0, 5) : [];

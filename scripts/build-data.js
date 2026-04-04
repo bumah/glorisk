@@ -448,7 +448,7 @@ function main() {
         const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
         const scores = [];
         for (const line of report.report.split('\n')) {
-          const m = line.match(/\|\s*\*?\*?\d+\.\s*.+?\*?\*?\s*\|\s*(\d+)\s*\|/);
+          const m = line.match(/\|\s*\*?\*?\d+\.\s*.+?\*?\*?\s*\|\s*(\d+)(?:\/10)?\s*\|/);
           if (m) scores.push(parseInt(m[1]));
         }
         if (scores.length >= 10) {
