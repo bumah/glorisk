@@ -536,6 +536,55 @@ function buildScoreHistory(coin) {
   `;
 }
 
+/* ── Dual Summary (Technical + Fundamental) ───────────────────────── */
+
+function buildDualSummary(coin) {
+  const mood = coin.mood;
+  const band = getMoodBand(mood.label);
+  const ps   = gloriskScore(mood);
+  const greenCount = IND_ORDER.filter(k => coin.indicators[k]?.color === 'green').length;
+  const amberCount = IND_ORDER.filter(k => coin.indicators[k]?.color === 'amber').length;
+  const redCount   = IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length;
+
+  // Score delta
+  let deltaHTML = '';
+  const sh1m = coin.scoreHistory?.['1m'];
+  if (sh1m) {
+    const prev = gloriskScore(sh1m);
+    const diff = ps - prev;
+    if (diff !== 0) {
+      const cls = diff > 0 ? 'sh-up' : 'sh-down';
+      const arrow = diff > 0 ? '\u2191' : '\u2193';
+      deltaHTML = `<div class="sd-delta ${cls}">${arrow}${Math.abs(diff)} from ${prev} (1M)</div>`;
+    }
+  }
+
+  return `
+    <div class="summary-dual">
+      <div class="summary-col summary-tech">
+        <div class="sd-label">TECHNICAL</div>
+        <div class="sd-title">Risk Score</div>
+        <div class="sd-score-row">
+          <span class="sd-score" style="color:${band.color}">${ps}</span>
+          <span class="sd-max">/ 100</span>
+        </div>
+        <div class="sd-bar"><div class="sd-bar-fill" style="width:${ps}%;background:${band.color}"></div></div>
+        <div class="sd-meta">
+          <span class="rsb ${moodRsbClass(mood.label)}" style="font-size:0.68rem;padding:3px 10px">${band.displayLabel ?? mood.label}</span>
+          <span class="card-ind-counts" style="font-size:0.62rem"><span class="cic-g">${greenCount}G</span> <span class="cic-a">${amberCount}A</span> <span class="cic-r">${redCount}R</span></span>
+        </div>
+        ${deltaHTML}
+      </div>
+      <div class="summary-col summary-fund" id="fundCol">
+        <div class="sd-label">FUNDAMENTAL</div>
+        <div class="sd-fund-empty">
+          <div style="color:var(--muted);font-size:0.78rem;font-weight:300">SWOT analysis not yet available for this asset.</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 /* ── Report rendering ──────────────────────────────────────────────── */
 
 function renderReport(coin) {
@@ -591,69 +640,48 @@ function renderReport(coin) {
       </div>
     </div>
 
-    <!-- Report Actions -->
-    <div class="report-actions">
-      <button class="ra-btn" id="btnExportPdf" title="Export as PDF">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        Export PDF
+    <!-- Report Actions (icon-only toolbar) -->
+    <div class="report-actions-bar">
+      <button class="ra-icon" id="btnExportPdf" title="Export PDF">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       </button>
-      <button class="ra-btn" id="btnShareX" title="Share on X">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-        Share on X
+      <button class="ra-icon" id="btnShareX" title="Share on X">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
       </button>
-      <button class="ra-btn" id="btnShareLi" title="Share on LinkedIn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-        LinkedIn
+      <button class="ra-icon" id="btnShareLi" title="Share on LinkedIn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
       </button>
-      <button class="ra-btn" id="btnShareImg" title="Share as Image">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        Share as Image
+      <button class="ra-icon" id="btnShareImg" title="Share as Image">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
       </button>
-      <button class="ra-btn" id="btnCopyLink" title="Copy link">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        Copy Link
+      <button class="ra-icon" id="btnCopyLink" title="Copy link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
       </button>
-    </div>
-    <div class="report-actions" style="margin-top:-0.5rem">
-      <a href="/compare.html?a=${encodeURIComponent(coin.ticker)}" class="ra-btn ra-btn--accent" style="text-decoration:none">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-9 9"/><path d="M3 21l9-9"/></svg>
-        + Add to Compare
+      <div class="ra-divider"></div>
+      <a href="/compare.html?a=${encodeURIComponent(coin.ticker)}" class="ra-icon ra-icon--accent" title="Add to Compare">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-9 9"/><path d="M3 21l9-9"/></svg>
       </a>
-      <button class="ra-btn ra-btn--accent" id="btnAddStress">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        + Add to Stress Test
+      <button class="ra-icon ra-icon--accent" id="btnAddStress" title="Add to Stress Test">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
       </button>
     </div>
 
-    <!-- GloRisk Score -->
-    <div class="risk-meter-wrap">
-      <div class="rm-header">
-        <div class="rm-label">GloRisk Score</div>
-        <div class="rm-score-value" style="color:${band.color}">${gloriskScore(mood)}${(() => {
-          const sh = coin.scoreHistory?.['1m'];
-          if (!sh) return '';
-          const prev = gloriskScore(sh);
-          const diff = gloriskScore(mood) - prev;
-          if (diff === 0) return '';
-          const cls = diff > 0 ? 'sh-up' : 'sh-down';
-          const arrow = diff > 0 ? '\u2191' : '\u2193';
-          return ` <span class="rm-delta ${cls}">${arrow}${Math.abs(diff)}</span>`;
-        })()}</div>
-      </div>
-      <div class="rm-track">
-        <div class="rm-fill" style="width:${gloriskScore(mood)}%;background:${band.color}"></div>
-      </div>
-      <div class="rm-ticks">
-        <span>Critical</span><span>Very Stable</span>
-      </div>
-      ${buildScoreHistory(coin)}
-    </div>
+    <!-- Dual Summary (Technical + Fundamental) -->
+    ${buildDualSummary(coin)}
 
     <!-- Risk Summary -->
     <div class="section-title">Risk Summary</div>
-    <div class="ai-box" style="margin-bottom:2rem">
-      <div class="ai-badge"><div class="ai-dot"></div> GloRisk Analysis</div>
+    <div class="ai-box" style="margin-bottom:1rem">
+      <div class="ai-badge"><div class="ai-dot"></div> Technical Analysis</div>
       <div class="ai-text" id="aiText"></div>
+    </div>
+
+    <!-- SWOT Summary (populated by loadDeepAnalysis) -->
+    <div id="swotSummaryWrap" style="display:none">
+      <div class="ai-box" style="margin-bottom:2rem">
+        <div class="ai-badge"><div class="ai-dot"></div> SWOT Analysis</div>
+        <div class="ai-text" id="swotSummaryText"></div>
+      </div>
     </div>
 
     <!-- Score Timeline Chart -->
@@ -678,9 +706,9 @@ function renderReport(coin) {
       <canvas id="priceChart" style="max-height:240px"></canvas>
     </div>
 
-    <!-- Full Analysis -->
+    <!-- Risk Analysis -->
     <div class="section-title" style="margin-top:2rem">
-      Full Analysis
+      Risk Analysis
       <span class="section-share" id="btnShareAnalysis" title="Share analysis">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         Share
@@ -688,10 +716,10 @@ function renderReport(coin) {
     </div>
     <div class="full-analysis" id="fullAnalysis">${buildFullAnalysis(coin)}</div>
 
-    <!-- Deep Analysis (AI-generated, loaded from static JSON) -->
+    <!-- SWOT Analysis (AI-generated, loaded from static JSON) -->
     <div class="section-title" style="margin-top:2rem">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.6"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-      Deep Analysis
+      SWOT Analysis
     </div>
     <div id="deepAnalysis" class="ai-box" style="display:none">
       <div class="ai-badge"><div class="ai-dot"></div>Investment Research</div>
@@ -701,12 +729,33 @@ function renderReport(coin) {
       </div>
     </div>
     <div id="deepAnalysisEmpty" style="padding:1rem;color:var(--muted);font-size:0.82rem;display:none">
-      Deep analysis report is not yet available for this asset.
+      SWOT analysis report is not yet available for this asset.
     </div>
 
     <!-- Indicator Definitions -->
     <div class="section-title" style="margin-top:2rem">Risk Indicator Definitions</div>
     <div class="ind-defs-table">${indDefsHTML}</div>
+
+    <!-- SWOT Rating Definitions -->
+    <div class="section-title" style="margin-top:2rem">SWOT Rating Definitions</div>
+    <div class="ind-defs-table">
+      <div class="ind-def-row">
+        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--green)"></span> Tier 1 \u2013 Pack Leader</div>
+        <div class="ind-def-desc">High-quality businesses with strong fundamentals and favourable external conditions. Internal \u2265 7, External \u2265 7.</div>
+      </div>
+      <div class="ind-def-row">
+        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--amber)"></span> Tier 2 \u2013 Momentum Stock</div>
+        <div class="ind-def-desc">Strong companies facing macro or cyclical pressures. Internal \u2265 7, External < 7.</div>
+      </div>
+      <div class="ind-def-row">
+        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--blue)"></span> Tier 3 \u2013 Defensive Holding</div>
+        <div class="ind-def-desc">Stable externally but weaker internal fundamentals. Internal < 7, External \u2265 7.</div>
+      </div>
+      <div class="ind-def-row">
+        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--red)"></span> Tier 4 \u2013 Decliner</div>
+        <div class="ind-def-desc">Weak businesses with structural or macro challenges. Internal < 7, External < 7.</div>
+      </div>
+    </div>
 
     <!-- Disclaimer -->
     <p class="report-disclaimer">Analysis is based on historical price behaviour. Not investment advice. Conditions can change quickly.</p>
@@ -1150,7 +1199,7 @@ function buildFullAnalysis(coin) {
     return `<span class="fa-dot" style="background:var(--${color})"></span>`;
   }
 
-  function card(title, v, explanation) {
+  function cardHTML(title, v, explanation) {
     return `
       <div class="fa-card">
         <div class="fa-card-header">
@@ -1163,114 +1212,119 @@ function buildFullAnalysis(coin) {
     `;
   }
 
-  const sections = [];
+  // Build all indicator cards with their explanations
+  const allCards = [];
 
-  // --- VOLATILITY ---
-  sections.push(`<div class="fa-group-label">Volatility</div>`);
+  const indDefs = {
+    volatility: v => ({
+      title: 'Daily Volatility',
+      text: v.raw < 30
+        ? `${ticker} has relatively calm daily price movements. An annualised volatility of ${v.label} means day-to-day price swings are modest and more predictable.`
+        : v.raw < 60
+        ? `${ticker} shows moderate price swings at ${v.label} annualised. The price can move meaningfully from day to day, which is typical for this type of asset.`
+        : `${ticker} has high volatility at ${v.label} annualised. The price swings significantly from day to day, making it harder to predict short-term moves.`,
+    }),
+    volSpike: v => ({
+      title: 'Volatility Spike',
+      text: v.raw < 1.0
+        ? `Recent volatility is lower than the historical average (${v.label}). Price behaviour has been calmer than usual lately \u2014 a stable sign.`
+        : v.raw < 2.0
+        ? `Recent volatility is slightly above the historical average at ${v.label}. Something may be shifting, but it\u2019s not extreme.`
+        : `Recent volatility is ${v.label} the historical average \u2014 a significant spike. This often precedes larger price moves and indicates heightened uncertainty.`,
+    }),
+    shortTrend: v => ({
+      title: '50-Day Trend',
+      text: v.raw > 0
+        ? `The price is ${v.label} above its 50-day average. The short-term direction is upward \u2014 buyers have been in control recently.`
+        : v.raw > -6
+        ? `The price is ${v.label} below its 50-day average. It has slipped slightly below the short-term trend, which could signal early weakness.`
+        : `The price is ${v.label} below its 50-day average. This is a clear downtrend signal \u2014 the asset has fallen well below where it was trading recently.`,
+    }),
+    longTrend: v => ({
+      title: '200-Day Trend',
+      text: v.raw > 0
+        ? `The price sits ${v.label} above its 200-day average \u2014 the long-term trend is intact and pointing upward.`
+        : v.raw > -10
+        ? `The price is ${v.label} below its 200-day average. The long-term trend is starting to weaken but hasn\u2019t broken down completely.`
+        : `The price is ${v.label} below its 200-day average. This is a significant long-term downtrend \u2014 the asset has been losing value over an extended period.`,
+    }),
+    maCross: v => ({
+      title: 'Trend Direction',
+      text: v.color === 'green'
+        ? `The 50-day average is above the 200-day average \u2014 known as a "Golden Cross." This is a widely-watched bullish signal that suggests the overall trend direction is upward.`
+        : `The 50-day average has fallen below the 200-day average \u2014 known as a "Death Cross." This is a bearish signal that suggests the overall trend direction is downward.`,
+    }),
+    vsPeak: v => ({
+      title: 'Distance from Peak',
+      text: v.raw < 20
+        ? `The price is only ${v.label} below its 3-year high. It has held up well and remains close to its peak value.`
+        : v.raw < 30
+        ? `The price is ${v.label} below its 3-year high. A noticeable pullback from the peak, though not extreme.`
+        : `The price is ${v.label} below its 3-year high. This is a deep drawdown \u2014 the asset has lost a significant portion of its peak value and hasn\u2019t recovered.`,
+    }),
+    return1M: v => ({
+      title: '30-Day Return',
+      text: v.raw >= 0
+        ? `Over the past 30 days, the price has risen ${v.label}. Short-term direction is positive.`
+        : v.raw > -10
+        ? `Over the past 30 days, the price has fallen ${v.label}. A modest short-term decline.`
+        : `Over the past 30 days, the price has dropped ${v.label}. This is a sharp decline that signals significant selling pressure.`,
+    }),
+    return1Y: v => ({
+      title: '12-Month Return',
+      text: v.raw > 0
+        ? `Over the past 12 months, the price is up ${v.label}. The asset has gained value over the longer term.`
+        : v.raw > -20
+        ? `Over the past 12 months, the price is down ${v.label}. A moderate decline over the year.`
+        : `Over the past 12 months, the price has fallen ${v.label}. This sustained decline indicates a prolonged period of weakness.`,
+    }),
+    range52W: v => ({
+      title: 'Position in Range',
+      text: v.raw > 45
+        ? `The price is in the upper half of its 52-week range (${v.label}). It\u2019s closer to its yearly high than its low \u2014 a sign of strength.`
+        : v.raw > 25
+        ? `The price sits in the middle of its 52-week range (${v.label}). It\u2019s neither near the top nor the bottom of its recent trading band.`
+        : `The price is near the bottom of its 52-week range (${v.label}). It has given back most of its gains from the past year.`,
+    }),
+    cagr3Y: v => ({
+      title: '3-Year Growth',
+      text: v.raw > 0
+        ? `The 3-year annual growth rate is ${v.label}. Over three years, the asset has grown in value on an annualised basis \u2014 a positive long-term sign.`
+        : `The 3-year annual growth rate is ${v.label}. Over three years, the asset has lost value on an annualised basis \u2014 meaning it has destroyed long-term value.`,
+    }),
+  };
 
-  if (ind.volatility) {
-    const v = ind.volatility;
-    const text = v.raw < 30
-      ? `${ticker} has relatively calm daily price movements. An annualised volatility of ${v.label} means day-to-day price swings are modest and more predictable.`
-      : v.raw < 60
-      ? `${ticker} shows moderate price swings at ${v.label} annualised. The price can move meaningfully from day to day, which is typical for this type of asset.`
-      : `${ticker} has high volatility at ${v.label} annualised. The price swings significantly from day to day, making it harder to predict short-term moves.`;
-    sections.push(card('Daily Volatility', v, text));
+  for (const key of IND_ORDER) {
+    const v = ind[key];
+    const def = indDefs[key];
+    if (!v || !def) continue;
+    const { title, text } = def(v);
+    allCards.push({ color: v.color, title, label: v.label, text });
   }
 
-  if (ind.volSpike) {
-    const v = ind.volSpike;
-    const text = v.raw < 1.0
-      ? `Recent volatility is lower than the historical average (${v.label}). Price behaviour has been calmer than usual lately \u2014 a stable sign.`
-      : v.raw < 2.0
-      ? `Recent volatility is slightly above the historical average at ${v.label}. Something may be shifting, but it\u2019s not extreme.`
-      : `Recent volatility is ${v.label} the historical average \u2014 a significant spike. This often precedes larger price moves and indicates heightened uncertainty.`;
-    sections.push(card('Volatility Spike', v, text));
+  // Group by severity: red → amber → green
+  const groups = [
+    { color: 'red',   label: 'Critical',  cards: allCards.filter(c => c.color === 'red') },
+    { color: 'amber', label: 'Concerning', cards: allCards.filter(c => c.color === 'amber') },
+    { color: 'green', label: 'Going Well', cards: allCards.filter(c => c.color === 'green') },
+  ];
+
+  let html = '';
+  for (const g of groups) {
+    if (!g.cards.length) continue;
+    html += `<div class="fa-group-label fa-gl--${g.color}">${g.label} (${g.cards.length})</div>`;
+    html += `<table class="fa-table"><thead><tr><th>Indicator</th><th>Data</th><th>Explanation</th></tr></thead><tbody>`;
+    for (const c of g.cards) {
+      html += `<tr>
+        <td class="fa-t-ind">${dot(c.color)} ${c.title}</td>
+        <td class="fa-t-data fa-val--${c.color}">${c.label}</td>
+        <td class="fa-t-explain">${c.text}</td>
+      </tr>`;
+    }
+    html += `</tbody></table>`;
   }
 
-  // --- TREND ---
-  sections.push(`<div class="fa-group-label">Trend</div>`);
-
-  if (ind.shortTrend) {
-    const v = ind.shortTrend;
-    const text = v.raw > 0
-      ? `The price is ${v.label} above its 50-day average. The short-term direction is upward \u2014 buyers have been in control recently.`
-      : v.raw > -6
-      ? `The price is ${v.label} below its 50-day average. It has slipped slightly below the short-term trend, which could signal early weakness.`
-      : `The price is ${v.label} below its 50-day average. This is a clear downtrend signal \u2014 the asset has fallen well below where it was trading recently.`;
-    sections.push(card('50-Day Trend', v, text));
-  }
-
-  if (ind.longTrend) {
-    const v = ind.longTrend;
-    const text = v.raw > 0
-      ? `The price sits ${v.label} above its 200-day average \u2014 the long-term trend is intact and pointing upward.`
-      : v.raw > -10
-      ? `The price is ${v.label} below its 200-day average. The long-term trend is starting to weaken but hasn\u2019t broken down completely.`
-      : `The price is ${v.label} below its 200-day average. This is a significant long-term downtrend \u2014 the asset has been losing value over an extended period.`;
-    sections.push(card('200-Day Trend', v, text));
-  }
-
-  if (ind.maCross) {
-    const v = ind.maCross;
-    const text = v.color === 'green'
-      ? `The 50-day average is above the 200-day average \u2014 known as a "Golden Cross." This is a widely-watched bullish signal that suggests the overall trend direction is upward.`
-      : `The 50-day average has fallen below the 200-day average \u2014 known as a "Death Cross." This is a bearish signal that suggests the overall trend direction is downward.`;
-    sections.push(card('Trend Direction', v, text));
-  }
-
-  // --- RETURNS ---
-  sections.push(`<div class="fa-group-label">Returns</div>`);
-
-  if (ind.vsPeak) {
-    const v = ind.vsPeak;
-    const text = v.raw < 20
-      ? `The price is only ${v.label} below its 3-year high. It has held up well and remains close to its peak value.`
-      : v.raw < 30
-      ? `The price is ${v.label} below its 3-year high. A noticeable pullback from the peak, though not extreme.`
-      : `The price is ${v.label} below its 3-year high. This is a deep drawdown \u2014 the asset has lost a significant portion of its peak value and hasn\u2019t recovered.`;
-    sections.push(card('Distance from Peak', v, text));
-  }
-
-  if (ind.return1M) {
-    const v = ind.return1M;
-    const text = v.raw >= 0
-      ? `Over the past 30 days, the price has risen ${v.label}. Short-term direction is positive.`
-      : v.raw > -10
-      ? `Over the past 30 days, the price has fallen ${v.label}. A modest short-term decline.`
-      : `Over the past 30 days, the price has dropped ${v.label}. This is a sharp decline that signals significant selling pressure.`;
-    sections.push(card('30-Day Return', v, text));
-  }
-
-  if (ind.return1Y) {
-    const v = ind.return1Y;
-    const text = v.raw > 0
-      ? `Over the past 12 months, the price is up ${v.label}. The asset has gained value over the longer term.`
-      : v.raw > -20
-      ? `Over the past 12 months, the price is down ${v.label}. A moderate decline over the year.`
-      : `Over the past 12 months, the price has fallen ${v.label}. This sustained decline indicates a prolonged period of weakness.`;
-    sections.push(card('12-Month Return', v, text));
-  }
-
-  if (ind.range52W) {
-    const v = ind.range52W;
-    const text = v.raw > 45
-      ? `The price is in the upper half of its 52-week range (${v.label}). It\u2019s closer to its yearly high than its low \u2014 a sign of strength.`
-      : v.raw > 25
-      ? `The price sits in the middle of its 52-week range (${v.label}). It\u2019s neither near the top nor the bottom of its recent trading band.`
-      : `The price is near the bottom of its 52-week range (${v.label}). It has given back most of its gains from the past year.`;
-    sections.push(card('Position in Range', v, text));
-  }
-
-  if (ind.cagr3Y) {
-    const v = ind.cagr3Y;
-    const text = v.raw > 0
-      ? `The 3-year annual growth rate is ${v.label}. Over three years, the asset has grown in value on an annualised basis \u2014 a positive long-term sign.`
-      : `The 3-year annual growth rate is ${v.label}. Over three years, the asset has lost value on an annualised basis \u2014 meaning it has destroyed long-term value.`;
-    sections.push(card('3-Year Growth', v, text));
-  }
-
-  return sections.join('');
+  return html;
 }
 
 /* ── Risk Summary (rule-based) ─────────────────────────────────────── */
@@ -1318,12 +1372,13 @@ function extractReportData(report) {
 
 function buildScoreCardsHTML(intAvg, extAvg, overall) {
   if (intAvg === null) return '';
+  const clr = v => v >= 8 ? 'var(--green)' : v >= 5 ? 'var(--amber)' : 'var(--red)';
   const card = (label, value) =>
     `<div class="da-score-card">
       <div class="da-score-label">${label}</div>
-      <div class="da-score-value">${value}<span class="da-score-max"> / 10</span></div>
+      <div class="da-score-value" style="color:${clr(value)}">${value}<span class="da-score-max"> / 10</span></div>
     </div>`;
-  return `<div class="da-scores">${card('INTERNAL STRENGTH', intAvg)}${card('EXTERNAL STRENGTH', extAvg)}${card('OVERALL RATING', overall)}</div>`;
+  return `<div class="da-scores">${card('INTERNAL RATING', intAvg)}${card('EXTERNAL RATING', extAvg)}${card('OVERALL RATING', overall)}</div>`;
 }
 
 function buildMatrixHTML(tier, ticker, intAvg, extAvg) {
@@ -1360,10 +1415,10 @@ function buildMatrixHTML(tier, ticker, intAvg, extAvg) {
 
   return `<div class="da-matrix">
     <div class="da-matrix-inner">
-      <div class="da-matrix-ylabel">E X T E R N A L &ensp; S T R E N G T H &ensp; \u2192</div>
+      <div class="da-matrix-ylabel">E X T E R N A L &ensp; R A T I N G &ensp; \u2192</div>
       <div class="da-matrix-grid">${grid}</div>
     </div>
-    <div class="da-matrix-xlabel">I N T E R N A L &ensp; S T R E N G T H &ensp; \u2192</div>
+    <div class="da-matrix-xlabel">I N T E R N A L &ensp; R A T I N G &ensp; \u2192</div>
   </div>`;
 }
 
@@ -1407,6 +1462,44 @@ async function loadDeepAnalysis(ticker) {
 
     // Extract structured data for custom components
     const rd = extractReportData(data.report);
+
+    // Populate fundamental column in dual summary header
+    const fundCol = document.getElementById('fundCol');
+    if (fundCol && rd.overall !== null) {
+      const scoreClr = v => v >= 8 ? 'var(--green)' : v >= 5 ? 'var(--amber)' : 'var(--red)';
+      const tierRsbMap = { 1: 'rsb-green', 2: 'rsb-amber', 3: 'rsb-blue', 4: 'rsb-red' };
+      const tierLabels = { 1: 'Pack Leader', 2: 'Momentum Stock', 3: 'Defensive Holding', 4: 'Weak/Speculative' };
+      const tierRsb = rd.tier ? tierRsbMap[rd.tier.number] || '' : '';
+      const tierLabel = rd.tier ? (tierLabels[rd.tier.number] || rd.tier.label) : '';
+
+      const barPct = (rd.overall / 10) * 100;
+      fundCol.innerHTML = `
+        <div class="sd-label">FUNDAMENTAL</div>
+        <div class="sd-title">SWOT Score</div>
+        <div class="sd-score-row">
+          <span class="sd-score" style="color:${scoreClr(rd.overall)}">${rd.overall}</span>
+          <span class="sd-max">/ 10</span>
+        </div>
+        <div class="sd-bar"><div class="sd-bar-fill" style="width:${barPct}%;background:${scoreClr(rd.overall)}"></div></div>
+        ${rd.tier ? `<div class="sd-meta"><span class="rsb ${tierRsb}" style="font-size:0.68rem;padding:3px 10px">${tierLabel}</span></div>` : ''}
+        <div class="sd-sub">Int <span style="color:${scoreClr(rd.intAvg)}">${rd.intAvg}</span> \u00b7 Ext <span style="color:${scoreClr(rd.extAvg)}">${rd.extAvg}</span></div>
+      `;
+    }
+
+    // Populate SWOT Summary block (executive summary from report)
+    const swotWrap = document.getElementById('swotSummaryWrap');
+    const swotText = document.getElementById('swotSummaryText');
+    if (swotWrap && swotText) {
+      const execSection = data.report.split(/###\s*Executive\s+Summary/i)[1]?.split(/###/)[0] || '';
+      const execClean = execSection.trim()
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\[\d+\]/g, '')
+        .replace(/\n{2,}/g, '</p><p>');
+      if (execClean) {
+        swotText.innerHTML = `<p>${execClean}</p>`;
+        swotWrap.style.display = 'block';
+      }
+    }
 
     // Parse markdown tables into styled HTML tables
     function parseMarkdownTable(block) {
@@ -1474,6 +1567,10 @@ async function loadDeepAnalysis(ticker) {
     // Build HTML, replacing structured sections with custom components
     let html = '';
     for (const section of sections) {
+      // Skip exec summary — already shown as SWOT Summary above
+      if (section.title.match(/executive\s+summary/i)) {
+        continue;
+      }
       if (section.title.match(/internal\s+vs\.?\s+external/i)) {
         html += buildScoreCardsHTML(rd.intAvg, rd.extAvg, rd.overall);
         continue;
@@ -1486,9 +1583,10 @@ async function loadDeepAnalysis(ticker) {
         html += buildRiskOpportunityHTML(rd.tailwinds, rd.risks);
         continue;
       }
-      // Regular section
+      // Regular section — rename legacy "Investment Verdict" to "Overall Verdict"
       if (section.title) {
-        html += `<h4 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;margin:1.5rem 0 0.5rem;color:var(--text);display:flex;align-items:center;gap:8px">${section.title}</h4>`;
+        const displayTitle = section.title.replace(/investment\s+verdict/i, 'Overall Verdict');
+        html += `<h4 style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;margin:1.5rem 0 0.5rem;color:var(--text);display:flex;align-items:center;gap:8px">${displayTitle}</h4>`;
       }
       html += parseMarkdownBlock(section.content);
     }
