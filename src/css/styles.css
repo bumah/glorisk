@@ -923,6 +923,31 @@ body {
   min-width: 28px;
 }
 
+/* Performance Summary traffic light */
+.perf-traffic { margin: 0.5rem 0; }
+.perf-traffic-bar {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+.perf-traffic-bar > div { border-radius: 3px; }
+.perf-traffic-labels {
+  display: flex;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.perf-change {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 0.4rem;
+}
+
 /* Section Score Bar (inline score above analysis tables) */
 .section-score-bar {
   display: flex;

@@ -668,10 +668,10 @@ function renderReport(coin) {
       <div class="ai-text" id="aiText"></div>
     </div>
 
-    <!-- SWOT Summary (populated by loadDeepAnalysis) -->
+    <!-- Market Position Summary (populated by loadDeepAnalysis) -->
     <div id="swotSummaryWrap" style="display:none">
       <div class="ai-box" style="margin-bottom:2rem">
-        <div class="ai-badge"><div class="ai-dot"></div> SWOT Analysis</div>
+        <div class="ai-badge"><div class="ai-dot"></div> Market Position Analysis</div>
         <div class="ai-text" id="swotSummaryText"></div>
       </div>
     </div>
@@ -715,10 +715,10 @@ function renderReport(coin) {
     </div>
     <div class="full-analysis" id="fullAnalysis">${buildFullAnalysis(coin)}</div>
 
-    <!-- SWOT Analysis (AI-generated, loaded from static JSON) -->
+    <!-- Market Position Analysis (AI-generated, loaded from static JSON) -->
     <div class="section-title" style="margin-top:2rem">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.6"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-      SWOT Analysis
+      Market Position Analysis
     </div>
     <div class="section-score-bar" id="swotScoreBar" style="display:none"></div>
     <div id="deepAnalysis" class="ai-box" style="display:none">
@@ -729,15 +729,15 @@ function renderReport(coin) {
       </div>
     </div>
     <div id="deepAnalysisEmpty" style="padding:1rem;color:var(--muted);font-size:0.82rem;display:none">
-      SWOT analysis report is not yet available for this asset.
+      Market position analysis report is not yet available for this asset.
     </div>
 
     <!-- Indicator Definitions -->
     <div class="section-title" style="margin-top:2rem">Performance Indicator Definitions</div>
     <div class="ind-defs-table">${indDefsHTML}</div>
 
-    <!-- SWOT Rating Definitions -->
-    <div class="section-title" style="margin-top:2rem">SWOT Rating Definitions</div>
+    <!-- Market Position Definitions -->
+    <div class="section-title" style="margin-top:2rem">Market Position Definitions</div>
     <div class="ind-defs-table">
       <div class="ind-def-row">
         <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--green)"></span> Tier 1 \u2013 Pack Leader</div>
@@ -1464,7 +1464,7 @@ async function loadDeepAnalysis(ticker) {
     // Extract structured data for custom components
     const rd = extractReportData(data.report);
 
-    // Compute SWOT Score scaled to /100 and update GloRisk composite
+    // Compute Market Position Score scaled to /100 and update GloRisk composite
     const tierRsbMap = { 1: 'rsb-green', 2: 'rsb-amber', 3: 'rsb-blue', 4: 'rsb-red' };
     const tierLabels = { 1: 'Pack Leader', 2: 'Momentum Stock', 3: 'Defensive Holding', 4: 'Weak/Speculative' };
     if (rd.overall !== null) {
@@ -1475,11 +1475,11 @@ async function loadDeepAnalysis(ticker) {
       const fundTierRsb = rd.tier ? tierRsbMap[rd.tier.number] || '' : '';
       const fundTierLabel = rd.tier ? (tierLabels[rd.tier.number] || rd.tier.label) : '';
 
-      // Populate SWOT Score bar above SWOT Analysis section
+      // Populate Market Position Score bar above Market Position Analysis section
       const swotScoreBar = document.getElementById('swotScoreBar');
       if (swotScoreBar) {
         swotScoreBar.innerHTML = `
-          <span class="ssb-label">SWOT Score</span>
+          <span class="ssb-label">Market Position Score</span>
           <span class="ssb-value" style="color:${swotBand.color}">${swot100}</span>
           <span class="ssb-max">/ 100</span>
           ${rd.tier ? `<span class="rsb ${fundTierRsb}" style="font-size:0.62rem;padding:2px 8px;margin-left:8px">${fundTierLabel}</span>` : ''}
@@ -1517,7 +1517,7 @@ async function loadDeepAnalysis(ticker) {
       }
     }
 
-    // Populate SWOT Summary block (executive summary from report)
+    // Populate Market Position Summary block (executive summary from report)
     const swotWrap = document.getElementById('swotSummaryWrap');
     const swotText = document.getElementById('swotSummaryText');
     if (swotWrap && swotText) {
@@ -1598,7 +1598,7 @@ async function loadDeepAnalysis(ticker) {
     // Build HTML, replacing structured sections with custom components
     let html = '';
     for (const section of sections) {
-      // Skip exec summary — already shown as SWOT Summary above
+      // Skip exec summary — already shown as Market Position Summary above
       if (section.title.match(/executive\s+summary/i)) {
         continue;
       }
@@ -1667,110 +1667,71 @@ function generateSummary(coin) {
   if (!aiText) return;
 
   const ind = coin.indicators;
-  const prev = coin.scoreHistory?.['1m']?.indicators; // 1M-ago indicator snapshot
+  const prev = coin.scoreHistory?.['1m']?.indicators;
   const displayLabel = getMoodBand(coin.mood.label).displayLabel ?? coin.mood.label;
   const ps = gloriskScore(coin.mood);
   const prevScore = coin.scoreHistory?.['1m'] ? gloriskScore(coin.scoreHistory['1m']) : null;
-  const prevLabel = coin.scoreHistory?.['1m'] ? (getMoodBand(coin.scoreHistory['1m'].label).displayLabel ?? coin.scoreHistory['1m'].label) : null;
+  const g = IND_ORDER.filter(k => ind[k]?.color === 'green').length;
+  const a = IND_ORDER.filter(k => ind[k]?.color === 'amber').length;
+  const r = IND_ORDER.filter(k => ind[k]?.color === 'red').length;
 
-  // Colour rank for comparison: green=0, amber=1, red=2
-  const colorRank = { green: 0, amber: 1, red: 2 };
-  const indNames = {
-    volatility: 'Daily Volatility', volSpike: 'Volatility Spike', vsPeak: 'Distance from Peak',
-    shortTrend: '50-Day Trend', longTrend: '200-Day Trend', maCross: 'Trend Direction',
-    return1M: '30-Day Return', return1Y: '12-Month Return', range52W: 'Position in Range', cagr3Y: '3-Year Growth',
-  };
-
-  // Opening line with score + direction
-  let html = `<p><strong>${coin.company}</strong> is rated <strong>${displayLabel}</strong> with a GloRisk Score of <strong>${ps}</strong>`;
+  // Score direction
+  let direction = '';
   if (prevScore !== null) {
     const diff = ps - prevScore;
-    if (diff > 0) html += ` <span style="color:var(--green)">\u2191${diff} pts</span> from ${prevScore}`;
-    else if (diff < 0) html += ` <span style="color:var(--red)">\u2193${Math.abs(diff)} pts</span> from ${prevScore}`;
-    else html += `, unchanged from last month`;
-    if (prevLabel && prevLabel !== displayLabel) {
-      html += ` (was <strong>${prevLabel}</strong>)`;
-    }
+    if (diff > 0) direction = ` <span style="color:var(--green)">\u2191${diff}</span> from ${prevScore}`;
+    else if (diff < 0) direction = ` <span style="color:var(--red)">\u2193${Math.abs(diff)}</span> from ${prevScore}`;
   }
-  html += `.</p>`;
 
-  // Compare current vs 1M-ago indicators
+  // Month-on-month change counts
+  let improved = 0, deteriorated = 0, unchanged = 0;
   if (prev) {
-    const improved = [], deteriorated = [], unchanged = [];
-
+    const colorRank = { green: 0, amber: 1, red: 2 };
     for (const key of IND_ORDER) {
-      const curr = ind[key];
-      const p = prev[key];
+      const curr = ind[key], p = prev[key];
       if (!curr || !p) continue;
-      const name = indNames[key] || key;
-      const currRank = colorRank[curr.color] ?? 1;
-      const prevRank = colorRank[p.color] ?? 1;
-
-      if (currRank < prevRank) {
-        // Improved (lower rank = healthier)
-        improved.push({ name, from: p, to: curr });
-      } else if (currRank > prevRank) {
-        // Deteriorated
-        deteriorated.push({ name, from: p, to: curr });
-      } else {
-        unchanged.push({ name, color: curr.color, label: curr.label });
-      }
-    }
-
-    // Deteriorated indicators
-    if (deteriorated.length) {
-      const lines = deteriorated.map(d =>
-        `<strong>${d.name}</strong> moved from ${d.from.label} to ${d.to.label}`
-      );
-      html += `<p><span style="color:var(--red)">\u25cf Deteriorated (${deteriorated.length}):</span> ${lines.join('; ')}.</p>`;
-    }
-
-    // Improved indicators
-    if (improved.length) {
-      const lines = improved.map(d =>
-        `<strong>${d.name}</strong> moved from ${d.from.label} to ${d.to.label}`
-      );
-      html += `<p><span style="color:var(--green)">\u25cf Improved (${improved.length}):</span> ${lines.join('; ')}.</p>`;
-    }
-
-    // Unchanged summary
-    if (unchanged.length) {
-      const greenCount = unchanged.filter(u => u.color === 'green').length;
-      const amberCount = unchanged.filter(u => u.color === 'amber').length;
-      const redCount   = unchanged.filter(u => u.color === 'red').length;
-      const parts = [];
-      if (greenCount) parts.push(`<span style="color:var(--green)">${greenCount} green</span>`);
-      if (amberCount) parts.push(`<span style="color:var(--amber)">${amberCount} amber</span>`);
-      if (redCount)   parts.push(`<span style="color:var(--red)">${redCount} red</span>`);
-      html += `<p><span style="color:var(--muted)">\u25cf Unchanged (${unchanged.length}):</span> ${parts.join(', ')} \u2014 ${unchanged.map(u => u.name).join(', ')}.</p>`;
-    }
-
-    // Net assessment
-    if (!deteriorated.length && !improved.length) {
-      html += `<p>The risk profile is unchanged from last month across all 10 indicators.</p>`;
-    } else if (deteriorated.length > improved.length) {
-      html += `<p>Overall, the risk profile has <strong>deteriorated</strong> this month with ${deteriorated.length} indicator${deteriorated.length > 1 ? 's' : ''} worsening vs ${improved.length} improving.</p>`;
-    } else if (improved.length > deteriorated.length) {
-      html += `<p>Overall, the risk profile has <strong>improved</strong> this month with ${improved.length} indicator${improved.length > 1 ? 's' : ''} improving vs ${deteriorated.length} worsening.</p>`;
-    } else {
-      html += `<p>The risk profile is <strong>mixed</strong> this month \u2014 ${improved.length} indicator${improved.length > 1 ? 's' : ''} improved and ${deteriorated.length} worsened.</p>`;
-    }
-  } else {
-    // No previous data — fall back to current-state summary
-    const g = IND_ORDER.filter(k => ind[k]?.color === 'green').length;
-    const a = IND_ORDER.filter(k => ind[k]?.color === 'amber').length;
-    const r = IND_ORDER.filter(k => ind[k]?.color === 'red').length;
-    html += `<p>Currently showing <span style="color:var(--green)">${g} green</span>, <span style="color:var(--amber)">${a} amber</span>, and <span style="color:var(--red)">${r} red</span> indicators across the 10 risk metrics tracked.</p>`;
-
-    if (r === 0 && a === 0) {
-      html += `<p>No risk signals are active. The asset is showing stability across all indicators.</p>`;
-    } else if (r >= 5) {
-      html += `<p>Multiple risk signals are elevated. The asset is under significant stress.</p>`;
+      const cR = colorRank[curr.color] ?? 1, pR = colorRank[p.color] ?? 1;
+      if (cR < pR) improved++;
+      else if (cR > pR) deteriorated++;
+      else unchanged++;
     }
   }
+
+  // Traffic light bar
+  const total = g + a + r || 1;
+  const gPct = (g / total) * 100, aPct = (a / total) * 100, rPct = (r / total) * 100;
+  let trafficBar = `<div class="perf-traffic">
+    <div class="perf-traffic-bar">
+      <div style="width:${gPct}%;background:var(--green)"></div>
+      <div style="width:${aPct}%;background:var(--amber)"></div>
+      <div style="width:${rPct}%;background:var(--red)"></div>
+    </div>
+    <div class="perf-traffic-labels">
+      <span style="color:var(--green)">${g} healthy</span>
+      <span style="color:var(--amber)">${a} warning</span>
+      <span style="color:var(--red)">${r} critical</span>
+    </div>
+  </div>`;
+
+  // Change line
+  let changeLine = '';
+  if (prev && (improved || deteriorated)) {
+    const parts = [];
+    if (improved) parts.push(`<span style="color:var(--green)">\u2191${improved} improved</span>`);
+    if (deteriorated) parts.push(`<span style="color:var(--red)">\u2193${deteriorated} deteriorated</span>`);
+    if (unchanged) parts.push(`<span style="color:var(--muted)">${unchanged} unchanged</span>`);
+    changeLine = `<div class="perf-change">${parts.join(' \u00b7 ')} this month</div>`;
+  }
+
+  let html = `
+    <p><strong>${displayLabel}</strong> (${ps}/100)${direction}</p>
+    ${trafficBar}
+    ${changeLine}
+  `;
 
   aiText.innerHTML = html;
 }
+
 
 /* ── Boot ──────────────────────────────────────────────────────────── */
 
