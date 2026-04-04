@@ -171,14 +171,17 @@ body { background: var(--bg); color: var(--text); }
 }
 .mood-table-row {
   display: grid;
-  grid-template-columns: 120px 90px 1fr;
+  grid-template-columns: 140px 100px 1fr;
   border-bottom: 1px solid var(--border);
+}
+.mood-table--2col .mood-table-row {
+  grid-template-columns: 160px 1fr;
 }
 .mood-table-row:last-child { border-bottom: none; }
 .mood-table-row.header {
   background: var(--surface2);
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   text-transform: uppercase;
   letter-spacing: 0.09em;
   color: var(--muted);
@@ -189,7 +192,7 @@ body { background: var(--bg); color: var(--text); }
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.87rem;
+  font-size: 0.85rem;
 }
 .mood-table-cell:last-child { border-right: none; }
 .mood-table-cell.pct {
@@ -197,7 +200,12 @@ body { background: var(--bg); color: var(--text); }
   font-size: 0.78rem;
   color: var(--muted);
 }
-.mood-table-cell.desc { color: var(--muted); font-weight: 300; line-height: 1.5; }
+.mood-table-cell.desc { color: var(--muted); font-weight: 300; line-height: 1.55; font-size: 0.82rem; }
+@media (max-width: 768px) {
+  .mood-table-row { grid-template-columns: 110px 80px 1fr; }
+  .mood-table--2col .mood-table-row { grid-template-columns: 130px 1fr; }
+  .mood-table-cell { padding: 10px 12px; font-size: 0.78rem; }
+}
 .mood-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
@@ -339,7 +347,7 @@ body { background: var(--bg); color: var(--text); }
       <p>Based on the Internal and External ratings, every analysed asset is classified into one of four categories:</p>
     </div>
 
-    <div class="mood-table">
+    <div class="mood-table mood-table--2col">
       <div class="mood-table-row header">
         <div class="mood-table-cell">Classification</div>
         <div class="mood-table-cell">What it means</div>
