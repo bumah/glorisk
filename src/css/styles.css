@@ -890,6 +890,38 @@ body {
   background: linear-gradient(90deg, var(--accent), #0066ff, transparent);
 }
 .glorisk-headline { font-size: 3rem !important; }
+.gc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+.gc-breakdown {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.gc-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.gc-row-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  min-width: 140px;
+}
+.gc-row-value {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 28px;
+}
 
 /* Section Score Bar (inline score above analysis tables) */
 .section-score-bar {

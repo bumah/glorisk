@@ -553,19 +553,30 @@ function buildGloRiskCard(coin) {
   const band = getMoodBand(mood.label);
   const ps   = gloriskScore(mood);
 
-  // Initially GloRisk = Risk Score (updated when SWOT loads)
+  // Initially GloRisk = Performance Score only (updated when SWOT loads)
   return `
     <div class="glorisk-card" id="gloriskCard">
-      <div class="sd-label">GLORISK SCORE</div>
+      <div class="gc-header">
+        <div class="sd-label">GLORISK SCORE</div>
+        <span class="rsb ${moodRsbClass(mood.label)}" id="gloriskBadge" style="font-size:0.72rem;padding:3px 12px">${band.displayLabel ?? mood.label}</span>
+      </div>
       <div class="sd-score-row">
         <span class="sd-score glorisk-headline" id="gloriskValue" style="color:${band.color}">${ps}</span>
         <span class="sd-max">/ 100</span>
       </div>
       <div class="sd-bar"><div class="sd-bar-fill" id="gloriskBar" style="width:${ps}%;background:${band.color}"></div></div>
-      <div class="sd-meta">
-        <span class="rsb ${moodRsbClass(mood.label)}" id="gloriskBadge" style="font-size:0.68rem;padding:3px 10px">${band.displayLabel ?? mood.label}</span>
+      <div class="gc-breakdown" id="gloriskBreakdown">
+        <div class="gc-row">
+          <span class="gc-row-label">Market Performance:</span>
+          <span class="gc-row-value">${ps}</span>
+          <span class="rsb ${moodRsbClass(mood.label)}" style="font-size:0.58rem;padding:2px 8px">${band.displayLabel ?? mood.label}</span>
+        </div>
+        <div class="gc-row" id="gloriskSwotRow" style="display:none">
+          <span class="gc-row-label">Market Position:</span>
+          <span class="gc-row-value" id="gloriskSwotValue"></span>
+          <span class="rsb" id="gloriskSwotBadge" style="font-size:0.58rem;padding:2px 8px"></span>
+        </div>
       </div>
-      <div class="sd-sub" id="gloriskBreakdown" style="margin-top:0.3rem">Performance ${ps}</div>
     </div>
   `;
 }
@@ -612,10 +623,7 @@ function renderReport(coin) {
       <div class="hero-info">
         <div class="hero-ticker">${coin.ticker}</div>
         <div class="hero-name">${coin.company}</div>
-        <div class="hero-badges">
-          <span class="rsb ${rsbCls}">${band.displayLabel ?? mood.label}</span>
-          <span class="rsb" id="heroTierBadge" style="display:none"></span>
-        </div>
+        <div class="hero-badges"></div>
       </div>
       <div class="hero-price-block">
         <div class="hero-price">${formatPrice(coin.price)}</div>
@@ -699,7 +707,7 @@ function renderReport(coin) {
       </span>
     </div>
     <div class="section-score-bar">
-      <span class="ssb-label">Performance Score</span>
+      <span class="ssb-label">Market Performance</span>
       <span class="ssb-value" style="color:${band.color}">${gloriskScore(mood)}</span>
       <span class="ssb-max">/ 100</span>
       <span class="rsb ${moodRsbClass(mood.label)}" style="font-size:0.62rem;padding:2px 8px;margin-left:8px">${band.displayLabel ?? mood.label}</span>
@@ -1456,18 +1464,9 @@ async function loadDeepAnalysis(ticker) {
     // Extract structured data for custom components
     const rd = extractReportData(data.report);
 
-    // Populate hero tier badge
-    const heroTierBadge = document.getElementById('heroTierBadge');
+    // Compute SWOT Score scaled to /100 and update GloRisk composite
     const tierRsbMap = { 1: 'rsb-green', 2: 'rsb-amber', 3: 'rsb-blue', 4: 'rsb-red' };
     const tierLabels = { 1: 'Pack Leader', 2: 'Momentum Stock', 3: 'Defensive Holding', 4: 'Weak/Speculative' };
-    if (heroTierBadge && rd.tier) {
-      const tierRsb = tierRsbMap[rd.tier.number] || '';
-      heroTierBadge.className = `rsb ${tierRsb}`;
-      heroTierBadge.textContent = tierLabels[rd.tier.number] || rd.tier.label;
-      heroTierBadge.style.display = '';
-    }
-
-    // Compute SWOT Score scaled to /100 and update GloRisk composite
     if (rd.overall !== null) {
       const swot100 = Math.round(rd.overall * 10);
       const int100  = Math.round(rd.intAvg * 10);
@@ -1489,21 +1488,32 @@ async function loadDeepAnalysis(ticker) {
         swotScoreBar.style.display = '';
       }
 
-      // Update GloRisk composite card = average of Risk + SWOT
+      // Update GloRisk composite card
       const gloriskValueEl = document.getElementById('gloriskValue');
       const gloriskBarEl   = document.getElementById('gloriskBar');
       const gloriskBadgeEl = document.getElementById('gloriskBadge');
-      const gloriskBreakEl = document.getElementById('gloriskBreakdown');
+      const swotRowEl      = document.getElementById('gloriskSwotRow');
+      const swotValueEl    = document.getElementById('gloriskSwotValue');
+      const swotBadgeEl    = document.getElementById('gloriskSwotBadge');
       if (gloriskValueEl) {
-        const riskScore = parseInt(gloriskValueEl.textContent); // current Risk Score
-        const glorisk = Math.round((riskScore + swot100) / 2);
+        const perfScore = parseInt(gloriskValueEl.textContent);
+        const glorisk = Math.round((perfScore + swot100) / 2);
         const gloBand = getScoreBand(glorisk);
 
         gloriskValueEl.textContent = glorisk;
         gloriskValueEl.style.color = gloBand.color;
         if (gloriskBarEl) { gloriskBarEl.style.width = glorisk + '%'; gloriskBarEl.style.background = gloBand.color; }
-        if (gloriskBadgeEl) { gloriskBadgeEl.className = `rsb ${gloBand.cls}`; gloriskBadgeEl.textContent = gloBand.label; gloriskBadgeEl.style.fontSize = '0.68rem'; gloriskBadgeEl.style.padding = '3px 10px'; }
-        if (gloriskBreakEl) { gloriskBreakEl.textContent = `Performance ${riskScore} \u00b7 SWOT ${swot100}`; }
+        if (gloriskBadgeEl) { gloriskBadgeEl.className = `rsb ${gloBand.cls}`; gloriskBadgeEl.textContent = gloBand.label; gloriskBadgeEl.style.fontSize = '0.72rem'; gloriskBadgeEl.style.padding = '3px 12px'; }
+
+        // Show SWOT row in breakdown
+        if (swotRowEl && swotValueEl && swotBadgeEl) {
+          swotValueEl.textContent = swot100;
+          swotBadgeEl.className = `rsb ${fundTierRsb}`;
+          swotBadgeEl.textContent = fundTierLabel;
+          swotBadgeEl.style.fontSize = '0.58rem';
+          swotBadgeEl.style.padding = '2px 8px';
+          swotRowEl.style.display = '';
+        }
       }
     }
 
