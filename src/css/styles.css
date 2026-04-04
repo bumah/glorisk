@@ -942,10 +942,28 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
-.perf-change {
-  font-size: 0.72rem;
-  color: var(--muted);
-  margin-top: 0.4rem;
+.perf-changes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+.perf-changes-header {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+}
+.perf-changes-item {
+  font-size: 0.78rem;
+  color: var(--text);
+  font-weight: 300;
+  line-height: 1.6;
+}
+@media (max-width: 768px) {
+  .perf-changes { grid-template-columns: 1fr; gap: 0.5rem; }
 }
 
 /* Section Score Bar (inline score above analysis tables) */

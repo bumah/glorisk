@@ -1680,54 +1680,62 @@ function generateSummary(coin) {
   let direction = '';
   if (prevScore !== null) {
     const diff = ps - prevScore;
-    if (diff > 0) direction = ` <span style="color:var(--green)">\u2191${diff}</span> from ${prevScore}`;
-    else if (diff < 0) direction = ` <span style="color:var(--red)">\u2193${Math.abs(diff)}</span> from ${prevScore}`;
+    if (diff > 0) direction = ` (<span style="color:var(--green)">\u2191${diff} from last month</span>)`;
+    else if (diff < 0) direction = ` (<span style="color:var(--red)">\u2193${Math.abs(diff)} from last month</span>)`;
   }
 
-  // Month-on-month change counts
-  let improved = 0, deteriorated = 0, unchanged = 0;
+  // Month-on-month indicator changes
+  const indNames = {
+    volatility: 'Daily Volatility', volSpike: 'Volatility Spike', vsPeak: 'Distance from Peak',
+    shortTrend: '50-Day Trend', longTrend: '200-Day Trend', maCross: 'Trend Direction',
+    return1M: '30-Day Return', return1Y: '12-Month Return', range52W: 'Position in Range', cagr3Y: '3-Year Growth',
+  };
+  const improvedList = [], deterioratedList = [];
   if (prev) {
     const colorRank = { green: 0, amber: 1, red: 2 };
     for (const key of IND_ORDER) {
       const curr = ind[key], p = prev[key];
       if (!curr || !p) continue;
       const cR = colorRank[curr.color] ?? 1, pR = colorRank[p.color] ?? 1;
-      if (cR < pR) improved++;
-      else if (cR > pR) deteriorated++;
-      else unchanged++;
+      if (cR < pR) improvedList.push(indNames[key] || key);
+      else if (cR > pR) deterioratedList.push(indNames[key] || key);
     }
   }
 
   // Traffic light bar
   const total = g + a + r || 1;
   const gPct = (g / total) * 100, aPct = (a / total) * 100, rPct = (r / total) * 100;
-  let trafficBar = `<div class="perf-traffic">
-    <div class="perf-traffic-bar">
-      <div style="width:${gPct}%;background:var(--green)"></div>
-      <div style="width:${aPct}%;background:var(--amber)"></div>
-      <div style="width:${rPct}%;background:var(--red)"></div>
-    </div>
-    <div class="perf-traffic-labels">
-      <span style="color:var(--green)">${g} healthy</span>
-      <span style="color:var(--amber)">${a} warning</span>
-      <span style="color:var(--red)">${r} critical</span>
-    </div>
-  </div>`;
 
-  // Change line
-  let changeLine = '';
-  if (prev && (improved || deteriorated)) {
-    const parts = [];
-    if (improved) parts.push(`<span style="color:var(--green)">\u2191${improved} improved</span>`);
-    if (deteriorated) parts.push(`<span style="color:var(--red)">\u2193${deteriorated} deteriorated</span>`);
-    if (unchanged) parts.push(`<span style="color:var(--muted)">${unchanged} unchanged</span>`);
-    changeLine = `<div class="perf-change">${parts.join(' \u00b7 ')} this month</div>`;
+  // Two-column changes
+  let changesHTML = '';
+  if (improvedList.length || deterioratedList.length) {
+    changesHTML = `<div class="perf-changes">
+      <div class="perf-changes-col">
+        <div class="perf-changes-header" style="color:var(--green)">\u25B2 IMPROVED</div>
+        ${improvedList.length ? improvedList.map(n => `<div class="perf-changes-item">${n}</div>`).join('') : '<div class="perf-changes-item" style="color:var(--muted2)">\u2014 none</div>'}
+      </div>
+      <div class="perf-changes-col">
+        <div class="perf-changes-header" style="color:var(--red)">\u25BC DETERIORATED</div>
+        ${deterioratedList.length ? deterioratedList.map(n => `<div class="perf-changes-item">${n}</div>`).join('') : '<div class="perf-changes-item" style="color:var(--muted2)">\u2014 none</div>'}
+      </div>
+    </div>`;
   }
 
   let html = `
-    <p><strong>${displayLabel}</strong> (${ps}/100)${direction}</p>
-    ${trafficBar}
-    ${changeLine}
+    <p>${coin.company} is currently rated <strong>${displayLabel}</strong> with a score of <strong>${ps}</strong>${direction}.</p>
+    <div class="perf-traffic">
+      <div class="perf-traffic-bar">
+        <div style="width:${gPct}%;background:var(--green)"></div>
+        <div style="width:${aPct}%;background:var(--amber)"></div>
+        <div style="width:${rPct}%;background:var(--red)"></div>
+      </div>
+      <div class="perf-traffic-labels">
+        <span style="color:var(--green)">${g} HEALTHY</span>
+        <span style="color:var(--amber)">${a} WARNING</span>
+        <span style="color:var(--red)">${r} CRITICAL</span>
+      </div>
+    </div>
+    ${changesHTML}
   `;
 
   aiText.innerHTML = html;
