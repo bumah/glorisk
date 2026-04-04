@@ -873,34 +873,50 @@ body {
   font-weight: 300;
 }
 
-/* ── Triple Summary (Risk + SWOT + GloRisk) ─────────────────────────────── */
-.summary-triple {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+/* ── GloRisk Score Card (single headline) ────────────────────────────────── */
+.glorisk-card {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
-  margin-bottom: 1.5rem;
-}
-.summary-col {
   padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
 }
-.summary-tech, .summary-fund {
-  border-right: 1px solid var(--border);
-}
-.summary-composite {
-  position: relative;
-  background: rgba(0,212,255,0.03);
-}
-.summary-composite::before {
+.glorisk-card::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0; height: 2px;
   background: linear-gradient(90deg, var(--accent), #0066ff, transparent);
 }
-.summary-composite .sd-score {
-  font-size: 2.6rem;
+.glorisk-headline { font-size: 3rem !important; }
+
+/* Section Score Bar (inline score above analysis tables) */
+.section-score-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+.ssb-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-right: 4px;
+}
+.ssb-value {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+.ssb-max {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-right: 4px;
 }
 .sd-label {
   font-family: var(--font-mono);
@@ -1001,8 +1017,7 @@ body {
 }
 
 @media (max-width: 768px) {
-  .summary-triple { grid-template-columns: 1fr; }
-  .summary-tech, .summary-fund { border-right: none; border-bottom: 1px solid var(--border); }
+  .glorisk-headline { font-size: 2.5rem !important; }
   .sd-score { font-size: 1.8rem; }
 }
 
@@ -1233,7 +1248,7 @@ body {
   body { background: #fff; color: #111; }
   .report-nav, .report-actions, .report-actions-bar, .section-share, .back-link { display: none !important; }
   .report-body { padding: 1rem; max-width: 100%; }
-  .risk-meter-wrap, .ai-box, .chart-wrap, .fa-table, .ind-defs-table, .summary-triple {
+  .risk-meter-wrap, .ai-box, .chart-wrap, .fa-table, .ind-defs-table, .glorisk-card {
     background: #fff; border-color: #ddd;
   }
   .rm-track { background: #e5e5e5; }
