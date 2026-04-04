@@ -565,7 +565,7 @@ function buildGloRiskCard(coin) {
       <div class="sd-meta">
         <span class="rsb ${moodRsbClass(mood.label)}" id="gloriskBadge" style="font-size:0.68rem;padding:3px 10px">${band.displayLabel ?? mood.label}</span>
       </div>
-      <div class="sd-sub" id="gloriskBreakdown" style="margin-top:0.3rem">Risk ${ps}</div>
+      <div class="sd-sub" id="gloriskBreakdown" style="margin-top:0.3rem">Performance ${ps}</div>
     </div>
   `;
 }
@@ -653,10 +653,10 @@ function renderReport(coin) {
     <!-- GloRisk Score -->
     ${buildGloRiskCard(coin)}
 
-    <!-- Risk Summary -->
-    <div class="section-title">Risk Summary</div>
+    <!-- Performance Summary -->
+    <div class="section-title">Performance Summary</div>
     <div class="ai-box" style="margin-bottom:1rem">
-      <div class="ai-badge"><div class="ai-dot"></div> Technical Analysis</div>
+      <div class="ai-badge"><div class="ai-dot"></div> Performance Analysis</div>
       <div class="ai-text" id="aiText"></div>
     </div>
 
@@ -690,16 +690,16 @@ function renderReport(coin) {
       <canvas id="priceChart" style="max-height:240px"></canvas>
     </div>
 
-    <!-- Risk Analysis -->
+    <!-- Performance Analysis -->
     <div class="section-title" style="margin-top:2rem">
-      Risk Analysis
+      Performance Analysis
       <span class="section-share" id="btnShareAnalysis" title="Share analysis">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         Share
       </span>
     </div>
     <div class="section-score-bar">
-      <span class="ssb-label">Risk Score</span>
+      <span class="ssb-label">Performance Score</span>
       <span class="ssb-value" style="color:${band.color}">${gloriskScore(mood)}</span>
       <span class="ssb-max">/ 100</span>
       <span class="rsb ${moodRsbClass(mood.label)}" style="font-size:0.62rem;padding:2px 8px;margin-left:8px">${band.displayLabel ?? mood.label}</span>
@@ -725,7 +725,7 @@ function renderReport(coin) {
     </div>
 
     <!-- Indicator Definitions -->
-    <div class="section-title" style="margin-top:2rem">Risk Indicator Definitions</div>
+    <div class="section-title" style="margin-top:2rem">Performance Indicator Definitions</div>
     <div class="ind-defs-table">${indDefsHTML}</div>
 
     <!-- SWOT Rating Definitions -->
@@ -1503,7 +1503,7 @@ async function loadDeepAnalysis(ticker) {
         gloriskValueEl.style.color = gloBand.color;
         if (gloriskBarEl) { gloriskBarEl.style.width = glorisk + '%'; gloriskBarEl.style.background = gloBand.color; }
         if (gloriskBadgeEl) { gloriskBadgeEl.className = `rsb ${gloBand.cls}`; gloriskBadgeEl.textContent = gloBand.label; gloriskBadgeEl.style.fontSize = '0.68rem'; gloriskBadgeEl.style.padding = '3px 10px'; }
-        if (gloriskBreakEl) { gloriskBreakEl.textContent = `Risk ${riskScore} \u00b7 SWOT ${swot100}`; }
+        if (gloriskBreakEl) { gloriskBreakEl.textContent = `Performance ${riskScore} \u00b7 SWOT ${swot100}`; }
       }
     }
 
