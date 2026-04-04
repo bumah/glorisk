@@ -587,7 +587,11 @@ function buildGloRiskCard(coin) {
 /* ── Performance Score card (inside Performance Summary) ──────────── */
 
 function buildBlocksHTML(colors) {
-  return `<div class="ind-blocks">${colors.map(c => `<div class="ind-block" style="background:var(--${c})"></div>`).join('')}</div>`;
+  const sorted = [...colors].sort((a, b) => {
+    const order = { green: 0, amber: 1, red: 2 };
+    return (order[a] ?? 1) - (order[b] ?? 1);
+  });
+  return `<div class="ind-blocks">${sorted.map(c => `<div class="ind-block" style="background:var(--${c})"></div>`).join('')}</div>`;
 }
 
 function buildPerfCard(coin) {
