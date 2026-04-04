@@ -924,6 +924,18 @@ body {
   min-width: 28px;
 }
 
+/* Indicator blocks (10 colored squares) */
+.ind-blocks {
+  display: flex;
+  gap: 3px;
+  margin-top: 0.75rem;
+}
+.ind-block {
+  flex: 1;
+  height: 6px;
+  border-radius: 2px;
+}
+
 /* Performance Summary traffic light */
 .perf-traffic { margin: 0.5rem 0; }
 .perf-traffic-bar {

@@ -586,14 +586,15 @@ function buildGloRiskCard(coin) {
 
 /* ── Performance Score card (inside Performance Summary) ──────────── */
 
+function buildBlocksHTML(colors) {
+  return `<div class="ind-blocks">${colors.map(c => `<div class="ind-block" style="background:var(--${c})"></div>`).join('')}</div>`;
+}
+
 function buildPerfCard(coin) {
   const mood = coin.mood;
   const band = getMoodBand(mood.label);
   const ps   = gloriskScore(mood);
-  const g = IND_ORDER.filter(k => coin.indicators[k]?.color === 'green').length;
-  const a = IND_ORDER.filter(k => coin.indicators[k]?.color === 'amber').length;
-  const r = IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length;
-  const total = g + a + r || 1;
+  const colors = IND_ORDER.map(k => coin.indicators[k]?.color || 'muted');
 
   return `
     <div class="glorisk-card" style="margin-bottom:0;border-bottom-left-radius:0;border-bottom-right-radius:0">
@@ -605,19 +606,7 @@ function buildPerfCard(coin) {
         <span class="sd-score glorisk-headline" style="color:${band.color}">${ps}</span>
         <span class="sd-max">/ 100</span>
       </div>
-      <div class="sd-bar"><div class="sd-bar-fill" style="width:${ps}%;background:${band.color}"></div></div>
-      <div class="perf-traffic" style="margin-top:0.75rem">
-        <div class="perf-traffic-bar">
-          <div style="width:${(g/total)*100}%;background:var(--green)"></div>
-          <div style="width:${(a/total)*100}%;background:var(--amber)"></div>
-          <div style="width:${(r/total)*100}%;background:var(--red)"></div>
-        </div>
-        <div class="perf-traffic-labels">
-          <span style="color:var(--green)">${g} HEALTHY</span>
-          <span style="color:var(--amber)">${a} WARNING</span>
-          <span style="color:var(--red)">${r} CRITICAL</span>
-        </div>
-      </div>
+      ${buildBlocksHTML(colors)}
     </div>
   `;
 }
@@ -1516,12 +1505,6 @@ async function loadDeepAnalysis(ticker) {
       const fundTierRsb = rd.tier ? tierRsbMap[rd.tier.number] || '' : '';
       const fundTierLabel = rd.tier ? (tierLabels[rd.tier.number] || rd.tier.label) : '';
 
-      // Count factor health: >=8 healthy, 5-7 warning, <5 critical
-      const strong = rd.scores.filter(s => s >= 8).length;
-      const moderate = rd.scores.filter(s => s >= 5 && s < 8).length;
-      const weak = rd.scores.filter(s => s < 5).length;
-      const total = strong + moderate + weak || 1;
-
       // Build Position card
       const posCard = document.getElementById('positionCard');
       if (posCard) {
@@ -1534,19 +1517,7 @@ async function loadDeepAnalysis(ticker) {
             <span class="sd-score glorisk-headline" style="color:${swotBand.color}">${swot100}</span>
             <span class="sd-max">/ 100</span>
           </div>
-          <div class="sd-bar"><div class="sd-bar-fill" style="width:${swot100}%;background:${swotBand.color}"></div></div>
-          <div class="perf-traffic" style="margin-top:0.75rem">
-            <div class="perf-traffic-bar">
-              <div style="width:${(strong/total)*100}%;background:var(--green)"></div>
-              <div style="width:${(moderate/total)*100}%;background:var(--amber)"></div>
-              <div style="width:${(weak/total)*100}%;background:var(--red)"></div>
-            </div>
-            <div class="perf-traffic-labels">
-              <span style="color:var(--green)">${strong} HEALTHY</span>
-              <span style="color:var(--amber)">${moderate} WARNING</span>
-              <span style="color:var(--red)">${weak} CRITICAL</span>
-            </div>
-          </div>
+          ${buildBlocksHTML(rd.scores.map(s => s >= 8 ? 'green' : s >= 5 ? 'amber' : 'red'))}
         `;
         posCard.style.marginBottom = '0';
         posCard.style.borderBottomLeftRadius = '0';
@@ -1765,10 +1736,6 @@ function generateSummary(coin) {
     }
   }
 
-  // Traffic light bar
-  const total = g + a + r || 1;
-  const gPct = (g / total) * 100, aPct = (a / total) * 100, rPct = (r / total) * 100;
-
   // Two-column changes
   let changesHTML = '';
   if (improvedList.length || deterioratedList.length) {
@@ -1786,18 +1753,6 @@ function generateSummary(coin) {
 
   let html = `
     <p>${coin.company} is currently rated <strong>${displayLabel}</strong> with a score of <strong>${ps}</strong>${direction}.</p>
-    <div class="perf-traffic">
-      <div class="perf-traffic-bar">
-        <div style="width:${gPct}%;background:var(--green)"></div>
-        <div style="width:${aPct}%;background:var(--amber)"></div>
-        <div style="width:${rPct}%;background:var(--red)"></div>
-      </div>
-      <div class="perf-traffic-labels">
-        <span style="color:var(--green)">${g} HEALTHY</span>
-        <span style="color:var(--amber)">${a} WARNING</span>
-        <span style="color:var(--red)">${r} CRITICAL</span>
-      </div>
-    </div>
     ${changesHTML}
   `;
 
