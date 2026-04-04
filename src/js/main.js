@@ -536,9 +536,19 @@ function buildScoreHistory(coin) {
   `;
 }
 
-/* ── Dual Summary (Technical + Fundamental) ───────────────────────── */
+/* ── Score band from numeric score (0-100, high = good) ───────────── */
 
-function buildDualSummary(coin) {
+function getScoreBand(score) {
+  if (score >= 90) return { label: 'Very Stable', color: '#60A5FA', cls: 'rsb-blue' };
+  if (score >= 75) return { label: 'Stable',      color: '#22c55e', cls: 'rsb-green' };
+  if (score >= 50) return { label: 'Unstable',    color: '#f59e0b', cls: 'rsb-amber' };
+  if (score >= 30) return { label: 'Stressed',    color: '#f97316', cls: 'rsb-orange' };
+  return               { label: 'Critical',    color: '#ef4444', cls: 'rsb-red' };
+}
+
+/* ── Triple Summary (Risk Score + SWOT Score + GloRisk Score) ─────── */
+
+function buildTripleSummary(coin) {
   const mood = coin.mood;
   const band = getMoodBand(mood.label);
   const ps   = gloriskScore(mood);
@@ -547,7 +557,7 @@ function buildDualSummary(coin) {
   const redCount   = IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length;
 
   return `
-    <div class="summary-dual">
+    <div class="summary-triple">
       <div class="summary-col summary-tech">
         <div class="sd-label">TECHNICAL</div>
         <div class="sd-title">Risk Score</div>
@@ -564,8 +574,21 @@ function buildDualSummary(coin) {
       <div class="summary-col summary-fund" id="fundCol">
         <div class="sd-label">FUNDAMENTAL</div>
         <div class="sd-fund-empty">
-          <div style="color:var(--muted);font-size:0.78rem;font-weight:300">SWOT analysis not yet available for this asset.</div>
+          <div style="color:var(--muted);font-size:0.78rem;font-weight:300">SWOT analysis not yet available.</div>
         </div>
+      </div>
+      <div class="summary-col summary-composite" id="compositeCol">
+        <div class="sd-label">COMPOSITE</div>
+        <div class="sd-title">GloRisk Score</div>
+        <div class="sd-score-row">
+          <span class="sd-score" style="color:${band.color}">${ps}</span>
+          <span class="sd-max">/ 100</span>
+        </div>
+        <div class="sd-bar"><div class="sd-bar-fill" style="width:${ps}%;background:${band.color}"></div></div>
+        <div class="sd-meta">
+          <span class="rsb ${moodRsbClass(mood.label)}" style="font-size:0.68rem;padding:3px 10px">${band.displayLabel ?? mood.label}</span>
+        </div>
+        <div class="sd-sub" style="color:var(--muted2);font-size:0.6rem;margin-top:0.25rem">Risk only (no SWOT data)</div>
       </div>
     </div>
   `;
@@ -651,8 +674,8 @@ function renderReport(coin) {
       </button>
     </div>
 
-    <!-- Dual Summary (Technical + Fundamental) -->
-    ${buildDualSummary(coin)}
+    <!-- Triple Summary (Risk + SWOT + GloRisk) -->
+    ${buildTripleSummary(coin)}
 
     <!-- Risk Summary -->
     <div class="section-title">Risk Summary</div>
@@ -1357,13 +1380,14 @@ function extractReportData(report) {
 
 function buildScoreCardsHTML(intAvg, extAvg, overall) {
   if (intAvg === null) return '';
-  const clr = v => v >= 8 ? 'var(--green)' : v >= 5 ? 'var(--amber)' : 'var(--red)';
+  const s = v => Math.round(v * 10); // scale to 100
+  const clr = v => v >= 80 ? 'var(--green)' : v >= 50 ? 'var(--amber)' : 'var(--red)';
   const card = (label, value) =>
     `<div class="da-score-card">
       <div class="da-score-label">${label}</div>
-      <div class="da-score-value" style="color:${clr(value)}">${value}<span class="da-score-max"> / 10</span></div>
+      <div class="da-score-value" style="color:${clr(value)}">${value}<span class="da-score-max"> / 100</span></div>
     </div>`;
-  return `<div class="da-scores">${card('INTERNAL RATING', intAvg)}${card('EXTERNAL RATING', extAvg)}${card('OVERALL RATING', overall)}</div>`;
+  return `<div class="da-scores">${card('INTERNAL RATING', s(intAvg))}${card('EXTERNAL RATING', s(extAvg))}${card('OVERALL RATING', s(overall))}</div>`;
 }
 
 function buildMatrixHTML(tier, ticker, intAvg, extAvg) {
@@ -1459,25 +1483,50 @@ async function loadDeepAnalysis(ticker) {
       heroTierBadge.style.display = '';
     }
 
-    // Populate fundamental column in dual summary header
+    // Populate fundamental column (SWOT Score scaled to /100)
     const fundCol = document.getElementById('fundCol');
+    const compositeCol = document.getElementById('compositeCol');
     if (fundCol && rd.overall !== null) {
-      const scoreClr = v => v >= 8 ? 'var(--green)' : v >= 5 ? 'var(--amber)' : 'var(--red)';
+      const swot100 = Math.round(rd.overall * 10);
+      const int100  = Math.round(rd.intAvg * 10);
+      const ext100  = Math.round(rd.extAvg * 10);
+      const swotBand = getScoreBand(swot100);
       const fundTierRsb = rd.tier ? tierRsbMap[rd.tier.number] || '' : '';
       const fundTierLabel = rd.tier ? (tierLabels[rd.tier.number] || rd.tier.label) : '';
 
-      const barPct = (rd.overall / 10) * 100;
       fundCol.innerHTML = `
         <div class="sd-label">FUNDAMENTAL</div>
         <div class="sd-title">SWOT Score</div>
         <div class="sd-score-row">
-          <span class="sd-score" style="color:${scoreClr(rd.overall)}">${rd.overall}</span>
-          <span class="sd-max">/ 10</span>
+          <span class="sd-score" style="color:${swotBand.color}">${swot100}</span>
+          <span class="sd-max">/ 100</span>
         </div>
-        <div class="sd-bar"><div class="sd-bar-fill" style="width:${barPct}%;background:${scoreClr(rd.overall)}"></div></div>
+        <div class="sd-bar"><div class="sd-bar-fill" style="width:${swot100}%;background:${swotBand.color}"></div></div>
         ${rd.tier ? `<div class="sd-meta"><span class="rsb ${fundTierRsb}" style="font-size:0.68rem;padding:3px 10px">${fundTierLabel}</span></div>` : ''}
-        <div class="sd-sub">Int <span style="color:${scoreClr(rd.intAvg)}">${rd.intAvg}</span> \u00b7 Ext <span style="color:${scoreClr(rd.extAvg)}">${rd.extAvg}</span></div>
+        <div class="sd-sub">Int ${int100} \u00b7 Ext ${ext100}</div>
       `;
+
+      // Compute composite GloRisk Score = average of Risk Score + SWOT Score
+      const riskScoreEl = document.querySelector('.summary-tech .sd-score');
+      const riskScore = riskScoreEl ? parseInt(riskScoreEl.textContent) : 50;
+      const glorisk = Math.round((riskScore + swot100) / 2);
+      const gloBand = getScoreBand(glorisk);
+
+      if (compositeCol) {
+        compositeCol.innerHTML = `
+          <div class="sd-label">COMPOSITE</div>
+          <div class="sd-title">GloRisk Score</div>
+          <div class="sd-score-row">
+            <span class="sd-score" style="color:${gloBand.color}">${glorisk}</span>
+            <span class="sd-max">/ 100</span>
+          </div>
+          <div class="sd-bar"><div class="sd-bar-fill" style="width:${glorisk}%;background:${gloBand.color}"></div></div>
+          <div class="sd-meta">
+            <span class="rsb ${gloBand.cls}" style="font-size:0.68rem;padding:3px 10px">${gloBand.label}</span>
+          </div>
+          <div class="sd-sub">Risk ${riskScore} \u00b7 SWOT ${swot100}</div>
+        `;
+      }
     }
 
     // Populate SWOT Summary block (executive summary from report)

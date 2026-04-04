@@ -873,10 +873,10 @@ body {
   font-weight: 300;
 }
 
-/* ── Dual Summary (Technical + Fundamental) ─────────────────────────────── */
-.summary-dual {
+/* ── Triple Summary (Risk + SWOT + GloRisk) ─────────────────────────────── */
+.summary-triple {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -886,8 +886,21 @@ body {
 .summary-col {
   padding: 1.5rem;
 }
-.summary-tech {
+.summary-tech, .summary-fund {
   border-right: 1px solid var(--border);
+}
+.summary-composite {
+  position: relative;
+  background: rgba(0,212,255,0.03);
+}
+.summary-composite::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), #0066ff, transparent);
+}
+.summary-composite .sd-score {
+  font-size: 2.6rem;
 }
 .sd-label {
   font-family: var(--font-mono);
@@ -988,8 +1001,8 @@ body {
 }
 
 @media (max-width: 768px) {
-  .summary-dual { grid-template-columns: 1fr; }
-  .summary-tech { border-right: none; border-bottom: 1px solid var(--border); }
+  .summary-triple { grid-template-columns: 1fr; }
+  .summary-tech, .summary-fund { border-right: none; border-bottom: 1px solid var(--border); }
   .sd-score { font-size: 1.8rem; }
 }
 
@@ -1220,7 +1233,7 @@ body {
   body { background: #fff; color: #111; }
   .report-nav, .report-actions, .report-actions-bar, .section-share, .back-link { display: none !important; }
   .report-body { padding: 1rem; max-width: 100%; }
-  .risk-meter-wrap, .ai-box, .chart-wrap, .fa-table, .ind-defs-table, .summary-dual {
+  .risk-meter-wrap, .ai-box, .chart-wrap, .fa-table, .ind-defs-table, .summary-triple {
     background: #fff; border-color: #ddd;
   }
   .rm-track { background: #e5e5e5; }
