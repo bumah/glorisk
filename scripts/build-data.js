@@ -437,6 +437,40 @@ function main() {
   }
 
   // Write catalog
+  // Enrich coins with position scores from AI reports (if available)
+  const REPORTS_DIR = path.join(PUBLIC_DATA, 'reports');
+  if (fs.existsSync(REPORTS_DIR)) {
+    let enriched = 0;
+    for (const coin of allCoins) {
+      const reportPath = path.join(REPORTS_DIR, `${coin.ticker}.json`);
+      if (!fs.existsSync(reportPath)) continue;
+      try {
+        const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+        const scores = [];
+        for (const line of report.report.split('\n')) {
+          const m = line.match(/\|\s*\*?\*?\d+\.\s*.+?\*?\*?\s*\|\s*(\d+)\s*\|/);
+          if (m) scores.push(parseInt(m[1]));
+        }
+        if (scores.length >= 10) {
+          const intAvg = +(scores.slice(0, 5).reduce((a, b) => a + b, 0) / 5).toFixed(1);
+          const extAvg = +(scores.slice(5, 10).reduce((a, b) => a + b, 0) / 5).toFixed(1);
+          const overall = +((intAvg + extAvg) / 2).toFixed(1);
+          const posScore = Math.round(overall * 10);
+          // Detect tier label
+          const tierMatch = report.report.match(/([\u{1F7E2}\u{1F7E1}\u{1F535}\u{1F534}])\s*\*?\*?(?:Tier\s+\d\s+)?([^*()\n]+)/u);
+          const tierLabelMap = { 'pack leader': 'Pack Leader', 'momentum stock': 'Momentum Stock', 'defensive holding': 'Defensive Holding', 'decliner': 'Decliner', 'weak/speculative': 'Decliner' };
+          const rawLabel = tierMatch ? tierMatch[2].trim().replace(/\*\*/g, '') : '';
+          const tierLabel = tierLabelMap[rawLabel.toLowerCase()] || rawLabel || null;
+          coin.positionScore = posScore;
+          coin.positionLabel = tierLabel;
+          coin.positionScores = scores;
+          enriched++;
+        }
+      } catch { /* skip bad reports */ }
+    }
+    if (enriched) console.log(`\n✓ Enriched ${enriched} asset(s) with position scores from AI reports`);
+  }
+
   const output = {
     asOf:  latestDate ? `${latestDate}T00:00:00Z` : new Date().toISOString(),
     built: new Date().toISOString(),

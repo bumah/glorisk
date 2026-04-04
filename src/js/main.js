@@ -63,6 +63,7 @@ let activeType   = 'all';  // 'all', 'Stocks', 'Crypto', 'SectorETFs', 'Index'
 let activeSub    = 'all';  // 'all', 'SP500', 'FTSE100', 'Nikkei225', 'HSI', 'Mag7', 'Majors', 'sector:...'
 let activeIssuer = 'all';  // 'all', 'Vanguard', 'iShares', 'SPDR'
 let browseQuery  = '';     // text filter from browse search
+let activeScoreTab = 'performance'; // 'performance', 'position', 'glorisk'
 
 /* ── Init ──────────────────────────────────────────────────────────── */
 
@@ -223,6 +224,19 @@ async function init() {
     activeIssuer = tab.dataset.issuer;
     renderCards();
   });
+  // Score tabs (Performance | Position | GloRisk)
+  const scoreTabsEl = document.getElementById('scoreTabs');
+  if (scoreTabsEl) {
+    scoreTabsEl.addEventListener('click', e => {
+      const tab = e.target.closest('.score-tab');
+      if (!tab) return;
+      scoreTabsEl.querySelectorAll('.score-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeScoreTab = tab.dataset.scoreTab;
+      renderCards();
+    });
+  }
+
   document.getElementById('backLink').addEventListener('click', showLanding);
   document.getElementById('navLogo').addEventListener('click', showLanding);
 
@@ -390,67 +404,130 @@ function renderCards() {
   const countEl     = document.getElementById('cardsCount');
   const activeMoods = [...document.querySelectorAll('.mood-filter:checked')].map(el => el.value);
   const q = browseQuery.toLowerCase();
-  const coins       = getSortedCoins().filter(c =>
+  const tab = activeScoreTab; // 'performance', 'position', 'glorisk'
+
+  // Position and GloRisk tabs only show stocks with positionScore
+  const isPositionTab = tab === 'position' || tab === 'glorisk';
+
+  let coins = getSortedCoins().filter(c =>
     activeMoods.includes(c.mood.label) && matchesTypeFilter(c) &&
     (!q || c.ticker.toLowerCase().includes(q) || c.company.toLowerCase().includes(q))
   );
 
+  // For position/glorisk tabs, further filter to stocks with positionScore
+  if (isPositionTab) {
+    coins = coins.filter(c => STOCK_GROUPS.includes(c.group) && c.positionScore != null);
+  }
+
+  // Sort by the relevant score (descending — highest first) when dropdown is default
+  const sortVal = document.getElementById('sortSelect').value;
+  if (sortVal === 'default') {
+    if (tab === 'performance') {
+      coins.sort((a, b) => gloriskScore(b.mood) - gloriskScore(a.mood));
+    } else if (tab === 'position') {
+      coins.sort((a, b) => (b.positionScore || 0) - (a.positionScore || 0));
+    } else if (tab === 'glorisk') {
+      coins.sort((a, b) => {
+        const aComposite = Math.round((gloriskScore(a.mood) + (a.positionScore || 0)) / 2);
+        const bComposite = Math.round((gloriskScore(b.mood) + (b.positionScore || 0)) / 2);
+        return bComposite - aComposite;
+      });
+    }
+  }
+
   countEl.innerHTML = `Showing <span>${coins.length}</span> of ${allCoins.length} assets`;
 
+  // Toggle 3-col grid class
+  grid.classList.add('grid-3col');
+
   if (!coins.length) {
-    grid.innerHTML = `<div class="no-results">No assets match your filters.</div>`;
+    grid.innerHTML = `<div class="no-results" style="grid-column:1/-1">No assets match your filters.</div>`;
     return;
   }
 
-  const moodColorMap = { 'Very Healthy': '#60a5fa', Healthy: '#22c55e', Unsettled: '#f59e0b', Stressed: '#f97316', Critical: '#ef4444' };
+  // Helper: get score band from numeric score
+  function scoreBand(score) {
+    if (score >= 90) return { label: 'Very Stable', color: '#60a5fa' };
+    if (score >= 75) return { label: 'Stable',      color: '#22c55e' };
+    if (score >= 50) return { label: 'Unstable',    color: '#f59e0b' };
+    if (score >= 30) return { label: 'Stressed',    color: '#f97316' };
+    return               { label: 'Critical',    color: '#ef4444' };
+  }
+
+  // Helper: build issue counts (only show amber/red — all green = clean card)
+  function issueCountsHTML(amberCount, redCount) {
+    if (!amberCount && !redCount) return '';
+    const parts = [];
+    if (amberCount) parts.push(`<span style="color:var(--amber)">${amberCount} warning</span>`);
+    if (redCount) parts.push(`<span style="color:var(--red)">${redCount} critical</span>`);
+    return `<div class="card-v2-issues">${parts.join(' \u00b7 ')}</div>`;
+  }
 
   grid.innerHTML = coins.map(c => {
     const moodKey   = c.mood.label.toLowerCase().replace(' ', '-');
-    const color     = moodColorMap[c.mood.label] || '#f59e0b';
     const change    = c.priceChange || 0;
     const changeClass = change >= 0 ? 'pos' : 'neg';
-    const g = IND_ORDER.filter(k => c.indicators[k]?.color === 'green').length;
-    const a = IND_ORDER.filter(k => c.indicators[k]?.color === 'amber').length;
-    const r = IND_ORDER.filter(k => c.indicators[k]?.color === 'red').length;
+    const perfScore = gloriskScore(c.mood);
+    const perfBand  = scoreBand(perfScore);
+
+    let score, scoreColor, labelText, issuesHtml;
+
+    if (tab === 'performance') {
+      score = perfScore;
+      scoreColor = perfBand.color;
+      labelText = perfBand.label;
+      const a = IND_ORDER.filter(k => c.indicators[k]?.color === 'amber').length;
+      const r = IND_ORDER.filter(k => c.indicators[k]?.color === 'red').length;
+      issuesHtml = issueCountsHTML(a, r);
+
+    } else if (tab === 'position') {
+      score = c.positionScore || 0;
+      labelText = c.positionLabel || '';
+      const posBand = scoreBand(score);
+      scoreColor = posBand.color;
+      const posScores = c.positionScores || [];
+      const a = posScores.filter(v => v >= 5 && v < 8).length;
+      const r = posScores.filter(v => v < 5).length;
+      issuesHtml = issueCountsHTML(a, r);
+
+    } else {
+      // glorisk tab: composite
+      const posScore = c.positionScore || 0;
+      score = Math.round((perfScore + posScore) / 2);
+      const compBand = scoreBand(score);
+      scoreColor = compBand.color;
+      labelText = compBand.label;
+      // Show both sub-scores inline
+      const perfLabel = perfBand.label;
+      const posLabel = c.positionLabel || scoreBand(posScore).label;
+      issuesHtml = `<div class="card-v2-issues"><span style="color:var(--muted)">Perf ${perfScore}</span> \u00b7 <span style="color:var(--muted)">Pos ${posScore}</span></div>`;
+    }
+
     return `
-      <div class="asset-card mood-${moodKey}" data-ticker="${c.ticker}">
-        <div class="card-top">
-          <div class="card-identity">
-            <div>
-              <div class="card-ticker">${c.ticker}</div>
-              <div class="card-name">${c.company}</div>
+      <div class="asset-card-v2 mood-${moodKey}" data-ticker="${c.ticker}">
+        <div class="card-v2-top">
+          <div class="card-v2-left">
+            <div class="card-v2-ticker">${c.ticker}</div>
+            <div class="card-v2-name">${c.company}</div>
+          </div>
+          <div class="card-v2-right">
+            <div class="card-v2-score-line">
+              <span class="card-v2-score" style="color:${scoreColor}">${score}</span>
+              <span class="card-v2-label">${labelText}</span>
+            </div>
+            <div class="card-v2-price-line">
+              <span class="card-v2-price">${formatPrice(c.price)}</span>
+              <span class="card-v2-change ${changeClass}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
             </div>
           </div>
-          <div class="card-score-wrap">
-            <div class="card-score" style="color:${color}">${gloriskScore(c.mood)}${(() => {
-              const sh = c.scoreHistory?.['1m'];
-              if (!sh) return '';
-              const diff = gloriskScore(c.mood) - gloriskScore(sh);
-              if (diff === 0) return '';
-              return diff > 0
-                ? '<span class="card-score-arrow" style="color:var(--green)">\u2191</span>'
-                : '<span class="card-score-arrow" style="color:var(--red)">\u2193</span>';
-            })()}</div>
-            <div class="card-score-label">Performance</div>
-          </div>
         </div>
-        <div class="card-mid">
-          <div class="card-price">${formatPrice(c.price)}</div>
-          <div class="card-change ${changeClass}">${change >= 0 ? '+' : ''}${change.toFixed(2)}% 30D</div>
-        </div>
-        <div class="card-mood-row">
-          ${moodPill(c.mood.label)}
-          <span class="card-ind-counts"><span class="cic-g">${g}G</span> <span class="cic-a">${a}A</span> <span class="cic-r">${r}R</span></span>
-        </div>
-        <div class="card-bottom">
-          <div class="score-bar" style="flex:1"><div class="score-fill" style="width:${gloriskScore(c.mood)}%;background:${color}"></div></div>
-        </div>
+        ${issuesHtml}
       </div>
     `;
   }).join('');
 
   // Card click
-  grid.querySelectorAll('.asset-card').forEach(card => {
+  grid.querySelectorAll('.asset-card-v2').forEach(card => {
     card.addEventListener('click', () => {
       const coin = allCoins.find(c => c.ticker === card.dataset.ticker);
       if (coin) showReport(coin);
