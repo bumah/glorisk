@@ -924,6 +924,15 @@ body {
   min-width: 28px;
 }
 
+/* Issue counts (warning/critical) in report cards */
+.gc-issues {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.5rem;
+}
+
 /* Indicator blocks (10 colored squares) */
 .ind-blocks {
   display: flex;

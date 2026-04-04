@@ -644,7 +644,6 @@ function buildGloRiskCard(coin) {
         <span class="sd-score glorisk-headline" id="gloriskValue" style="color:${band.color}">${ps}</span>
         <span class="sd-max">/ 100</span>
       </div>
-      <div class="sd-bar"><div class="sd-bar-fill" id="gloriskBar" style="width:${ps}%;background:${band.color}"></div></div>
       <div class="gc-breakdown" id="gloriskBreakdown" style="display:none">
         <div class="gc-row">
           <span class="gc-row-label">Performance:</span>
@@ -671,11 +670,20 @@ function buildBlocksHTML(colors) {
   return `<div class="ind-blocks">${sorted.map(c => `<div class="ind-block" style="background:var(--${c})"></div>`).join('')}</div>`;
 }
 
+function buildIssueCountsHTML(amberCount, redCount) {
+  if (!amberCount && !redCount) return '';
+  const parts = [];
+  if (amberCount) parts.push(`<span style="color:var(--amber)">${amberCount} warning</span>`);
+  if (redCount) parts.push(`<span style="color:var(--red)">${redCount} critical</span>`);
+  return `<div class="gc-issues">${parts.join(' \u00b7 ')}</div>`;
+}
+
 function buildPerfCard(coin) {
   const mood = coin.mood;
   const band = getMoodBand(mood.label);
   const ps   = gloriskScore(mood);
-  const colors = IND_ORDER.map(k => coin.indicators[k]?.color || 'muted');
+  const a = IND_ORDER.filter(k => coin.indicators[k]?.color === 'amber').length;
+  const r = IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length;
 
   return `
     <div class="glorisk-card" style="margin-bottom:0;border-bottom-left-radius:0;border-bottom-right-radius:0">
@@ -687,7 +695,7 @@ function buildPerfCard(coin) {
         <span class="sd-score glorisk-headline" style="color:${band.color}">${ps}</span>
         <span class="sd-max">/ 100</span>
       </div>
-      ${buildBlocksHTML(colors)}
+      ${buildIssueCountsHTML(a, r)}
     </div>
   `;
 }
@@ -1593,7 +1601,7 @@ async function loadDeepAnalysis(ticker) {
             <span class="sd-score glorisk-headline" style="color:${swotBand.color}">${swot100}</span>
             <span class="sd-max">/ 100</span>
           </div>
-          ${buildBlocksHTML(rd.scores.map(s => s >= 8 ? 'green' : s >= 5 ? 'amber' : 'red'))}
+          ${buildIssueCountsHTML(rd.scores.filter(s => s >= 5 && s < 8).length, rd.scores.filter(s => s < 5).length)}
         `;
         posCard.style.display = '';
       }
@@ -1601,7 +1609,6 @@ async function loadDeepAnalysis(ticker) {
       // Show GloRisk composite card
       const gloriskCardWrap = document.getElementById('gloriskCardWrap');
       const gloriskValueEl  = document.getElementById('gloriskValue');
-      const gloriskBarEl    = document.getElementById('gloriskBar');
       const gloriskBadgeEl  = document.getElementById('gloriskBadge');
       const gloriskLabelEl  = document.getElementById('gloriskLabel');
       const gloriskBreakEl  = document.getElementById('gloriskBreakdown');
@@ -1616,7 +1623,6 @@ async function loadDeepAnalysis(ticker) {
         if (gloriskLabelEl) gloriskLabelEl.textContent = 'GLORISK SCORE';
         gloriskValueEl.textContent = glorisk;
         gloriskValueEl.style.color = gloBand.color;
-        if (gloriskBarEl) { gloriskBarEl.style.width = glorisk + '%'; gloriskBarEl.style.background = gloBand.color; }
         if (gloriskBadgeEl) { gloriskBadgeEl.className = `rsb ${gloBand.cls}`; gloriskBadgeEl.textContent = gloBand.label; gloriskBadgeEl.style.fontSize = '0.72rem'; gloriskBadgeEl.style.padding = '3px 12px'; }
         if (perfValueEl) perfValueEl.textContent = perfScore;
         if (swotValueEl) swotValueEl.textContent = swot100;
