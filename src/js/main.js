@@ -707,8 +707,7 @@ function renderReport(coin) {
     <!-- Market Position Summary (populated by loadDeepAnalysis) -->
     <div id="swotSummaryWrap" style="display:none">
       <div class="section-title">Market Position Summary</div>
-      <div class="glorisk-card" id="positionCard"></div>
-      <div class="ai-box" style="margin-bottom:2rem;border-top:none;border-top-left-radius:0;border-top-right-radius:0">
+      <div class="ai-box" style="margin-bottom:2rem">
         <div class="ai-text" id="swotSummaryText"></div>
       </div>
     </div>
@@ -750,6 +749,7 @@ function renderReport(coin) {
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.6"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
       Market Position Analysis
     </div>
+    <div class="glorisk-card" id="positionCard" style="display:none;margin-bottom:0;border-bottom-left-radius:0;border-bottom-right-radius:0"></div>
     <div id="deepAnalysis" class="ai-box" style="display:none">
       <div class="ai-badge"><div class="ai-dot"></div>Investment Research</div>
       <div class="ai-text" id="deepAnalysisText"></div>
@@ -1523,9 +1523,7 @@ async function loadDeepAnalysis(ticker) {
           </div>
           ${buildBlocksHTML(rd.scores.map(s => s >= 8 ? 'green' : s >= 5 ? 'amber' : 'red'))}
         `;
-        posCard.style.marginBottom = '0';
-        posCard.style.borderBottomLeftRadius = '0';
-        posCard.style.borderBottomRightRadius = '0';
+        posCard.style.display = '';
       }
 
       // Show GloRisk composite card
