@@ -448,7 +448,7 @@ function renderCards() {
   // Helper: get score band from numeric score
   function scoreBand(score) {
     if (score >= 90) return { label: 'Very Stable', color: '#60a5fa' };
-    if (score >= 75) return { label: 'Stable',      color: '#22c55e' };
+    if (score >= 80) return { label: 'Stable',      color: '#22c55e' };
     if (score >= 50) return { label: 'Unstable',    color: '#f59e0b' };
     if (score >= 30) return { label: 'Stressed',    color: '#f97316' };
     return               { label: 'Critical',    color: '#ef4444' };
@@ -620,7 +620,7 @@ function buildScoreHistory(coin) {
 
 function getScoreBand(score) {
   if (score >= 90) return { label: 'Very Stable', color: '#60A5FA', cls: 'rsb-blue' };
-  if (score >= 75) return { label: 'Stable',      color: '#22c55e', cls: 'rsb-green' };
+  if (score >= 80) return { label: 'Stable',      color: '#22c55e', cls: 'rsb-green' };
   if (score >= 50) return { label: 'Unstable',    color: '#f59e0b', cls: 'rsb-amber' };
   if (score >= 30) return { label: 'Stressed',    color: '#f97316', cls: 'rsb-orange' };
   return               { label: 'Critical',    color: '#ef4444', cls: 'rsb-red' };

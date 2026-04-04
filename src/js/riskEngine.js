@@ -65,8 +65,8 @@ export const THRESHOLDS = {
 
 export const MOOD_BANDS = [
   { pctLo:  0, pctHi: 10, label: 'Very Healthy', displayLabel: 'Very Stable', key: 'vcalm',    color: '#60A5FA', cls: 'mood-very-healthy' },
-  { pctLo: 10, pctHi: 25, label: 'Healthy',      displayLabel: 'Stable',      key: 'calm',     color: '#22c55e', cls: 'mood-healthy'      },
-  { pctLo: 25, pctHi: 50, label: 'Unsettled',    displayLabel: 'Unstable',    key: 'unsettled',color: '#f59e0b', cls: 'mood-unsettled'    },
+  { pctLo: 10, pctHi: 20, label: 'Healthy',      displayLabel: 'Stable',      key: 'calm',     color: '#22c55e', cls: 'mood-healthy'      },
+  { pctLo: 20, pctHi: 50, label: 'Unsettled',    displayLabel: 'Unstable',    key: 'unsettled',color: '#f59e0b', cls: 'mood-unsettled'    },
   { pctLo: 50, pctHi: 70, label: 'Stressed',     displayLabel: 'Stressed',    key: 'stressed', color: '#f97316', cls: 'mood-stressed'     },
   { pctLo: 70, pctHi:101, label: 'Critical',     displayLabel: 'Critical',    key: 'danger',   color: '#ef4444', cls: 'mood-critical'     },
 ];
