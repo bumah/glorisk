@@ -740,19 +740,19 @@ function renderReport(coin) {
     <div class="section-title" style="margin-top:2rem">Market Position Definitions</div>
     <div class="ind-defs-table">
       <div class="ind-def-row">
-        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--green)"></span> Tier 1 \u2013 Pack Leader</div>
+        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--green)"></span> Pack Leader</div>
         <div class="ind-def-desc">High-quality businesses with strong fundamentals and favourable external conditions. Internal \u2265 7, External \u2265 7.</div>
       </div>
       <div class="ind-def-row">
-        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--amber)"></span> Tier 2 \u2013 Momentum Stock</div>
+        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--amber)"></span> Momentum Stock</div>
         <div class="ind-def-desc">Strong companies facing macro or cyclical pressures. Internal \u2265 7, External < 7.</div>
       </div>
       <div class="ind-def-row">
-        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--blue)"></span> Tier 3 \u2013 Defensive Holding</div>
+        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--blue)"></span> Defensive Holding</div>
         <div class="ind-def-desc">Stable externally but weaker internal fundamentals. Internal < 7, External \u2265 7.</div>
       </div>
       <div class="ind-def-row">
-        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--red)"></span> Tier 4 \u2013 Decliner</div>
+        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--red)"></span> Decliner</div>
         <div class="ind-def-desc">Weak businesses with structural or macro challenges. Internal < 7, External < 7.</div>
       </div>
     </div>
@@ -1358,10 +1358,11 @@ function extractReportData(report) {
     const fullTitle = itemMatch[1].trim();
     const rawDesc = itemMatch[2].trim().replace(/\[\d+\]/g, '').replace(/\s{2,}/g, ' ');
     const lower = fullTitle.toLowerCase();
+    if (lower.includes('catalyst')) continue; // skip catalysts
     if (lower.includes('risk') || lower.includes('headwind') || lower.includes('threat')) {
       risks.push({ title: fullTitle.replace(/^key\s+(risks?)[:\s]*/i, ''), desc: rawDesc });
     } else {
-      tailwinds.push({ title: fullTitle.replace(/^key\s+(tailwinds?|catalysts?)[:\s]*/i, ''), desc: rawDesc });
+      tailwinds.push({ title: fullTitle.replace(/^key\s+(tailwinds?)[:\s]*/i, ''), desc: rawDesc });
     }
   }
 
@@ -1385,10 +1386,10 @@ function buildScoreCardsHTML(intAvg, extAvg, overall) {
 function buildMatrixHTML(tier, ticker, intAvg, extAvg) {
   if (!tier) return '';
   const cells = [
-    { num: 3, label: 'Tier 3', sub: 'Defensive Holding', color: 'blue' },
-    { num: 1, label: 'Tier 1', sub: 'Pack Leader', color: 'green' },
-    { num: 4, label: 'Tier 4', sub: 'Weak/Speculative', color: 'red' },
-    { num: 2, label: 'Tier 2', sub: 'Momentum Stock', color: 'amber' },
+    { num: 3, label: 'Defensive', sub: 'Holding', color: 'blue' },
+    { num: 1, label: 'Pack', sub: 'Leader', color: 'green' },
+    { num: 4, label: 'Decliner', sub: '', color: 'red' },
+    { num: 2, label: 'Momentum', sub: 'Stock', color: 'amber' },
   ];
   // Compute point position inside active cell (percentage)
   const clamp = (v, lo, hi) => Math.max(10, Math.min(90, ((v - lo) / (hi - lo)) * 100));
