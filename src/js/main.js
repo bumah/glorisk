@@ -676,11 +676,11 @@ function renderReport(coin) {
       </div>
     </div>
 
-    <!-- Score Timeline Chart -->
-    <div class="section-title">Score History</div>
+    <!-- Performance Timeline Chart -->
+    <div class="section-title">Performance History</div>
     <div class="chart-wrap" style="margin-bottom:2rem">
       <div class="chart-header">
-        <div class="chart-title">${coin.ticker} \u00b7 GloRisk Score over 12 months</div>
+        <div class="chart-title">${coin.ticker} \u00b7 Performance Score over 12 months</div>
       </div>
       <canvas id="scoreChart" style="max-height:180px"></canvas>
     </div>
@@ -1058,7 +1058,7 @@ async function buildScoreChart(coin) {
       labels,
       datasets: [
         {
-          label: 'GloRisk Score',
+          label: 'Performance Score',
           data: scores,
           borderColor: '#00d4ff',
           borderWidth: 2,
