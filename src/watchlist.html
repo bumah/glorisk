@@ -21,19 +21,25 @@ body { background: var(--bg); color: var(--text); }
 /* Watchlist table */
 .wl-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.82rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.5rem; }
 .wl-table th { background: var(--surface2); font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
-.wl-table th:nth-child(n+3) { text-align: right; }
+.wl-table th.th-right { text-align: right; }
+.wl-table th.th-center { text-align: center; }
 .wl-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
 .wl-table tr:last-child td { border-bottom: none; }
 .wl-table td:first-child { font-weight: 500; }
-.wl-table td:nth-child(n+3) { text-align: right; font-family: var(--font-mono); font-size: 0.78rem; }
+.wl-table td.td-right { text-align: right; font-family: var(--font-mono); font-size: 0.78rem; }
+.wl-table td.td-center { text-align: center; font-family: var(--font-mono); font-size: 0.78rem; }
 .wl-table tr:hover td { background: var(--surface2); }
 .wl-ticker { color: var(--accent); cursor: pointer; text-decoration: none; }
 .wl-ticker:hover { text-decoration: underline; }
 .wl-name { font-size: 0.72rem; color: var(--muted); }
+.wl-price-line { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+.wl-price-line .wl-change-pos { color: var(--green); }
+.wl-price-line .wl-change-neg { color: var(--red); }
 .wl-breakdown { font-family: var(--font-mono); font-size: 0.6rem; margin-top: 3px; }
 .wl-remove { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 6px 10px; transition: all 0.15s; min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center; }
 .wl-remove:hover { color: var(--red); border-color: var(--red); background: rgba(239,68,68,0.1); }
 .wl-score { font-family: var(--font-display); font-weight: 800; font-size: 0.9rem; }
+.wl-score-dash { font-family: var(--font-mono); font-size: 0.82rem; color: var(--muted); }
 
 /* Auth modal */
 .wl-auth-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 1rem; }
@@ -55,6 +61,8 @@ body { background: var(--bg); color: var(--text); }
   .wl-table { font-size: 0.75rem; }
   .wl-table th, .wl-table td { padding: 8px 8px; }
   .wl-name { display: none; }
+  .wl-price-line { display: none; }
+  .wl-col-position, .wl-col-glorisk { display: none; }
 }
 
 /* Print */
@@ -152,8 +160,43 @@ let watchlist = []; // array of ticker strings
 let currentUser = null;
 let changesData = null; // from changes.json
 let alertsDismissed = false;
+let reportCache = {}; // ticker -> { position: number|null, fetched: true }
 
 function gloriskScore(mood) { return Math.min(95, Math.max(10, 100 - mood.score * 5)); }
+
+// Parse a report markdown to extract overall score (average of all 10 factor scores)
+function parseReportScore(reportText) {
+  if (!reportText) return null;
+  // Extract factor scores from the markdown table: | **N. Name** | SCORE | ...
+  const scoreRegex = /\|\s*\*?\*?\d+\.\s*[^|]+\*?\*?\s*\|\s*(\d+(?:\.\d+)?)\s*\|/g;
+  const scores = [];
+  let m;
+  while ((m = scoreRegex.exec(reportText)) !== null) {
+    const val = parseFloat(m[1]);
+    if (val >= 1 && val <= 10) scores.push(val);
+  }
+  if (scores.length >= 5) {
+    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+    return Math.round(avg * 10); // scale to 0-100
+  }
+  return null;
+}
+
+// Fetch report data for a ticker, cache the result
+async function fetchReportScore(ticker) {
+  if (reportCache[ticker]) return reportCache[ticker];
+  try {
+    const res = await fetch(`/data/reports/${encodeURIComponent(ticker)}.json`);
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+    const position = parseReportScore(data.report);
+    reportCache[ticker] = { position, fetched: true };
+  } catch {
+    reportCache[ticker] = { position: null, fetched: true };
+  }
+  return reportCache[ticker];
+}
+
 function formatPrice(p) {
   if (p == null) return '\u2014';
   if (p < 1) return '$' + p.toFixed(4);
@@ -303,52 +346,59 @@ function renderAlerts() {
   });
 }
 
-function render() {
+async function render() {
   const area = document.getElementById('watchlistArea');
   if (!watchlist.length) {
     area.innerHTML = '<div class="wl-empty"><div>Add assets above to build your watchlist.</div><div class="wl-empty-sub">Your watchlist is saved in this browser and can be shared via link.</div></div>';
     return;
   }
 
+  // Fetch report scores for all watchlist items in parallel
+  await Promise.all(watchlist.map(ticker => fetchReportScore(ticker)));
+
   const rows = watchlist.map((ticker, i) => {
     const coin = getCoin(ticker);
     if (!coin) return '';
-    const score = gloriskScore(coin.mood);
+    const performance = gloriskScore(coin.mood);
     const band = getMoodBand(coin.mood.label);
     const change = coin.priceChange || 0;
-    const changeCls = change >= 0 ? 'pos' : 'neg';
-
-    // Score direction
-    const sh = coin.scoreHistory?.['1m'];
-    let arrow = '';
-    if (sh) {
-      const diff = score - gloriskScore(sh);
-      if (diff > 0) arrow = ' <span style="color:var(--green)">\u2191</span>';
-      else if (diff < 0) arrow = ' <span style="color:var(--red)">\u2193</span>';
-    }
+    const changeCls = change >= 0 ? 'wl-change-pos' : 'wl-change-neg';
+    const changeStr = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
 
     // Indicator breakdown
     const g = IND_ORDER.filter(k => coin.indicators[k]?.color === 'green').length;
     const a = IND_ORDER.filter(k => coin.indicators[k]?.color === 'amber').length;
     const r = IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length;
 
-    // Last month score
-    const prev1m = sh ? gloriskScore(sh) : null;
-    const prev1mColor = sh ? getMoodBand(sh.label).color : '';
+    // Position score from report
+    const rpt = reportCache[ticker];
+    const positionScore = rpt?.position ?? null;
+    const positionHtml = positionScore !== null
+      ? `<span class="wl-score">${positionScore}</span>`
+      : `<span class="wl-score-dash">\u2014</span>`;
+
+    // GloRisk composite = (performance + position) / 2
+    let gloriskHtml;
+    if (positionScore !== null) {
+      const composite = Math.round((performance + positionScore) / 2);
+      gloriskHtml = `<span class="wl-score" style="color:${band.color}">${composite}</span>`;
+    } else {
+      gloriskHtml = `<span class="wl-score-dash">\u2014</span>`;
+    }
 
     return `<tr>
       <td>
         <a href="/browse.html?asset=${encodeURIComponent(ticker)}" class="wl-ticker">${ticker}</a>
         <div class="wl-name">${coin.company}</div>
+        <div class="wl-price-line">${formatPrice(coin.price)} <span class="${changeCls}">${changeStr}</span></div>
       </td>
       <td>
         <span class="mood-pill ${band.cls}" style="font-size:0.62rem">${band.displayLabel}</span>
         <div class="wl-breakdown"><span class="cic-g">${g}G</span> <span class="cic-a">${a}A</span> <span class="cic-r">${r}R</span></div>
       </td>
-      <td><span class="wl-score" style="color:${band.color}">${score}</span>${arrow}</td>
-      <td style="color:${prev1mColor}">${prev1m !== null ? prev1m : '\u2014'}</td>
-      <td>${formatPrice(coin.price)}</td>
-      <td class="card-change ${changeCls}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</td>
+      <td class="td-center"><span class="wl-score" style="color:${band.color}">${performance}</span></td>
+      <td class="td-center wl-col-position">${positionHtml}</td>
+      <td class="td-center wl-col-glorisk">${gloriskHtml}</td>
       <td><button class="wl-remove" data-idx="${i}" title="Remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></td>
     </tr>`;
   }).filter(Boolean).join('');
@@ -357,7 +407,7 @@ function render() {
 
   area.innerHTML = `
     <table class="wl-table">
-      <thead><tr><th>Asset</th><th>Status</th><th>Score</th><th>1M Ago</th><th>Price</th><th>30D</th><th></th></tr></thead>
+      <thead><tr><th>Asset</th><th>Status</th><th class="th-center">Performance</th><th class="th-center wl-col-position">Position</th><th class="th-center wl-col-glorisk">GloRisk</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
 

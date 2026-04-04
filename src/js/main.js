@@ -421,15 +421,18 @@ function renderCards() {
               <div class="card-name">${c.company}</div>
             </div>
           </div>
-          <div class="card-score" style="color:${color}">${gloriskScore(c.mood)}${(() => {
-            const sh = c.scoreHistory?.['1m'];
-            if (!sh) return '';
-            const diff = gloriskScore(c.mood) - gloriskScore(sh);
-            if (diff === 0) return '';
-            return diff > 0
-              ? '<span class="card-score-arrow" style="color:var(--green)">\u2191</span>'
-              : '<span class="card-score-arrow" style="color:var(--red)">\u2193</span>';
-          })()}</div>
+          <div class="card-score-wrap">
+            <div class="card-score" style="color:${color}">${gloriskScore(c.mood)}${(() => {
+              const sh = c.scoreHistory?.['1m'];
+              if (!sh) return '';
+              const diff = gloriskScore(c.mood) - gloriskScore(sh);
+              if (diff === 0) return '';
+              return diff > 0
+                ? '<span class="card-score-arrow" style="color:var(--green)">\u2191</span>'
+                : '<span class="card-score-arrow" style="color:var(--red)">\u2193</span>';
+            })()}</div>
+            <div class="card-score-label">Performance</div>
+          </div>
         </div>
         <div class="card-mid">
           <div class="card-price">${formatPrice(c.price)}</div>
@@ -553,11 +556,11 @@ function buildGloRiskCard(coin) {
   const band = getMoodBand(mood.label);
   const ps   = gloriskScore(mood);
 
-  // Initially GloRisk = Performance Score only (updated when SWOT loads)
+  // Show Performance Score initially; upgraded to GloRisk composite when Position loads
   return `
     <div class="glorisk-card" id="gloriskCard">
       <div class="gc-header">
-        <div class="sd-label">GLORISK SCORE</div>
+        <div class="sd-label" id="gloriskLabel">PERFORMANCE SCORE</div>
         <span class="rsb ${moodRsbClass(mood.label)}" id="gloriskBadge" style="font-size:0.72rem;padding:3px 12px">${band.displayLabel ?? mood.label}</span>
       </div>
       <div class="sd-score-row">
@@ -565,14 +568,14 @@ function buildGloRiskCard(coin) {
         <span class="sd-max">/ 100</span>
       </div>
       <div class="sd-bar"><div class="sd-bar-fill" id="gloriskBar" style="width:${ps}%;background:${band.color}"></div></div>
-      <div class="gc-breakdown" id="gloriskBreakdown">
+      <div class="gc-breakdown" id="gloriskBreakdown" style="display:none">
         <div class="gc-row">
-          <span class="gc-row-label">Market Performance:</span>
-          <span class="gc-row-value">${ps}</span>
-          <span class="rsb ${moodRsbClass(mood.label)}" style="font-size:0.58rem;padding:2px 8px">${band.displayLabel ?? mood.label}</span>
+          <span class="gc-row-label">Performance:</span>
+          <span class="gc-row-value" id="gloriskPerfValue">${ps}</span>
+          <span class="rsb ${moodRsbClass(mood.label)}" id="gloriskPerfBadge" style="font-size:0.58rem;padding:2px 8px">${band.displayLabel ?? mood.label}</span>
         </div>
-        <div class="gc-row" id="gloriskSwotRow" style="display:none">
-          <span class="gc-row-label">Market Position:</span>
+        <div class="gc-row">
+          <span class="gc-row-label">Position:</span>
           <span class="gc-row-value" id="gloriskSwotValue"></span>
           <span class="rsb" id="gloriskSwotBadge" style="font-size:0.58rem;padding:2px 8px"></span>
         </div>
@@ -1495,11 +1498,13 @@ async function loadDeepAnalysis(ticker) {
         swotScoreBar.style.display = '';
       }
 
-      // Update GloRisk composite card
+      // Upgrade card from Performance Score → GloRisk composite
+      const gloriskLabelEl = document.getElementById('gloriskLabel');
       const gloriskValueEl = document.getElementById('gloriskValue');
       const gloriskBarEl   = document.getElementById('gloriskBar');
       const gloriskBadgeEl = document.getElementById('gloriskBadge');
-      const swotRowEl      = document.getElementById('gloriskSwotRow');
+      const gloriskBreakEl = document.getElementById('gloriskBreakdown');
+      const perfValueEl    = document.getElementById('gloriskPerfValue');
       const swotValueEl    = document.getElementById('gloriskSwotValue');
       const swotBadgeEl    = document.getElementById('gloriskSwotBadge');
       if (gloriskValueEl) {
@@ -1507,20 +1512,18 @@ async function loadDeepAnalysis(ticker) {
         const glorisk = Math.round((perfScore + swot100) / 2);
         const gloBand = getScoreBand(glorisk);
 
+        // Update headline to GloRisk composite
+        if (gloriskLabelEl) gloriskLabelEl.textContent = 'GLORISK SCORE';
         gloriskValueEl.textContent = glorisk;
         gloriskValueEl.style.color = gloBand.color;
         if (gloriskBarEl) { gloriskBarEl.style.width = glorisk + '%'; gloriskBarEl.style.background = gloBand.color; }
         if (gloriskBadgeEl) { gloriskBadgeEl.className = `rsb ${gloBand.cls}`; gloriskBadgeEl.textContent = gloBand.label; gloriskBadgeEl.style.fontSize = '0.72rem'; gloriskBadgeEl.style.padding = '3px 12px'; }
 
-        // Show SWOT row in breakdown
-        if (swotRowEl && swotValueEl && swotBadgeEl) {
-          swotValueEl.textContent = swot100;
-          swotBadgeEl.className = `rsb ${fundTierRsb}`;
-          swotBadgeEl.textContent = fundTierLabel;
-          swotBadgeEl.style.fontSize = '0.58rem';
-          swotBadgeEl.style.padding = '2px 8px';
-          swotRowEl.style.display = '';
-        }
+        // Show breakdown rows
+        if (perfValueEl) perfValueEl.textContent = perfScore;
+        if (swotValueEl) swotValueEl.textContent = swot100;
+        if (swotBadgeEl) { swotBadgeEl.className = `rsb ${fundTierRsb}`; swotBadgeEl.textContent = fundTierLabel; swotBadgeEl.style.fontSize = '0.58rem'; swotBadgeEl.style.padding = '2px 8px'; }
+        if (gloriskBreakEl) gloriskBreakEl.style.display = '';
       }
     }
 

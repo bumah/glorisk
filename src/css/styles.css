@@ -303,6 +303,7 @@ body {
 .card-ticker { font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; }
 .card-name   { font-size: 0.75rem; color: var(--muted); margin-top: 1px; }
 
+.card-score-wrap { text-align: right; }
 .card-score {
   font-family: var(--font-display);
   font-size: 1.3rem;
@@ -334,7 +335,7 @@ body {
 .card-change.neg { color: var(--red); }
 
 .card-bottom { margin-top: 10px; display: flex; align-items: center; gap: 8px; }
-.card-score-label { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
+.card-score-label { font-family: var(--font-mono); font-size: 0.58rem; color: var(--muted); white-space: nowrap; margin-top: 2px; letter-spacing: 0.03em; text-transform: uppercase; }
 
 /* ── Risk meter ──────────────────────────────────────────────────────────── */
 .risk-meter-wrap {

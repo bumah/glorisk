@@ -193,29 +193,76 @@ function wireSearch(inputId, dropId, onSelect) {
   }
 }
 
-function renderComparison() {
+async function renderComparison() {
   if (!coinA || !coinB) return;
   const result = document.getElementById('cmpResult');
   result.classList.add('active');
 
   const a = coinA, b = coinB;
-  const sA = gloriskScore(a.mood), sB = gloriskScore(b.mood);
+  const perfA = gloriskScore(a.mood), perfB = gloriskScore(b.mood);
   const bandA = getMoodBand(a.mood.label), bandB = getMoodBand(b.mood.label);
+
+  // Fetch Market Position reports for both assets
+  async function fetchPositionScore(ticker) {
+    try {
+      const res = await fetch(`/data/reports/${ticker}.json`);
+      if (!res.ok) return null;
+      const data = await res.json();
+      const report = data.report || '';
+      const scores = [];
+      for (const line of report.split('\n')) {
+        const m = line.match(/\|\s*\*?\*?\d+\.\s*.+?\*?\*?\s*\|\s*(\d+)\s*\|/);
+        if (m) scores.push(parseInt(m[1]));
+      }
+      const internal = scores.length >= 5 ? scores.slice(0, 5) : [];
+      const external = scores.length >= 10 ? scores.slice(5, 10) : [];
+      const intAvg = internal.length ? internal.reduce((s, v) => s + v, 0) / internal.length : null;
+      const extAvg = external.length ? external.reduce((s, v) => s + v, 0) / external.length : null;
+      if (intAvg !== null && extAvg !== null) return Math.round(((intAvg + extAvg) / 2) * 10);
+      return null;
+    } catch { return null; }
+  }
+
+  const [posA, posB] = await Promise.all([fetchPositionScore(a.ticker), fetchPositionScore(b.ticker)]);
+  const hasBothPos = posA !== null && posB !== null;
+  const gloriskA = hasBothPos ? Math.round((perfA + posA) / 2) : null;
+  const gloriskB = hasBothPos ? Math.round((perfB + posB) / 2) : null;
+
+  // Score colour helper
+  const scoreClr = v => v >= 70 ? 'var(--green)' : v >= 40 ? 'var(--amber)' : 'var(--red)';
+
+  // Score rows — GloRisk (composite), Performance, Position
+  const scoreRows = [];
+  if (hasBothPos) {
+    scoreRows.push({ label: 'GloRisk Score', vA: gloriskA, vB: gloriskB, colorA: scoreClr(gloriskA), colorB: scoreClr(gloriskB), suffix: ' / 100' });
+  }
+  scoreRows.push({ label: 'Performance Score', vA: perfA, vB: perfB, colorA: scoreClr(perfA), colorB: scoreClr(perfB), suffix: ' / 100' });
+  scoreRows.push({
+    label: 'Market Position Score',
+    vA: posA !== null ? posA : '\u2014',
+    vB: posB !== null ? posB : '\u2014',
+    colorA: posA !== null ? scoreClr(posA) : '',
+    colorB: posB !== null ? scoreClr(posB) : '',
+    suffix: ' / 100'
+  });
 
   // Stats comparison
   const stats = [
+    ...scoreRows,
     { label: 'Price', vA: formatPrice(a.price), vB: formatPrice(b.price) },
     { label: '30D Change', vA: (a.priceChange >= 0 ? '+' : '') + a.priceChange?.toFixed(2) + '%', vB: (b.priceChange >= 0 ? '+' : '') + b.priceChange?.toFixed(2) + '%', colorA: a.priceChange >= 0 ? 'var(--green)' : 'var(--red)', colorB: b.priceChange >= 0 ? 'var(--green)' : 'var(--red)' },
     { label: '12M Average', vA: a.avgScore || '\u2014', vB: b.avgScore || '\u2014' },
   ];
 
-  const statsHTML = stats.map(s => `
+  const statsHTML = stats.map(s => {
+    const fmtVal = (v, suffix) => typeof v === 'number' ? `${v}${suffix || ''}` : v;
+    return `
     <div class="cmp-stat-row">
       <div class="cmp-stat-label">${s.label}</div>
-      <div class="cmp-stat-val" style="${s.colorA ? 'color:'+s.colorA : ''}">${s.vA}</div>
-      <div class="cmp-stat-val" style="${s.colorB ? 'color:'+s.colorB : ''}">${s.vB}</div>
+      <div class="cmp-stat-val" style="${s.colorA ? 'color:'+s.colorA : ''}">${fmtVal(s.vA, s.suffix)}</div>
+      <div class="cmp-stat-val" style="${s.colorB ? 'color:'+s.colorB : ''}">${fmtVal(s.vB, s.suffix)}</div>
     </div>
-  `).join('');
+  `}).join('');
 
   // Indicator comparison
   const indHTML = IND_ORDER.map(k => {
@@ -251,14 +298,16 @@ function renderComparison() {
         <div class="cmp-hero-side">
           <div class="cmp-hero-ticker">${a.ticker}</div>
           <div class="cmp-hero-name">${a.company}</div>
-          <div class="cmp-hero-score" style="color:${bandA.color}">${sA}</div>
+          <div class="cmp-hero-score" style="color:${bandA.color}">${hasBothPos ? gloriskA : perfA}</div>
+          <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-top:2px">${hasBothPos ? 'GloRisk Score' : 'Performance Score'}</div>
           <div class="cmp-hero-status"><span class="mood-pill ${bandA.cls}">${bandA.displayLabel}</span></div>
         </div>
         <div class="cmp-hero-vs">VS</div>
         <div class="cmp-hero-side">
           <div class="cmp-hero-ticker">${b.ticker}</div>
           <div class="cmp-hero-name">${b.company}</div>
-          <div class="cmp-hero-score" style="color:${bandB.color}">${sB}</div>
+          <div class="cmp-hero-score" style="color:${bandB.color}">${hasBothPos ? gloriskB : perfB}</div>
+          <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-top:2px">${hasBothPos ? 'GloRisk Score' : 'Performance Score'}</div>
           <div class="cmp-hero-status"><span class="mood-pill ${bandB.cls}">${bandB.displayLabel}</span></div>
         </div>
       </div>
@@ -295,7 +344,10 @@ function renderComparison() {
 
   // Wire share buttons
   document.getElementById('cmpShareX')?.addEventListener('click', () => {
-    const text = `${a.ticker} (${sA}) vs ${b.ticker} (${sB}) \u2014 GloRisk Score comparison on dailyfinn.com`;
+    const heroA = hasBothPos ? gloriskA : perfA;
+    const heroB = hasBothPos ? gloriskB : perfB;
+    const shareLabel = hasBothPos ? 'GloRisk Score' : 'Performance Score';
+    const text = `${a.ticker} (${heroA}) vs ${b.ticker} (${heroB}) \u2014 ${shareLabel} comparison on dailyfinn.com`;
     window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'width=550,height=420');
   });
 
@@ -393,7 +445,7 @@ async function init() {
     coinB = allCoins.find(c => c.ticker === pB.toUpperCase());
     if (coinB) document.getElementById('inputB').value = `${coinB.ticker} \u2014 ${coinB.company}`;
   }
-  if (coinA && coinB) renderComparison();
+  if (coinA && coinB) await renderComparison();
 
   // Update nav sign in/out button
   const gnUser = await getUser();
