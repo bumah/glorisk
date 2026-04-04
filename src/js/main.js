@@ -1664,7 +1664,7 @@ async function loadDeepAnalysis(ticker) {
         t += '<tr>';
         cells.forEach((c, i) => {
           let val = c.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-          if (i === 1 && /^\d+$/.test(c.trim())) {
+          if (i === 1 && /^\d+(?:\/10)?$/.test(c.trim())) {
             const n = parseInt(c);
             const clr = n >= 8 ? 'var(--green)' : n >= 6 ? 'var(--amber)' : 'var(--red)';
             val = `<span style="color:${clr};font-weight:600;font-family:var(--font-display)">${c}</span>`;
