@@ -584,6 +584,44 @@ function buildGloRiskCard(coin) {
   `;
 }
 
+/* ── Performance Score card (inside Performance Summary) ──────────── */
+
+function buildPerfCard(coin) {
+  const mood = coin.mood;
+  const band = getMoodBand(mood.label);
+  const ps   = gloriskScore(mood);
+  const g = IND_ORDER.filter(k => coin.indicators[k]?.color === 'green').length;
+  const a = IND_ORDER.filter(k => coin.indicators[k]?.color === 'amber').length;
+  const r = IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length;
+  const total = g + a + r || 1;
+
+  return `
+    <div class="glorisk-card" style="margin-bottom:0;border-bottom-left-radius:0;border-bottom-right-radius:0">
+      <div class="gc-header">
+        <div class="sd-label">PERFORMANCE SCORE</div>
+        <span class="rsb ${moodRsbClass(mood.label)}" style="font-size:0.72rem;padding:3px 12px">${band.displayLabel ?? mood.label}</span>
+      </div>
+      <div class="sd-score-row">
+        <span class="sd-score glorisk-headline" style="color:${band.color}">${ps}</span>
+        <span class="sd-max">/ 100</span>
+      </div>
+      <div class="sd-bar"><div class="sd-bar-fill" style="width:${ps}%;background:${band.color}"></div></div>
+      <div class="perf-traffic" style="margin-top:0.75rem">
+        <div class="perf-traffic-bar">
+          <div style="width:${(g/total)*100}%;background:var(--green)"></div>
+          <div style="width:${(a/total)*100}%;background:var(--amber)"></div>
+          <div style="width:${(r/total)*100}%;background:var(--red)"></div>
+        </div>
+        <div class="perf-traffic-labels">
+          <span style="color:var(--green)">${g} HEALTHY</span>
+          <span style="color:var(--amber)">${a} WARNING</span>
+          <span style="color:var(--red)">${r} CRITICAL</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 /* ── Report rendering ──────────────────────────────────────────────── */
 
 function renderReport(coin) {
@@ -661,20 +699,23 @@ function renderReport(coin) {
       </button>
     </div>
 
-    <!-- GloRisk Score -->
-    ${buildGloRiskCard(coin)}
+    <!-- GloRisk Score (only shown when Position data loads) -->
+    <div id="gloriskCardWrap" style="display:none">
+      ${buildGloRiskCard(coin)}
+    </div>
 
-    <!-- Performance Summary -->
+    <!-- Performance Summary (always shown) -->
     <div class="section-title">Performance Summary</div>
-    <div class="ai-box" style="margin-bottom:1rem">
-      <div class="ai-badge"><div class="ai-dot"></div> Performance Analysis</div>
+    ${buildPerfCard(coin)}
+    <div class="ai-box" style="margin-bottom:1rem;border-top:none;border-top-left-radius:0;border-top-right-radius:0">
       <div class="ai-text" id="aiText"></div>
     </div>
 
     <!-- Market Position Summary (populated by loadDeepAnalysis) -->
     <div id="swotSummaryWrap" style="display:none">
-      <div class="ai-box" style="margin-bottom:2rem">
-        <div class="ai-badge"><div class="ai-dot"></div> Market Position Analysis</div>
+      <div class="section-title">Market Position Summary</div>
+      <div class="glorisk-card" id="positionCard"></div>
+      <div class="ai-box" style="margin-bottom:2rem;border-top:none;border-top-left-radius:0;border-top-right-radius:0">
         <div class="ai-text" id="swotSummaryText"></div>
       </div>
     </div>
@@ -709,13 +750,6 @@ function renderReport(coin) {
         Share
       </span>
     </div>
-    <div class="section-score-bar">
-      <span class="ssb-label">Market Performance</span>
-      <span class="ssb-value" style="color:${band.color}">${gloriskScore(mood)}</span>
-      <span class="ssb-max">/ 100</span>
-      <span class="rsb ${moodRsbClass(mood.label)}" style="font-size:0.62rem;padding:2px 8px;margin-left:8px">${band.displayLabel ?? mood.label}</span>
-      <span class="card-ind-counts" style="font-size:0.62rem;margin-left:8px"><span class="cic-g">${IND_ORDER.filter(k => coin.indicators[k]?.color === 'green').length}G</span> <span class="cic-a">${IND_ORDER.filter(k => coin.indicators[k]?.color === 'amber').length}A</span> <span class="cic-r">${IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length}R</span></span>
-    </div>
     <div class="full-analysis" id="fullAnalysis">${buildFullAnalysis(coin)}</div>
 
     <!-- Market Position Analysis (AI-generated, loaded from static JSON) -->
@@ -723,7 +757,6 @@ function renderReport(coin) {
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.6"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
       Market Position Analysis
     </div>
-    <div class="section-score-bar" id="swotScoreBar" style="display:none"></div>
     <div id="deepAnalysis" class="ai-box" style="display:none">
       <div class="ai-badge"><div class="ai-dot"></div>Investment Research</div>
       <div class="ai-text" id="deepAnalysisText"></div>
@@ -1474,56 +1507,77 @@ async function loadDeepAnalysis(ticker) {
     // Extract structured data for custom components
     const rd = extractReportData(data.report);
 
-    // Compute Market Position Score scaled to /100 and update GloRisk composite
+    // Compute Market Position Score and build Position card + GloRisk card
     const tierRsbMap = { 1: 'rsb-green', 2: 'rsb-amber', 3: 'rsb-blue', 4: 'rsb-red' };
     const tierLabels = { 1: 'Pack Leader', 2: 'Momentum Stock', 3: 'Defensive Holding', 4: 'Weak/Speculative' };
     if (rd.overall !== null) {
       const swot100 = Math.round(rd.overall * 10);
-      const int100  = Math.round(rd.intAvg * 10);
-      const ext100  = Math.round(rd.extAvg * 10);
       const swotBand = getScoreBand(swot100);
       const fundTierRsb = rd.tier ? tierRsbMap[rd.tier.number] || '' : '';
       const fundTierLabel = rd.tier ? (tierLabels[rd.tier.number] || rd.tier.label) : '';
 
-      // Populate Market Position Score bar above Market Position Analysis section
-      const swotScoreBar = document.getElementById('swotScoreBar');
-      if (swotScoreBar) {
-        swotScoreBar.innerHTML = `
-          <span class="ssb-label">Market Position Score</span>
-          <span class="ssb-value" style="color:${swotBand.color}">${swot100}</span>
-          <span class="ssb-max">/ 100</span>
-          ${rd.tier ? `<span class="rsb ${fundTierRsb}" style="font-size:0.62rem;padding:2px 8px;margin-left:8px">${fundTierLabel}</span>` : ''}
-          <span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--muted);margin-left:8px">Int ${int100} \u00b7 Ext ${ext100}</span>
+      // Count factor health: >=8 healthy, 5-7 warning, <5 critical
+      const strong = rd.scores.filter(s => s >= 8).length;
+      const moderate = rd.scores.filter(s => s >= 5 && s < 8).length;
+      const weak = rd.scores.filter(s => s < 5).length;
+      const total = strong + moderate + weak || 1;
+
+      // Build Position card
+      const posCard = document.getElementById('positionCard');
+      if (posCard) {
+        posCard.innerHTML = `
+          <div class="gc-header">
+            <div class="sd-label">POSITION SCORE</div>
+            <span class="rsb ${fundTierRsb}" style="font-size:0.72rem;padding:3px 12px">${fundTierLabel}</span>
+          </div>
+          <div class="sd-score-row">
+            <span class="sd-score glorisk-headline" style="color:${swotBand.color}">${swot100}</span>
+            <span class="sd-max">/ 100</span>
+          </div>
+          <div class="sd-bar"><div class="sd-bar-fill" style="width:${swot100}%;background:${swotBand.color}"></div></div>
+          <div class="perf-traffic" style="margin-top:0.75rem">
+            <div class="perf-traffic-bar">
+              <div style="width:${(strong/total)*100}%;background:var(--green)"></div>
+              <div style="width:${(moderate/total)*100}%;background:var(--amber)"></div>
+              <div style="width:${(weak/total)*100}%;background:var(--red)"></div>
+            </div>
+            <div class="perf-traffic-labels">
+              <span style="color:var(--green)">${strong} HEALTHY</span>
+              <span style="color:var(--amber)">${moderate} WARNING</span>
+              <span style="color:var(--red)">${weak} CRITICAL</span>
+            </div>
+          </div>
         `;
-        swotScoreBar.style.display = '';
+        posCard.style.marginBottom = '0';
+        posCard.style.borderBottomLeftRadius = '0';
+        posCard.style.borderBottomRightRadius = '0';
       }
 
-      // Upgrade card from Performance Score → GloRisk composite
-      const gloriskLabelEl = document.getElementById('gloriskLabel');
-      const gloriskValueEl = document.getElementById('gloriskValue');
-      const gloriskBarEl   = document.getElementById('gloriskBar');
-      const gloriskBadgeEl = document.getElementById('gloriskBadge');
-      const gloriskBreakEl = document.getElementById('gloriskBreakdown');
-      const perfValueEl    = document.getElementById('gloriskPerfValue');
-      const swotValueEl    = document.getElementById('gloriskSwotValue');
-      const swotBadgeEl    = document.getElementById('gloriskSwotBadge');
-      if (gloriskValueEl) {
+      // Show GloRisk composite card
+      const gloriskCardWrap = document.getElementById('gloriskCardWrap');
+      const gloriskValueEl  = document.getElementById('gloriskValue');
+      const gloriskBarEl    = document.getElementById('gloriskBar');
+      const gloriskBadgeEl  = document.getElementById('gloriskBadge');
+      const gloriskLabelEl  = document.getElementById('gloriskLabel');
+      const gloriskBreakEl  = document.getElementById('gloriskBreakdown');
+      const perfValueEl     = document.getElementById('gloriskPerfValue');
+      const swotValueEl     = document.getElementById('gloriskSwotValue');
+      const swotBadgeEl     = document.getElementById('gloriskSwotBadge');
+      if (gloriskValueEl && gloriskCardWrap) {
         const perfScore = parseInt(gloriskValueEl.textContent);
         const glorisk = Math.round((perfScore + swot100) / 2);
         const gloBand = getScoreBand(glorisk);
 
-        // Update headline to GloRisk composite
         if (gloriskLabelEl) gloriskLabelEl.textContent = 'GLORISK SCORE';
         gloriskValueEl.textContent = glorisk;
         gloriskValueEl.style.color = gloBand.color;
         if (gloriskBarEl) { gloriskBarEl.style.width = glorisk + '%'; gloriskBarEl.style.background = gloBand.color; }
         if (gloriskBadgeEl) { gloriskBadgeEl.className = `rsb ${gloBand.cls}`; gloriskBadgeEl.textContent = gloBand.label; gloriskBadgeEl.style.fontSize = '0.72rem'; gloriskBadgeEl.style.padding = '3px 12px'; }
-
-        // Show breakdown rows
         if (perfValueEl) perfValueEl.textContent = perfScore;
         if (swotValueEl) swotValueEl.textContent = swot100;
         if (swotBadgeEl) { swotBadgeEl.className = `rsb ${fundTierRsb}`; swotBadgeEl.textContent = fundTierLabel; swotBadgeEl.style.fontSize = '0.58rem'; swotBadgeEl.style.padding = '2px 8px'; }
         if (gloriskBreakEl) gloriskBreakEl.style.display = '';
+        gloriskCardWrap.style.display = '';
       }
     }
 
