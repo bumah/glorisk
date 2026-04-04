@@ -704,14 +704,6 @@ function renderReport(coin) {
       <div class="ai-text" id="aiText"></div>
     </div>
 
-    <!-- Market Position Summary (populated by loadDeepAnalysis) -->
-    <div id="swotSummaryWrap" style="display:none">
-      <div class="section-title">Market Position Summary</div>
-      <div class="ai-box" style="margin-bottom:2rem">
-        <div class="ai-text" id="swotSummaryText"></div>
-      </div>
-    </div>
-
     <!-- Performance Timeline Chart -->
     <div class="section-title">Performance History</div>
     <div class="chart-wrap" style="margin-bottom:2rem">
@@ -750,6 +742,9 @@ function renderReport(coin) {
       Market Position Analysis
     </div>
     <div class="glorisk-card" id="positionCard" style="display:none;margin-bottom:0;border-bottom-left-radius:0;border-bottom-right-radius:0"></div>
+    <div id="swotSummaryWrap" class="ai-box" style="display:none;border-top:none;border-top-left-radius:0;border-top-right-radius:0;margin-bottom:1rem">
+      <div class="ai-text" id="swotSummaryText"></div>
+    </div>
     <div id="deepAnalysis" class="ai-box" style="display:none">
       <div class="ai-badge"><div class="ai-dot"></div>Investment Research</div>
       <div class="ai-text" id="deepAnalysisText"></div>
