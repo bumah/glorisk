@@ -1344,9 +1344,15 @@ function extractReportData(report) {
   const extAvg = external.length ? +(external.reduce((a, b) => a + b, 0) / external.length).toFixed(1) : null;
   const overall = intAvg !== null && extAvg !== null ? +((intAvg + extAvg) / 2).toFixed(1) : null;
 
-  // 2. Extract tier classification
-  const tierMatch = report.match(/([\u{1F7E2}\u{1F7E1}\u{1F535}\u{1F534}])\s*\*?\*?Tier\s+(\d)\s+([^*()\n]+)/u);
-  const tier = tierMatch ? { number: parseInt(tierMatch[2]), label: tierMatch[3].trim().replace(/\*\*/g, '') } : null;
+  // 2. Extract tier classification (supports "Tier N Label" and just "Label")
+  const tierLabelMap = { 'pack leader': 1, 'momentum stock': 2, 'defensive holding': 3, 'decliner': 4, 'weak/speculative': 4 };
+  let tier = null;
+  const tierMatch = report.match(/([\u{1F7E2}\u{1F7E1}\u{1F535}\u{1F534}])\s*\*?\*?(?:Tier\s+(\d)\s+)?([^*()\n]+)/u);
+  if (tierMatch) {
+    const label = tierMatch[3].trim().replace(/\*\*/g, '');
+    const num = tierMatch[2] ? parseInt(tierMatch[2]) : (tierLabelMap[label.toLowerCase()] || null);
+    if (num) tier = { number: num, label };
+  }
 
   // 3. Extract risk & opportunity items
   const riskSection = report.split(/###\s*Risk\s*&?\s*Opportunity\s*Analysis/i)[1]?.split(/###/)[0] || '';
