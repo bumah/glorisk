@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GloRisk — Market Summary</title>
+<title>DailyFinn — Market Summary</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/css/styles.css">
@@ -109,7 +109,7 @@ body { background: var(--bg); color: var(--text); }
   .ms-table { border-color: #ddd; }
   .ms-table th { background: #f5f5f5; color: #666; }
   .ms-table td { color: #333; border-color: #eee; }
-  .page-body::after { content: 'glorisk.com'; display: block; text-align: center; color: #999; font-size: 0.75rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd; }
+  .page-body::after { content: 'dailyfinn.com'; display: block; text-align: center; color: #999; font-size: 0.75rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd; }
 }
 
 @media (max-width: 768px) {
@@ -121,7 +121,7 @@ body { background: var(--bg); color: var(--text); }
 <body>
 
 <nav class="global-nav">
-  <a href="/" class="gn-logo">Glo<span>Risk</span></a>
+  <a href="/" class="gn-logo">Daily<span>Finn</span></a>
   <div class="gn-links">
     <a href="/" class="gn-link">Home</a>
     <a href="/browse.html" class="gn-link">Browse</a>
@@ -131,10 +131,11 @@ body { background: var(--bg); color: var(--text); }
     <a href="/market.html" class="gn-link active">Summary</a>
     <a href="/methodology.html" class="gn-link">Methodology</a>
     <div class="gn-dropdown">
-      <button class="gn-dropdown-trigger">Tools <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="gn-dropdown-trigger">Products <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="gn-dropdown-menu">
-        <a href="https://stockpanda.app" target="_blank" rel="noopener" class="gn-dropdown-item"><span>StockPanda</span> <span class="gn-dropdown-item-sub">stockpanda.app</span></a>
-        <a href="https://coinpeekpro.com" target="_blank" rel="noopener" class="gn-dropdown-item"><span>CoinPeek</span> <span class="gn-dropdown-item-sub">coinpeekpro.com</span></a>
+        <a href="/methodology.html" class="gn-dropdown-item"><span>GloRisk Score</span> <span class="gn-dropdown-item-sub">Risk Intelligence</span></a>
+        <a href="https://stockpanda.app" target="_blank" rel="noopener" class="gn-dropdown-item"><span>StockPanda</span> <span class="gn-dropdown-item-sub">Stock Analysis</span></a>
+        <a href="https://coinpeekpro.com" target="_blank" rel="noopener" class="gn-dropdown-item"><span>CoinPeek</span> <span class="gn-dropdown-item-sub">Crypto Analysis</span></a>
       </div>
     </div>
   </div>
@@ -167,10 +168,11 @@ body { background: var(--bg); color: var(--text); }
 
 <footer class="site-footer">
   <div class="site-footer-inner">
-    <div class="site-footer-logo">Glo<span>Risk</span></div>
-    <p>GloRisk is a free research tool. Not financial advice. Always do your own research.</p>
+    <div class="site-footer-logo">Daily<span>Finn</span></div>
+    <p>DailyFinn is a free research tool. Not financial advice. Always do your own research.</p>
     <div class="site-footer-tools">
-      <div class="site-footer-tools-label">More Tools</div>
+      <div class="site-footer-tools-label">Products</div>
+      <a href="/methodology.html" class="site-footer-tool"><span>GloRisk Score</span> Risk Intelligence</a>
       <a href="https://stockpanda.app" target="_blank" rel="noopener" class="site-footer-tool"><span>StockPanda</span> Stock Analysis</a>
       <a href="https://coinpeekpro.com" target="_blank" rel="noopener" class="site-footer-tool"><span>CoinPeek</span> Crypto Analysis</a>
     </div>
@@ -380,7 +382,7 @@ window.saveSectionImg = async function(btn) {
   tempDiv.querySelectorAll('.save-img-btn').forEach(b => b.remove());
   const wm = document.createElement('div');
   wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:0.75rem;border-top:1px solid #1e2530;margin-top:1rem;';
-  wm.textContent = 'glorisk.com';
+  wm.textContent = 'dailyfinn.com';
   tempDiv.appendChild(wm);
   document.body.appendChild(tempDiv);
   try {
@@ -400,7 +402,7 @@ window.saveSectionImg = async function(btn) {
 // Actions
 document.getElementById('btnPrint').addEventListener('click', () => window.print());
 document.getElementById('btnShareX').addEventListener('click', () => {
-  const text = 'GloRisk Market Summary \u2014 Risk overview for Magnificent 7, Crypto Majors, Indices & Tech ETFs.';
+  const text = 'DailyFinn Market Summary \u2014 Risk overview for Magnificent 7, Crypto Majors, Indices & Tech ETFs.';
   const url = window.location.href;
   window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text + '\n\n' + url)}`, '_blank', 'width=550,height=420');
 });

@@ -1,5 +1,5 @@
 /**
- * GloRisk — Main Application
+ * DailyFinn — Main Application
  * ─────────────────────────────────────────────────────────────────────────────
  * SPA entry point: landing, browse grid, per-asset report.
  */
@@ -605,7 +605,7 @@ function renderReport(coin) {
 
   const displayLabel = band.displayLabel ?? mood.label;
   const ps = gloriskScore(mood);
-  const shareText = `${coin.ticker} (${coin.company}) is rated ${displayLabel} with a GloRisk Score of ${ps} on GloRisk.`;
+  const shareText = `${coin.ticker} (${coin.company}) is rated ${displayLabel} with a GloRisk Score of ${ps} on DailyFinn.`;
   const shareUrl = window.location.origin + '/browse.html?asset=' + encodeURIComponent(coin.ticker);
 
   body.innerHTML = `
@@ -825,7 +825,7 @@ async function saveElementAsImage(el, filename) {
   tempDiv.querySelectorAll('.save-img-btn, .section-share').forEach(b => b.remove());
   const wm = document.createElement('div');
   wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:0.75rem;border-top:1px solid #1e2530;margin-top:1rem;';
-  wm.textContent = 'glorisk.com';
+  wm.textContent = 'dailyfinn.com';
   tempDiv.appendChild(wm);
   document.body.appendChild(tempDiv);
   try {
@@ -859,7 +859,7 @@ async function captureReportImage(coin) {
   tempDiv.querySelectorAll('.report-actions').forEach(el => el.remove());
   const wm = document.createElement('div');
   wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:1rem;border-top:1px solid #1e2530;margin-top:1.5rem;';
-  wm.textContent = 'glorisk.com';
+  wm.textContent = 'dailyfinn.com';
   tempDiv.appendChild(wm);
   document.body.appendChild(tempDiv);
 
@@ -921,7 +921,7 @@ function wireReportActions(coin, shareText, shareUrl) {
     // Add a GloRisk watermark
     const watermark = document.createElement('div');
     watermark.style.cssText = 'font-family:Bricolage Grotesque,sans-serif;font-size:0.75rem;color:#3a4250;text-align:center;padding-top:1rem;border-top:1px solid #1e2530;margin-top:1.5rem;';
-    watermark.textContent = 'glorisk.com \u00b7 glorisk.com';
+    watermark.textContent = 'dailyfinn.com \u00b7 dailyfinn.com';
 
     elements.forEach(el => {
       const clone = el.cloneNode(true);
@@ -982,7 +982,7 @@ function wireReportActions(coin, shareText, shareUrl) {
     // Watermark
     const wm = document.createElement('div');
     wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:1rem;border-top:1px solid #1e2530;margin-top:1rem;';
-    wm.textContent = 'glorisk.com';
+    wm.textContent = 'dailyfinn.com';
     tempDiv.appendChild(wm);
     document.body.appendChild(tempDiv);
 
