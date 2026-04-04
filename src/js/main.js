@@ -850,19 +850,19 @@ function renderReport(coin) {
     <div class="ind-defs-table">
       <div class="ind-def-row">
         <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--green)"></span> Momentum</div>
-        <div class="ind-def-desc">Strong fundamentals and favourable external conditions. Internal \u2265 7, External \u2265 7.</div>
+        <div class="ind-def-desc">Strong fundamentals and favourable external conditions.</div>
       </div>
       <div class="ind-def-row">
         <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--amber)"></span> Resilient</div>
-        <div class="ind-def-desc">Strong business facing macro or cyclical pressures. Internal \u2265 7, External < 7.</div>
+        <div class="ind-def-desc">Strong business facing macro or cyclical pressures.</div>
       </div>
       <div class="ind-def-row">
         <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--orange)"></span> Fragile</div>
-        <div class="ind-def-desc">Stable externally but weaker internal fundamentals. Internal < 7, External \u2265 7.</div>
+        <div class="ind-def-desc">Stable externally but weaker internal fundamentals.</div>
       </div>
       <div class="ind-def-row">
         <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--red)"></span> Trouble</div>
-        <div class="ind-def-desc">Weak fundamentals and challenging conditions. Internal < 7, External < 7.</div>
+        <div class="ind-def-desc">Weak fundamentals and challenging conditions.</div>
       </div>
     </div>
 
