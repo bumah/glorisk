@@ -1454,7 +1454,7 @@ body {
 }
 .da-mc-active.da-mc-green  { border-color: var(--green); background: rgba(34,197,94,0.04); }
 .da-mc-active.da-mc-amber  { border-color: var(--amber); background: rgba(245,158,11,0.04); }
-.da-mc-active.da-mc-blue   { border-color: var(--blue); background: rgba(96,165,250,0.04); }
+.da-mc-active.da-mc-orange { border-color: var(--orange); background: rgba(249,115,22,0.04); }
 .da-mc-active.da-mc-red    { border-color: var(--red); background: rgba(239,68,68,0.04); }
 .da-mc-dot {
   width: 14px;
@@ -1462,10 +1462,10 @@ body {
   border-radius: 50%;
   margin-bottom: 6px;
 }
-.da-dot-green { background: var(--green); }
-.da-dot-amber { background: var(--amber); }
-.da-dot-blue  { background: var(--blue); }
-.da-dot-red   { background: var(--red); }
+.da-dot-green  { background: var(--green); }
+.da-dot-amber  { background: var(--amber); }
+.da-dot-orange { background: var(--orange); }
+.da-dot-red    { background: var(--red); }
 .da-mc-tier {
   font-family: var(--font-display);
   font-size: 1.1rem;

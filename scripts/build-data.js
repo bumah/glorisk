@@ -458,7 +458,7 @@ function main() {
           const posScore = Math.round(overall * 10);
           // Detect tier label
           const tierMatch = report.report.match(/([\u{1F7E2}\u{1F7E1}\u{1F535}\u{1F534}])\s*\*?\*?(?:Tier\s+\d\s+)?([^*()\n]+)/u);
-          const tierLabelMap = { 'pack leader': 'Pack Leader', 'momentum stock': 'Momentum Stock', 'defensive holding': 'Defensive Holding', 'decliner': 'Decliner', 'weak/speculative': 'Decliner' };
+          const tierLabelMap = { 'momentum': 'Momentum', 'pack leader': 'Momentum', 'resilient': 'Resilient', 'momentum stock': 'Resilient', 'fragile': 'Fragile', 'defensive holding': 'Fragile', 'trouble': 'Trouble', 'decliner': 'Trouble', 'weak/speculative': 'Trouble' };
           const rawLabel = tierMatch ? tierMatch[2].trim().replace(/\*\*/g, '') : '';
           const tierLabel = tierLabelMap[rawLabel.toLowerCase()] || rawLabel || null;
           coin.positionScore = posScore;

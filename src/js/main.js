@@ -849,19 +849,19 @@ function renderReport(coin) {
     <div class="section-title" style="margin-top:2rem">Market Position Definitions</div>
     <div class="ind-defs-table">
       <div class="ind-def-row">
-        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--green)"></span> Pack Leader</div>
+        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--green)"></span> Momentum</div>
         <div class="ind-def-desc">High-quality businesses with strong fundamentals and favourable external conditions. Internal \u2265 7, External \u2265 7.</div>
       </div>
       <div class="ind-def-row">
-        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--amber)"></span> Momentum Stock</div>
+        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--amber)"></span> Resilient</div>
         <div class="ind-def-desc">Strong companies facing macro or cyclical pressures. Internal \u2265 7, External < 7.</div>
       </div>
       <div class="ind-def-row">
-        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--blue)"></span> Defensive Holding</div>
+        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--orange)"></span> Fragile</div>
         <div class="ind-def-desc">Stable externally but weaker internal fundamentals. Internal < 7, External \u2265 7.</div>
       </div>
       <div class="ind-def-row">
-        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--red)"></span> Decliner</div>
+        <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--red)"></span> Trouble</div>
         <div class="ind-def-desc">Weak businesses with structural or macro challenges. Internal < 7, External < 7.</div>
       </div>
     </div>
@@ -1454,7 +1454,7 @@ function extractReportData(report) {
   const overall = intAvg !== null && extAvg !== null ? +((intAvg + extAvg) / 2).toFixed(1) : null;
 
   // 2. Extract tier classification (supports "Tier N Label" and just "Label")
-  const tierLabelMap = { 'pack leader': 1, 'momentum stock': 2, 'defensive holding': 3, 'decliner': 4, 'weak/speculative': 4 };
+  const tierLabelMap = { 'momentum': 1, 'pack leader': 1, 'resilient': 2, 'momentum stock': 2, 'fragile': 3, 'defensive holding': 3, 'trouble': 4, 'decliner': 4, 'weak/speculative': 4 };
   let tier = null;
   const tierMatch = report.match(/([\u{1F7E2}\u{1F7E1}\u{1F535}\u{1F534}])\s*\*?\*?(?:Tier\s+(\d)\s+)?([^*()\n]+)/u);
   if (tierMatch) {
@@ -1501,10 +1501,10 @@ function buildScoreCardsHTML(intAvg, extAvg, overall) {
 function buildMatrixHTML(tier, ticker, intAvg, extAvg) {
   if (!tier) return '';
   const cells = [
-    { num: 3, label: 'Defensive', sub: 'Holding', color: 'blue' },
-    { num: 1, label: 'Pack', sub: 'Leader', color: 'green' },
-    { num: 4, label: 'Decliner', sub: '', color: 'red' },
-    { num: 2, label: 'Momentum', sub: 'Stock', color: 'amber' },
+    { num: 3, label: 'Fragile', sub: '', color: 'orange' },
+    { num: 1, label: 'Momentum', sub: '', color: 'green' },
+    { num: 4, label: 'Trouble', sub: '', color: 'red' },
+    { num: 2, label: 'Resilient', sub: '', color: 'amber' },
   ];
   // Compute point position inside active cell (percentage)
   const clamp = (v, lo, hi) => Math.max(10, Math.min(90, ((v - lo) / (hi - lo)) * 100));
@@ -1581,8 +1581,8 @@ async function loadDeepAnalysis(ticker) {
     const rd = extractReportData(data.report);
 
     // Compute Market Position Score and build Position card + GloRisk card
-    const tierRsbMap = { 1: 'rsb-green', 2: 'rsb-amber', 3: 'rsb-blue', 4: 'rsb-red' };
-    const tierLabels = { 1: 'Pack Leader', 2: 'Momentum Stock', 3: 'Defensive Holding', 4: 'Weak/Speculative' };
+    const tierRsbMap = { 1: 'rsb-green', 2: 'rsb-amber', 3: 'rsb-orange', 4: 'rsb-red' };
+    const tierLabels = { 1: 'Momentum', 2: 'Resilient', 3: 'Fragile', 4: 'Trouble' };
     if (rd.overall !== null) {
       const swot100 = Math.round(rd.overall * 10);
       const swotBand = getScoreBand(swot100);
