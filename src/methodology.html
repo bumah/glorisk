@@ -255,30 +255,16 @@ body { background: var(--bg); color: var(--text); }
 <div class="page-body">
 
   <div class="page-eyebrow">Methodology</div>
-  <h1 class="page-title">How GloRisk calculates risk</h1>
-  <p class="page-intro">GloRisk assigns every asset a single risk score derived from price-based indicators. Each indicator is scored independently, the scores are summed, and the total determines the asset's Risk State — from Very Stable through to Critical. This page explains exactly how each step works.</p>
+  <h1 class="page-title">How DailyFinn calculates scores</h1>
+  <p class="page-intro">DailyFinn evaluates every asset across two dimensions — <strong>Performance</strong> and <strong>Market Position</strong> — and combines them into a single <strong>GloRisk Score</strong> when both are available.</p>
 
-  <!-- ── The basic idea ── -->
+  <!-- ── Performance Score ── -->
   <div class="method-section">
-    <div class="method-heading">The basic idea</div>
+    <div class="method-heading">Performance Score (0–100)</div>
     <div class="method-body">
-      <p>Risk analysis can be thought of in three layers: <strong>volatility</strong> (how wildly the price moves), <strong>trend</strong> (is the price going up or down over time), and <strong>return</strong> (how much has the price actually changed). GloRisk measures all three, combining them into a single composite score.</p>
-      <p>Each indicator is scored green, amber, or red. A low score means low risk signals; a high score means multiple warning signs are active simultaneously.</p>
-    </div>
-    <div class="score-chips">
-      <div class="score-chip score-chip--green">● Green — low risk signal</div>
-      <div class="score-chip score-chip--amber">● Amber — elevated signal</div>
-      <div class="score-chip score-chip--red">● Red — high risk signal</div>
-    </div>
-  </div>
-
-  <div class="method-divider"></div>
-
-  <!-- ── Risk indicators ── -->
-  <div class="method-section">
-    <div class="method-heading">Risk indicators</div>
-    <div class="method-body">
-      <p>Indicators fall into three groups: volatility, trend, and return.</p>
+      <p>The Performance Score measures how an asset is behaving based on price data. It tracks 10 indicators across three categories: <strong>volatility</strong>, <strong>trend</strong>, and <strong>returns</strong>. Each indicator is scored independently, and the results are combined into a single score from 0 (Critical) to 100 (Very Stable).</p>
+      <p>A high Performance Score means the asset is showing stable price behaviour — low volatility, upward trends, and healthy returns. A low score means the opposite — elevated risk signals across multiple dimensions.</p>
+      <p>Performance Scores are recalculated every time market data is refreshed.</p>
     </div>
 
     <div class="ind-group">
@@ -286,11 +272,11 @@ body { background: var(--bg); color: var(--text); }
       <div class="ind-list">
         <div class="ind-list-item">
           <div class="ind-list-name">Daily Volatility</div>
-          <div class="ind-list-desc">How wildly the price moves day-to-day, expressed as an annualised figure. Higher volatility means larger and more unpredictable price moves.</div>
+          <div class="ind-list-desc">How wildly the price moves day-to-day, expressed as an annualised figure.</div>
         </div>
         <div class="ind-list-item">
           <div class="ind-list-name">Volatility Spike</div>
-          <div class="ind-list-desc">Recent volatility compared to the longer-term average. A rising ratio means volatility is accelerating — something is changing.</div>
+          <div class="ind-list-desc">Recent volatility compared to the longer-term average. A rising ratio means volatility is accelerating.</div>
         </div>
       </div>
     </div>
@@ -300,15 +286,15 @@ body { background: var(--bg); color: var(--text); }
       <div class="ind-list">
         <div class="ind-list-item">
           <div class="ind-list-name">50-Day Trend</div>
-          <div class="ind-list-desc">Price relative to its 50-day moving average. Positive means the price is trading above its short-term trend (bullish).</div>
+          <div class="ind-list-desc">Price relative to its 50-day moving average.</div>
         </div>
         <div class="ind-list-item">
           <div class="ind-list-name">200-Day Trend</div>
-          <div class="ind-list-desc">Price relative to its 200-day moving average. Positive means the long-term uptrend is intact.</div>
+          <div class="ind-list-desc">Price relative to its 200-day moving average.</div>
         </div>
         <div class="ind-list-item">
           <div class="ind-list-name">Trend Direction</div>
-          <div class="ind-list-desc">Whether the 50-day average is above (Golden Cross) or below (Death Cross) the 200-day average. A key signal of overall trend direction.</div>
+          <div class="ind-list-desc">Whether the 50-day average is above or below the 200-day average.</div>
         </div>
       </div>
     </div>
@@ -318,7 +304,7 @@ body { background: var(--bg); color: var(--text); }
       <div class="ind-list">
         <div class="ind-list-item">
           <div class="ind-list-name">Distance from Peak</div>
-          <div class="ind-list-desc">How far the price is from its 3-year high. Large drawdowns signal sustained weakness.</div>
+          <div class="ind-list-desc">How far the price is from its 3-year high.</div>
         </div>
         <div class="ind-list-item">
           <div class="ind-list-name">30-Day Return</div>
@@ -326,15 +312,15 @@ body { background: var(--bg); color: var(--text); }
         </div>
         <div class="ind-list-item">
           <div class="ind-list-name">12-Month Return</div>
-          <div class="ind-list-desc">Total price return over the past 12 months of available data.</div>
+          <div class="ind-list-desc">Total price return over the past 12 months.</div>
         </div>
         <div class="ind-list-item">
           <div class="ind-list-name">Position in Range</div>
-          <div class="ind-list-desc">Where the price sits within its 52-week high/low band. Near the bottom signals weakness.</div>
+          <div class="ind-list-desc">Where the price sits within its 52-week high/low band.</div>
         </div>
         <div class="ind-list-item">
           <div class="ind-list-name">3-Year Growth</div>
-          <div class="ind-list-desc">Compound annual growth rate over 3 years. A negative rate means the asset has lost value over time.</div>
+          <div class="ind-list-desc">Compound annual growth rate over 3 years.</div>
         </div>
       </div>
     </div>
@@ -342,83 +328,110 @@ body { background: var(--bg); color: var(--text); }
 
   <div class="method-divider"></div>
 
-  <!-- ── Composite score ── -->
+  <!-- ── Market Position Score ── -->
   <div class="method-section">
-    <div class="method-heading">Composite score and Risk State</div>
+    <div class="method-heading">Market Position Score (0–100)</div>
     <div class="method-body">
-      <p>The indicator scores are summed to produce a composite score. This score is then expressed as a percentage of the maximum possible score to determine the asset's Risk State.</p>
-      <p>Using a percentage rather than a raw score means the thresholds remain stable even if the number of indicators changes in future.</p>
+      <p>The Market Position Score evaluates the fundamental quality of a business. It uses an AI-powered research framework that scores 10 factors across two categories:</p>
+      <p><strong>Internal Rating</strong> — business quality, financial performance, earnings trajectory, leadership, and competitive moat.</p>
+      <p><strong>External Rating</strong> — market position, regulatory exposure, supply chain resilience, macroeconomic sensitivity, and industry outlook.</p>
+      <p>Each factor is scored 1–10 by an AI research model, and the results are averaged to produce an overall Market Position Score scaled to 100.</p>
+      <p>Based on the Internal and External ratings, every analysed asset is classified into one of four categories:</p>
     </div>
 
     <div class="mood-table">
       <div class="mood-table-row header">
-        <div class="mood-table-cell">Risk State</div>
-        <div class="mood-table-cell">% of max risk</div>
+        <div class="mood-table-cell">Classification</div>
+        <div class="mood-table-cell">Criteria</div>
+        <div class="mood-table-cell">What it means</div>
+      </div>
+      <div class="mood-table-row">
+        <div class="mood-table-cell"><div class="mood-dot" style="background:#22c55e"></div>Momentum</div>
+        <div class="mood-table-cell pct">Int ≥ 7, Ext ≥ 7</div>
+        <div class="mood-table-cell desc">Strong fundamentals and favourable external conditions.</div>
+      </div>
+      <div class="mood-table-row">
+        <div class="mood-table-cell"><div class="mood-dot" style="background:#f59e0b"></div>Resilient</div>
+        <div class="mood-table-cell pct">Int ≥ 7, Ext &lt; 7</div>
+        <div class="mood-table-cell desc">Strong business facing macro or cyclical pressures.</div>
+      </div>
+      <div class="mood-table-row">
+        <div class="mood-table-cell"><div class="mood-dot" style="background:#f97316"></div>Fragile</div>
+        <div class="mood-table-cell pct">Int &lt; 7, Ext ≥ 7</div>
+        <div class="mood-table-cell desc">Stable externally but weaker internal fundamentals.</div>
+      </div>
+      <div class="mood-table-row">
+        <div class="mood-table-cell"><div class="mood-dot" style="background:#ef4444"></div>Trouble</div>
+        <div class="mood-table-cell pct">Int &lt; 7, Ext &lt; 7</div>
+        <div class="mood-table-cell desc">Weak fundamentals and challenging conditions.</div>
+      </div>
+    </div>
+
+    <div class="method-body" style="margin-top:1rem">
+      <p>Market Position reports are generated periodically using AI research and reviewed for quality.</p>
+    </div>
+  </div>
+
+  <div class="method-divider"></div>
+
+  <!-- ── GloRisk Score ── -->
+  <div class="method-section">
+    <div class="method-heading">GloRisk Score (0–100)</div>
+    <div class="method-body">
+      <p>The GloRisk Score is a composite that combines Performance and Market Position into a single number. It is calculated as the average of the two scores.</p>
+      <p>The GloRisk Score is only available for assets that have both a Performance Score and a Market Position Score. Assets without a Market Position report will show their Performance Score only.</p>
+      <p>The same rating scale applies to all scores:</p>
+    </div>
+
+    <div class="mood-table">
+      <div class="mood-table-row header">
+        <div class="mood-table-cell">Rating</div>
+        <div class="mood-table-cell">Score Range</div>
         <div class="mood-table-cell">What it means</div>
       </div>
       <div class="mood-table-row">
         <div class="mood-table-cell"><div class="mood-dot" style="background:#60a5fa"></div>Very Stable</div>
-        <div class="mood-table-cell pct">0 – 10%</div>
-        <div class="mood-table-cell desc">Nearly all indicators are green. The asset is showing very few risk signals.</div>
+        <div class="mood-table-cell pct">90 – 100</div>
+        <div class="mood-table-cell desc">Nearly all indicators are healthy. Very few risk signals.</div>
       </div>
       <div class="mood-table-row">
         <div class="mood-table-cell"><div class="mood-dot" style="background:#22c55e"></div>Stable</div>
-        <div class="mood-table-cell pct">10 – 20%</div>
-        <div class="mood-table-cell desc">Mostly green indicators with a small number of ambers. Low overall risk signal.</div>
+        <div class="mood-table-cell pct">75 – 89</div>
+        <div class="mood-table-cell desc">Mostly healthy indicators with minor concerns. Low overall risk.</div>
       </div>
       <div class="mood-table-row">
         <div class="mood-table-cell"><div class="mood-dot" style="background:#f59e0b"></div>Unstable</div>
-        <div class="mood-table-cell pct">20 – 50%</div>
-        <div class="mood-table-cell desc">A mix of green, amber and red signals. Risk is elevated but not at an extreme level.</div>
+        <div class="mood-table-cell pct">50 – 74</div>
+        <div class="mood-table-cell desc">A mix of healthy and warning signals. Risk is elevated but not extreme.</div>
       </div>
       <div class="mood-table-row">
         <div class="mood-table-cell"><div class="mood-dot" style="background:#f97316"></div>Stressed</div>
-        <div class="mood-table-cell pct">50 – 70%</div>
-        <div class="mood-table-cell desc">Multiple red signals are active. More than half of the maximum risk score has been reached.</div>
+        <div class="mood-table-cell pct">30 – 49</div>
+        <div class="mood-table-cell desc">Multiple warning and critical signals are active.</div>
       </div>
       <div class="mood-table-row">
         <div class="mood-table-cell"><div class="mood-dot" style="background:#ef4444"></div>Critical</div>
-        <div class="mood-table-cell pct">70 – 100%</div>
-        <div class="mood-table-cell desc">The majority of indicators are red. The asset is displaying widespread, severe risk signals across all three dimensions.</div>
+        <div class="mood-table-cell pct">0 – 29</div>
+        <div class="mood-table-cell desc">Widespread critical signals across multiple dimensions.</div>
       </div>
     </div>
   </div>
 
   <div class="method-divider"></div>
 
-  <!-- ── Data and limitations ── -->
+  <!-- ── Important notes ── -->
   <div class="method-section">
-    <div class="method-heading">Data and limitations</div>
+    <div class="method-heading">Important notes</div>
     <div class="method-body">
-      <p>GloRisk uses <strong>daily closing prices</strong> as its primary input. Indicators that require moving averages are computed from 50-day and 200-day simple moving averages aligned to the price history.</p>
-      <p>All calculations are based on <strong>historical price data only</strong>. GloRisk does not factor in news, on-chain data, fundamentals, sentiment, liquidity, or any qualitative information. Two assets with identical price histories will always receive identical scores.</p>
-    </div>
-  </div>
-
-  <div class="method-divider"></div>
-
-  <!-- ── What this score is and isn't ── -->
-  <div class="method-section">
-    <div class="method-heading">What this score is — and isn't</div>
-    <div class="method-body">
-      <p>The GloRisk score is a <strong>signal aggregator</strong>, not a prediction. It summarises where an asset sits across multiple price-based dimensions at a given point in time. A Critical score does not mean the price will fall further; a Very Stable score does not mean the price will rise.</p>
-      <p>High-risk scores can persist for extended periods, and assets can move from Critical to Stable very quickly. The score is most useful as a consistent, comparable snapshot — particularly when tracking how an asset's risk profile changes over time, or when comparing risk levels across a portfolio.</p>
-    </div>
-  </div>
-
-  <div class="method-divider"></div>
-
-  <!-- ── Future development ── -->
-  <div class="method-section">
-    <div class="method-heading">Future development</div>
-    <div class="method-body">
-      <p>GloRisk currently bases its risk score entirely on <strong>price history</strong>. While this provides a consistent and objective baseline, price data alone does not capture the full picture of an asset's risk profile.</p>
-      <p>In future versions we plan to incorporate additional indicator categories — including <strong>company financials</strong> (earnings, debt, valuations) and <strong>macroeconomic factors</strong> (interest rates, inflation, broader market conditions) — to provide a more holistic and rounded risk assessment.</p>
+      <p>Performance Scores are based entirely on <strong>historical price data</strong>. They do not factor in news, fundamentals, or sentiment.</p>
+      <p>Market Position Scores are generated by <strong>AI research models</strong> and reflect a point-in-time assessment. They are not updated in real time.</p>
+      <p>The GloRisk Score is a <strong>signal aggregator</strong>, not a prediction. It summarises where an asset sits today — it does not forecast future performance.</p>
+      <p>Nothing on DailyFinn constitutes financial advice. Always do your own research.</p>
     </div>
   </div>
 
   <div class="method-disclaimer">
-    Analysis is based on historical price behaviour only. Not investment advice. Past performance is not indicative of future results. Conditions can change quickly and risk scores may not reflect current market circumstances. Always conduct your own research before making any investment decision.
+    Analysis is based on historical data and AI research. Not investment advice. Past performance is not indicative of future results. Conditions can change quickly and scores may not reflect current market circumstances. Always conduct your own research before making any investment decision.
   </div>
 
 </div>

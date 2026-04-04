@@ -850,11 +850,11 @@ function renderReport(coin) {
     <div class="ind-defs-table">
       <div class="ind-def-row">
         <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--green)"></span> Momentum</div>
-        <div class="ind-def-desc">High-quality businesses with strong fundamentals and favourable external conditions. Internal \u2265 7, External \u2265 7.</div>
+        <div class="ind-def-desc">Strong fundamentals and favourable external conditions. Internal \u2265 7, External \u2265 7.</div>
       </div>
       <div class="ind-def-row">
         <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--amber)"></span> Resilient</div>
-        <div class="ind-def-desc">Strong companies facing macro or cyclical pressures. Internal \u2265 7, External < 7.</div>
+        <div class="ind-def-desc">Strong business facing macro or cyclical pressures. Internal \u2265 7, External < 7.</div>
       </div>
       <div class="ind-def-row">
         <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--orange)"></span> Fragile</div>
@@ -862,7 +862,7 @@ function renderReport(coin) {
       </div>
       <div class="ind-def-row">
         <div class="ind-def-name" style="display:flex;align-items:center;gap:6px"><span class="fa-dot" style="background:var(--red)"></span> Trouble</div>
-        <div class="ind-def-desc">Weak businesses with structural or macro challenges. Internal < 7, External < 7.</div>
+        <div class="ind-def-desc">Weak fundamentals and challenging conditions. Internal < 7, External < 7.</div>
       </div>
     </div>
 
