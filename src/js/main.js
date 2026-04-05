@@ -13,12 +13,16 @@ import { getUser, signOut } from './supabase.js';
 
 /* ── Formatting ────────────────────────────────────────────────────── */
 
-const CURRENCY_MAP = { FTSE100: '£', Nikkei225: '¥', HSI: 'HK$' };
+const CURRENCY_MAP = { FTSE100: 'p', Nikkei225: '¥', HSI: 'HK$' };
 function getCurrencySymbol(group) { return CURRENCY_MAP[group] || '$'; }
 
 function formatPrice(p, group) {
   const sym = getCurrencySymbol(group);
   if (p == null) return '—';
+  const suffix = group === 'FTSE100';
+  if (suffix) {
+    return p.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + 'p';
+  }
   if (p < 0.0001) return sym + p.toFixed(8);
   if (p < 0.01)   return sym + p.toFixed(6);
   if (p < 1)      return sym + p.toFixed(4);

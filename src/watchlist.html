@@ -197,10 +197,11 @@ async function fetchReportScore(ticker) {
   return reportCache[ticker];
 }
 
-const CURRENCY_MAP = { FTSE100: '£', Nikkei225: '¥', HSI: 'HK$' };
+const CURRENCY_MAP = { FTSE100: 'p', Nikkei225: '¥', HSI: 'HK$' };
 function formatPrice(p, group) {
   const sym = CURRENCY_MAP[group] || '$';
   if (p == null) return '\u2014';
+  if (group === 'FTSE100') return p.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + 'p';
   if (p < 1) return sym + p.toFixed(4);
   return sym + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
