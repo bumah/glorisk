@@ -146,10 +146,12 @@ let allCoins = [];
 let coinA = null, coinB = null;
 
 function gloriskScore(mood) { return Math.min(95, Math.max(10, 100 - mood.score * 5)); }
-function formatPrice(p) {
+const CURRENCY_MAP = { FTSE100: '£', Nikkei225: '¥', HSI: 'HK$' };
+function formatPrice(p, group) {
+  const sym = CURRENCY_MAP[group] || '$';
   if (p == null) return '\u2014';
-  if (p < 1) return '$' + p.toFixed(4);
-  return '$' + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (p < 1) return sym + p.toFixed(4);
+  return sym + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // Search wiring
@@ -249,7 +251,7 @@ async function renderComparison() {
   // Stats comparison
   const stats = [
     ...scoreRows,
-    { label: 'Price', vA: formatPrice(a.price), vB: formatPrice(b.price) },
+    { label: 'Price', vA: formatPrice(a.price, a.group), vB: formatPrice(b.price, b.group) },
     { label: '30D Change', vA: (a.priceChange >= 0 ? '+' : '') + a.priceChange?.toFixed(2) + '%', vB: (b.priceChange >= 0 ? '+' : '') + b.priceChange?.toFixed(2) + '%', colorA: a.priceChange >= 0 ? 'var(--green)' : 'var(--red)', colorB: b.priceChange >= 0 ? 'var(--green)' : 'var(--red)' },
     { label: '12M Average', vA: a.avgScore || '\u2014', vB: b.avgScore || '\u2014' },
   ];

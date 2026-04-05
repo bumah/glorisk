@@ -197,10 +197,12 @@ async function fetchReportScore(ticker) {
   return reportCache[ticker];
 }
 
-function formatPrice(p) {
+const CURRENCY_MAP = { FTSE100: '£', Nikkei225: '¥', HSI: 'HK$' };
+function formatPrice(p, group) {
+  const sym = CURRENCY_MAP[group] || '$';
   if (p == null) return '\u2014';
-  if (p < 1) return '$' + p.toFixed(4);
-  return '$' + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (p < 1) return sym + p.toFixed(4);
+  return sym + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 function getCoin(ticker) { return allCoins.find(c => c.ticker === ticker); }
 
@@ -390,7 +392,7 @@ async function render() {
       <td>
         <a href="/browse.html?asset=${encodeURIComponent(ticker)}" class="wl-ticker">${ticker}</a>
         <div class="wl-name">${coin.company}</div>
-        <div class="wl-price-line">${formatPrice(coin.price)} <span class="${changeCls}">${changeStr}</span></div>
+        <div class="wl-price-line">${formatPrice(coin.price, coin.group)} <span class="${changeCls}">${changeStr}</span></div>
       </td>
       <td>
         <span class="mood-pill ${band.cls}" style="font-size:0.62rem">${band.displayLabel}</span>

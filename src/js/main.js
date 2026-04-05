@@ -13,12 +13,16 @@ import { getUser, signOut } from './supabase.js';
 
 /* ── Formatting ────────────────────────────────────────────────────── */
 
-function formatPrice(p) {
+const CURRENCY_MAP = { FTSE100: '£', Nikkei225: '¥', HSI: 'HK$' };
+function getCurrencySymbol(group) { return CURRENCY_MAP[group] || '$'; }
+
+function formatPrice(p, group) {
+  const sym = getCurrencySymbol(group);
   if (p == null) return '—';
-  if (p < 0.0001) return '$' + p.toFixed(8);
-  if (p < 0.01)   return '$' + p.toFixed(6);
-  if (p < 1)      return '$' + p.toFixed(4);
-  return '$' + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (p < 0.0001) return sym + p.toFixed(8);
+  if (p < 0.01)   return sym + p.toFixed(6);
+  if (p < 1)      return sym + p.toFixed(4);
+  return sym + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function moodPill(label) {
@@ -516,7 +520,7 @@ function renderCards() {
               <span class="card-v2-label">${labelText}</span>
             </div>
             <div class="card-v2-price-line">
-              <span class="card-v2-price">${formatPrice(c.price)}</span>
+              <span class="card-v2-price">${formatPrice(c.price, c.group)}</span>
               <span class="card-v2-change ${changeClass}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
             </div>
           </div>
@@ -745,7 +749,7 @@ function renderReport(coin) {
         <div class="hero-badges"></div>
       </div>
       <div class="hero-price-block">
-        <div class="hero-price">${formatPrice(coin.price)}</div>
+        <div class="hero-price">${formatPrice(coin.price, coin.group)}</div>
         <div class="hero-change ${changeCls}">${change >= 0 ? '+' : ''}${change.toFixed(2)}% 30D</div>
         <div class="hero-asof">as of ${asOfDateStr}</div>
       </div>
@@ -1287,12 +1291,12 @@ async function buildChart(coin) {
           titleColor: '#5a6470',
           bodyColor: '#e8edf2',
           bodyFont: { family: 'DM Mono' },
-          callbacks: { label: ctx => `  ${ctx.dataset.label}: ${formatPrice(ctx.raw)}` },
+          callbacks: { label: ctx => `  ${ctx.dataset.label}: ${formatPrice(ctx.raw, coin.group)}` },
         },
       },
       scales: {
         x: { grid: { color: '#1e2530' }, ticks: { color: '#5a6470', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 8, maxRotation: 0 } },
-        y: { position: 'right', grid: { color: '#1e2530' }, ticks: { color: '#5a6470', font: { family: 'DM Mono', size: 10 }, callback: v => formatPrice(v) } },
+        y: { position: 'right', grid: { color: '#1e2530' }, ticks: { color: '#5a6470', font: { family: 'DM Mono', size: 10 }, callback: v => formatPrice(v, coin.group) } },
       },
     },
   });
