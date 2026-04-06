@@ -2367,6 +2367,26 @@ body {
   font-weight: 300;
 }
 
+/* ── Shared layout classes ──────────────────────────────────────────────── */
+.container { max-width: 1000px; margin: 0 auto; padding: 0 1.5rem; }
+.center { text-align: center; }
+.section { padding: 5rem 1.5rem; }
+.section--alt { padding: 5rem 1.5rem; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.eyebrow { font-family: var(--font-mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--accent); margin-bottom: 0.5rem; }
+.section-h2 { font-family: var(--font-display); font-size: clamp(1.3rem, 3vw, 1.8rem); font-weight: 800; line-height: 1.25; letter-spacing: -0.5px; margin-bottom: 1rem; }
+.section-p { color: var(--muted); font-size: 0.92rem; font-weight: 300; line-height: 1.75; margin-bottom: 1.5rem; }
+.tagline { color: var(--accent); font-family: var(--font-display); font-weight: 700; font-size: 1rem; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+.benefit-cards { display: flex; flex-direction: column; gap: 10px; }
+.benefit-card { background: var(--bg); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius-sm); padding: 1rem 1.25rem; font-size: 0.88rem; color: var(--muted); font-weight: 300; line-height: 1.5; transition: all 0.2s; }
+.benefit-card:hover { border-left-color: var(--text); background: var(--surface2); }
+.benefit-card strong { color: var(--text); font-weight: 600; }
+
+@media (max-width: 768px) {
+  .split { grid-template-columns: 1fr; gap: 2rem; }
+  .section, .section--alt { padding: 3rem 1rem; }
+}
+
 /* ── Scrollbar styling ──────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

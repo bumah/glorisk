@@ -270,6 +270,17 @@
 
 /* ── Advanced Filter Wizard ──────────────────────────────────────── */
 /* Wizard CSS moved to styles.css */
+
+.browse-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto 1rem;
+  padding: 0 1rem;
+  gap: 12px;
+}
+.browse-table-wrap { max-width: 1100px; }
 </style>
 </head>
 <body>
@@ -289,9 +300,9 @@
 </nav>
 
 <!-- ── BROWSE GRID ─────────────────────────────────────────────────── -->
-<div style="max-width:1200px;margin:2rem auto 1rem;padding:0 1rem">
-  <h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;margin-bottom:0.25rem">Browse Assets</h1>
-  <p style="color:var(--muted);font-size:0.88rem;font-weight:300">Rank assets by Performance Risk, Position Risk, and Overall Risk.</p>
+<div class="page-header">
+  <h1>Browse Assets</h1>
+  <p>Rank assets by Performance Risk, Position Risk, and Overall Risk.</p>
 </div>
 <div id="browseSection">
   <div id="browse">
@@ -465,7 +476,7 @@
 
     <div class="browse-header">
       <div class="browse-title">Browse Assets</div>
-      <div style="display:flex;align-items:center;gap:10px">
+      <div class="browse-toolbar">
         <div class="view-toggle" id="viewToggle">
           <button class="vt-btn active" data-view="table">Table</button>
           <button class="vt-btn" data-view="cards">Cards</button>

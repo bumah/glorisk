@@ -33,9 +33,9 @@ body { background: var(--bg); color: var(--text); }
 .page-nav a.back:hover { color: var(--accent); }
 
 .page-body {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 3.5rem 1.5rem 6rem;
+  max-width: none;
+  margin: 0;
+  padding: 0 0 2rem;
 }
 
 /* ── Typography ─────────────────────────────────────────────────────── */
@@ -233,25 +233,13 @@ body { background: var(--bg); color: var(--text); }
 }
 
 /* ── About hero ─────────────────────────────────────────────────────── */
-.about-hero {
-  text-align: center;
-  max-width: 700px;
-  margin: 3rem auto 2rem;
-  padding: 0 1rem;
-}
-.about-hero h1 {
-  font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: 1rem;
-}
+.about-hero { text-align: center; max-width: 700px; margin: 4rem auto 0; padding: 0 1rem; }
+.about-hero h1 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; }
 .about-hero h1 span { color: var(--accent); }
-.about-hero p {
-  color: var(--muted);
-  font-size: 0.95rem;
-  font-weight: 300;
-  line-height: 1.7;
-}
+.about-hero p { color: var(--muted); font-size: 1rem; font-weight: 300; line-height: 1.75; }
+
+/* ── Method table wrap ─────────────────────────────────────────────── */
+.method-table-wrap { max-width: 800px; margin: 2rem auto 0; }
 
 </style>
 </head>
@@ -273,134 +261,141 @@ body { background: var(--bg); color: var(--text); }
 
 <div class="page-body">
 
+  <!-- Hero -->
   <div class="about-hero">
     <h1>Your Global <span>Risk</span> Companion</h1>
-    <p>Most investors rely on hype, hope, and instinct — without a clear understanding of risk. They enter positions without knowing how unstable an asset is, how much it can drop, or whether it matches how they invest. This leads to misaligned decisions, avoidable losses, and poor outcomes.</p>
+    <p>Most investors rely on hype, hope, and instinct — without a clear understanding of risk. They enter positions without knowing how unstable an asset is, how much it can drop, or whether it matches how they invest.</p>
   </div>
 
-  <!-- ── What is GloRisk? ── -->
-  <div class="method-section">
-    <div class="method-heading">What is GloRisk?</div>
-    <div class="method-body">
-      <p>GloRisk is a risk intelligence layer for your investments. It gives you:</p>
-      <p>&bull; A clear view of risk across global assets<br>
-      &bull; A way to compare opportunities objectively<br>
-      &bull; Insight into your potential downside<br>
-      &bull; A personalised score based on how you invest</p>
-      <p>So you invest with discipline, clarity, and control.</p>
-    </div>
-  </div>
-
-  <div class="method-divider"></div>
-
-  <!-- ── What We Calculate ── -->
-  <div class="method-section">
-    <div class="method-heading">What we calculate</div>
-    <div class="method-body">
-      <p>GloRisk produces four scores for every asset:</p>
-    </div>
-
-    <div class="mood-table">
-      <div class="mood-table-row header">
-        <div class="mood-table-cell">Score</div>
-        <div class="mood-table-cell">What it measures</div>
-        <div class="mood-table-cell">How it works</div>
-      </div>
-      <div class="mood-table-row">
-        <div class="mood-table-cell"><strong>GloRisk Score</strong></div>
-        <div class="mood-table-cell desc">Your personalised risk fit</div>
-        <div class="mood-table-cell desc">You tell us your preferences. We score every asset against your profile. The result is unique to you.</div>
-      </div>
-      <div class="mood-table-row">
-        <div class="mood-table-cell"><strong>Market Performance</strong></div>
-        <div class="mood-table-cell desc">Price-based risk signals</div>
-        <div class="mood-table-cell desc">10 indicators across volatility, trend, and returns. Calculated from daily price data. Same for everyone.</div>
-      </div>
-      <div class="mood-table-row">
-        <div class="mood-table-cell"><strong>Market Position</strong></div>
-        <div class="mood-table-cell desc">Fundamental business quality</div>
-        <div class="mood-table-cell desc">10 factors covering business moat, financials, leadership, regulation, and industry outlook. AI-researched.</div>
-      </div>
-      <div class="mood-table-row">
-        <div class="mood-table-cell"><strong>Market Composite</strong></div>
-        <div class="mood-table-cell desc">Combined market score</div>
-        <div class="mood-table-cell desc">Average of Performance and Position. Only available when both scores exist for an asset.</div>
+  <!-- What is GloRisk -->
+  <section class="section section--alt">
+    <div class="container">
+      <div class="split">
+        <div>
+          <div class="eyebrow">What is GloRisk?</div>
+          <h2 class="section-h2">A risk intelligence layer for your investments.</h2>
+          <p class="section-p">So you invest with discipline, clarity, and control.</p>
+        </div>
+        <div class="benefit-cards">
+          <div class="benefit-card"><strong>Clear view of risk</strong> across global assets</div>
+          <div class="benefit-card"><strong>Compare</strong> opportunities objectively</div>
+          <div class="benefit-card"><strong>Understand your downside</strong> before you invest</div>
+          <div class="benefit-card"><strong>Personalised score</strong> based on how you invest</div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="method-divider"></div>
-
-  <!-- ── How GloRisk Score Works ── -->
-  <div class="method-section">
-    <div class="method-heading">How the GloRisk Score works</div>
-    <div class="method-body">
-      <p>You complete a 10-question profile about your investment preferences — how you feel about volatility, drawdowns, trends, returns, and growth.</p>
-      <p>Each question maps to one of our 10 risk indicators. Your answer determines how strictly you score each indicator:</p>
-      <p><strong>Strict</strong> — only green indicators score well. Amber and red are penalised.<br>
-      <strong>Moderate</strong> — green and amber score well. Red is penalised.<br>
-      <strong>Open</strong> — all indicator states score well. You're comfortable with risk.</p>
-      <p>The result is a score from 0 to 100 that tells you how well each asset <strong>fits your risk profile</strong> — not whether it's objectively good or bad.</p>
-      <p>A conservative investor and an aggressive investor will see completely different scores for the same stock. That's the point.</p>
-    </div>
-  </div>
-
-  <div class="method-divider"></div>
-
-  <!-- ── Rating Scale ── -->
-  <div class="method-section">
-    <div class="method-heading">Rating scale</div>
-    <div class="method-body">
-      <p>All scores use the same 0–100 scale:</p>
-    </div>
-
-    <div class="mood-table">
-      <div class="mood-table-row header">
-        <div class="mood-table-cell">Rating</div>
-        <div class="mood-table-cell">Score</div>
-        <div class="mood-table-cell">What it means</div>
-      </div>
-      <div class="mood-table-row">
-        <div class="mood-table-cell"><div class="mood-dot" style="background:#60a5fa"></div>Very Stable</div>
-        <div class="mood-table-cell pct">90 – 100</div>
-        <div class="mood-table-cell desc">Excellent across all dimensions.</div>
-      </div>
-      <div class="mood-table-row">
-        <div class="mood-table-cell"><div class="mood-dot" style="background:#22c55e"></div>Stable</div>
-        <div class="mood-table-cell pct">80 – 89</div>
-        <div class="mood-table-cell desc">Strong with minor concerns.</div>
-      </div>
-      <div class="mood-table-row">
-        <div class="mood-table-cell"><div class="mood-dot" style="background:#f59e0b"></div>Unstable</div>
-        <div class="mood-table-cell pct">60 – 79</div>
-        <div class="mood-table-cell desc">Mixed signals. Elevated but not extreme.</div>
-      </div>
-      <div class="mood-table-row">
-        <div class="mood-table-cell"><div class="mood-dot" style="background:#f97316"></div>Stressed</div>
-        <div class="mood-table-cell pct">40 – 59</div>
-        <div class="mood-table-cell desc">Multiple warning signals active.</div>
-      </div>
-      <div class="mood-table-row">
-        <div class="mood-table-cell"><div class="mood-dot" style="background:#ef4444"></div>Critical</div>
-        <div class="mood-table-cell pct">0 – 39</div>
-        <div class="mood-table-cell desc">Widespread issues across multiple dimensions.</div>
+  <!-- What We Calculate -->
+  <section class="section">
+    <div class="container">
+      <div class="eyebrow center">What We Calculate</div>
+      <h2 class="section-h2 center">Four scores for every asset</h2>
+      <div class="method-table-wrap">
+        <div class="mood-table">
+          <div class="mood-table-row header">
+            <div class="mood-table-cell">Score</div>
+            <div class="mood-table-cell">What it measures</div>
+            <div class="mood-table-cell">How it works</div>
+          </div>
+          <div class="mood-table-row">
+            <div class="mood-table-cell"><strong>GloRisk Score</strong></div>
+            <div class="mood-table-cell desc">Your personalised risk fit</div>
+            <div class="mood-table-cell desc">You tell us your preferences. We score every asset against your profile. The result is unique to you.</div>
+          </div>
+          <div class="mood-table-row">
+            <div class="mood-table-cell"><strong>Market Performance</strong></div>
+            <div class="mood-table-cell desc">Price-based risk signals</div>
+            <div class="mood-table-cell desc">10 indicators across volatility, trend, and returns. Calculated from daily price data. Same for everyone.</div>
+          </div>
+          <div class="mood-table-row">
+            <div class="mood-table-cell"><strong>Market Position</strong></div>
+            <div class="mood-table-cell desc">Fundamental business quality</div>
+            <div class="mood-table-cell desc">10 factors covering business moat, financials, leadership, regulation, and industry outlook. AI-researched.</div>
+          </div>
+          <div class="mood-table-row">
+            <div class="mood-table-cell"><strong>Market Composite</strong></div>
+            <div class="mood-table-cell desc">Combined market score</div>
+            <div class="mood-table-cell desc">Average of Performance and Position. Only available when both scores exist for an asset.</div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="method-divider"></div>
-
-  <!-- ── Important ── -->
-  <div class="method-section">
-    <div class="method-heading">Important</div>
-    <div class="method-body">
-      <p>GloRisk is a <strong>risk awareness tool</strong>, not a prediction engine. It tells you where an asset sits today — not where it will be tomorrow.</p>
-      <p>Scores change as markets move. An asset that fits your profile today may not fit next month. That's why tracking matters.</p>
-      <p>Nothing on GloRisk constitutes financial advice. Always do your own research before making investment decisions.</p>
+  <!-- How GloRisk Score Works -->
+  <section class="section section--alt">
+    <div class="container">
+      <div class="eyebrow center">How The GloRisk Score Works</div>
+      <h2 class="section-h2 center">Your profile, your scores</h2>
+      <div class="method-body" style="max-width:700px;margin:0 auto">
+        <p>You complete a 10-question profile about your investment preferences — how you feel about volatility, drawdowns, trends, returns, and growth.</p>
+        <p>Each question maps to one of our 10 risk indicators. Your answer determines how strictly you score each indicator:</p>
+        <p><strong>Strict</strong> — only green indicators score well. Amber and red are penalised.<br>
+        <strong>Moderate</strong> — green and amber score well. Red is penalised.<br>
+        <strong>Open</strong> — all indicator states score well. You're comfortable with risk.</p>
+        <p>The result is a score from 0 to 100 that tells you how well each asset <strong>fits your risk profile</strong> — not whether it's objectively good or bad.</p>
+        <p>A conservative investor and an aggressive investor will see completely different scores for the same stock. That's the point.</p>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="method-disclaimer">
+  <!-- Rating Scale -->
+  <section class="section">
+    <div class="container">
+      <div class="eyebrow center">Rating Scale</div>
+      <h2 class="section-h2 center">All scores use the same 0–100 scale</h2>
+      <div class="method-table-wrap">
+        <div class="mood-table">
+          <div class="mood-table-row header">
+            <div class="mood-table-cell">Rating</div>
+            <div class="mood-table-cell">Score</div>
+            <div class="mood-table-cell">What it means</div>
+          </div>
+          <div class="mood-table-row">
+            <div class="mood-table-cell"><div class="mood-dot" style="background:#60a5fa"></div>Very Stable</div>
+            <div class="mood-table-cell pct">90 – 100</div>
+            <div class="mood-table-cell desc">Excellent across all dimensions.</div>
+          </div>
+          <div class="mood-table-row">
+            <div class="mood-table-cell"><div class="mood-dot" style="background:#22c55e"></div>Stable</div>
+            <div class="mood-table-cell pct">80 – 89</div>
+            <div class="mood-table-cell desc">Strong with minor concerns.</div>
+          </div>
+          <div class="mood-table-row">
+            <div class="mood-table-cell"><div class="mood-dot" style="background:#f59e0b"></div>Unstable</div>
+            <div class="mood-table-cell pct">60 – 79</div>
+            <div class="mood-table-cell desc">Mixed signals. Elevated but not extreme.</div>
+          </div>
+          <div class="mood-table-row">
+            <div class="mood-table-cell"><div class="mood-dot" style="background:#f97316"></div>Stressed</div>
+            <div class="mood-table-cell pct">40 – 59</div>
+            <div class="mood-table-cell desc">Multiple warning signals active.</div>
+          </div>
+          <div class="mood-table-row">
+            <div class="mood-table-cell"><div class="mood-dot" style="background:#ef4444"></div>Critical</div>
+            <div class="mood-table-cell pct">0 – 39</div>
+            <div class="mood-table-cell desc">Widespread issues across multiple dimensions.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Important -->
+  <section class="section section--alt">
+    <div class="container" style="max-width:700px">
+      <div class="eyebrow center">Important</div>
+      <h2 class="section-h2 center">What GloRisk is — and isn't</h2>
+      <div class="method-body">
+        <p>GloRisk is a <strong>risk awareness tool</strong>, not a prediction engine. It tells you where an asset sits today — not where it will be tomorrow.</p>
+        <p>Scores change as markets move. An asset that fits your profile today may not fit next month. That's why tracking matters.</p>
+        <p>Nothing on GloRisk constitutes financial advice. Always do your own research before making investment decisions.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="method-disclaimer" style="max-width:700px;margin:2rem auto;padding:0 1rem">
     GloRisk is a risk awareness tool, not investment advice. Scores are based on historical data and AI research. Past performance is not indicative of future results. Always conduct your own research.
   </div>
 
