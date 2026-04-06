@@ -2303,14 +2303,61 @@ body {
 
 /* ── Global table polish ────────────────────────────────────────────────── */
 .screener-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
   box-shadow: var(--shadow-sm);
   border-top: 2px solid var(--accent2);
 }
+.screener-table thead th {
+  padding: 10px 14px;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.screener-table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
+  vertical-align: middle;
+}
+.screener-table tbody tr:last-child td { border-bottom: none; }
+.screener-table tbody tr { cursor: pointer; }
 .screener-table tbody tr {
   transition: background 0.12s ease;
 }
 .screener-table tbody tr:hover {
   background: var(--surface2);
+}
+
+/* ── Shared table cell classes ──────────────────────────────────────────── */
+.st-th-left { text-align: left !important; }
+.st-th-right { text-align: right !important; }
+.st-ticker { font-family: var(--font-display); font-weight: 700; font-size: 0.88rem; }
+.st-name { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
+.st-right { text-align: right; font-family: var(--font-mono); font-size: 0.78rem; }
+.st-fit { text-align: right; font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; }
+.st-label { text-align: right; font-family: var(--font-mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.st-scoring { font-family: var(--font-mono); font-size: 0.62rem; white-space: nowrap; }
+.st-view { text-align: center; }
+.st-view-link { font-family: var(--font-mono); font-size: 0.62rem; color: var(--accent); text-decoration: none; text-transform: uppercase; letter-spacing: 0.06em; background: none; border: none; cursor: pointer; padding: 0; }
+.st-view-link:hover { text-decoration: underline; }
+.card-v2-change { font-family: var(--font-mono); font-size: 0.72rem; }
+.card-v2-change.pos { color: var(--green); }
+.card-v2-change.neg { color: var(--red); }
+@media (max-width: 768px) {
+  .st-th-1y, .st-td-1y, .st-scoring { display: none; }
 }
 
 /* ── Global card hover glow ─────────────────────────────────────────────── */
