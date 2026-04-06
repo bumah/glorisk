@@ -24,8 +24,8 @@
   --font-body:    'Inter', sans-serif;
   --font-mono:    'DM Mono', monospace;
 
-  --radius:   12px;
-  --radius-sm: 8px;
+  --radius:   16px;
+  --radius-sm: 10px;
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
   --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
@@ -954,13 +954,14 @@ body {
 }
 .fit-modal {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border2);
   border-radius: var(--radius);
   padding: 1.5rem;
   max-width: 800px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: var(--shadow-lg);
 }
 .fit-modal-body {
   overflow-x: auto;
@@ -1682,17 +1683,23 @@ body {
 /* ── Footer ──────────────────────────────────────────────────────────────── */
 .site-footer {
   border-top: 1px solid var(--border);
-  padding: 3rem 2rem;
+  padding: 3rem 0;
+  margin-top: 4rem;
   max-width: 1200px;
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 .site-footer-inner {
   max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 0 1rem;
 }
 .site-footer p {
-  font-size: 0.8rem;
-  line-height: 1.75;
+  font-size: 0.78rem;
   color: var(--muted);
+  line-height: 1.6;
+  margin-top: 0.5rem;
   font-weight: 300;
   margin-bottom: 0.75rem;
 }
@@ -1709,10 +1716,10 @@ body {
 }
 .site-footer-logo {
   font-family: var(--font-display);
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 1.1rem;
   color: var(--muted2);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   letter-spacing: -0.2px;
 }
 .site-footer-logo span { color: var(--accent); opacity: 0.5; }
@@ -2102,6 +2109,7 @@ body {
   padding: 1.25rem;
   margin-top: 10px;
   margin-bottom: 1rem;
+  box-shadow: var(--shadow-md);
 }
 .wizard-section { margin-bottom: 1rem; }
 .wizard-section:last-child { margin-bottom: 0; }
@@ -2237,9 +2245,66 @@ body {
 }
 .cta-link:hover { background: var(--accent-glow); border-color: var(--accent); }
 
+/* ── Primary button ─────────────────────────────────────────────────────── */
+.btn-primary {
+  display: inline-block;
+  background: var(--accent);
+  color: #000;
+  padding: 14px 32px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 20px rgba(0,200,240,0.15);
+}
+.btn-primary:hover {
+  box-shadow: 0 0 30px rgba(0,200,240,0.25);
+  transform: translateY(-1px);
+}
+.btn-secondary {
+  display: inline-block;
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 14px 28px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-secondary:hover {
+  border-color: var(--accent2);
+  background: var(--accent-glow);
+}
+
+/* ── Section spacing ────────────────────────────────────────────────────── */
+.solutions-section { padding: 4rem 0; }
+.solutions-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.solutions-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
 /* ── Global table polish ────────────────────────────────────────────────── */
 .screener-table {
   box-shadow: var(--shadow-sm);
+  border-top: 2px solid var(--accent2);
 }
 .screener-table tbody tr {
   transition: background 0.12s ease;
@@ -2249,7 +2314,13 @@ body {
 }
 
 /* ── Global card hover glow ─────────────────────────────────────────────── */
-.tool-card:hover,
+.tool-card {
+  transition: all 0.25s ease;
+}
+.tool-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--accent2);
+}
 .asset-card-v2:hover {
   box-shadow: 0 0 0 1px var(--accent2), var(--shadow-md);
 }
@@ -2262,7 +2333,7 @@ body {
 /* ── Footer polish ──────────────────────────────────────────────────────── */
 .site-footer {
   border-top: 1px solid var(--border);
-  margin-top: 2rem;
+  margin-top: 4rem;
 }
 .site-footer a {
   color: var(--accent);
@@ -2276,6 +2347,24 @@ body {
 }
 .gn-link:hover {
   color: var(--text);
+}
+
+/* ── Page header ────────────────────────────────────────────────────────── */
+.page-header {
+  max-width: 1100px;
+  margin: 2.5rem auto 1.5rem;
+  padding: 0 1rem;
+}
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+}
+.page-header p {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 300;
 }
 
 /* ── Scrollbar styling ──────────────────────────────────────────────────── */
