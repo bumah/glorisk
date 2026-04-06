@@ -458,54 +458,6 @@
       </select>
     </div>
 
-    <!-- Asset type tabs -->
-    <div class="type-tabs" id="typeTabs">
-      <button class="type-tab active" data-type="all">All <span class="type-tab-count" id="cnt-all">&mdash;</span></button>
-      <button class="type-tab" data-type="Stocks">Stocks <span class="type-tab-count" id="cnt-stocks">&mdash;</span></button>
-      <button class="type-tab" data-type="Crypto">Crypto <span class="type-tab-count" id="cnt-crypto">&mdash;</span></button>
-      <button class="type-tab" data-type="SectorETFs">ETFs <span class="type-tab-count" id="cnt-etfs">&mdash;</span></button>
-      <button class="type-tab" data-type="Index">Indices <span class="type-tab-count" id="cnt-index">&mdash;</span></button>
-    </div>
-    <!-- Stock sub-tabs -->
-    <div class="sub-tabs" id="subTabs" style="display:none">
-      <button class="sub-tab active" data-sub="all">All Stocks</button>
-      <button class="sub-tab" data-sub="Mag7">Magnificent 7</button>
-      <button class="sub-tab" data-sub="SP500">S&amp;P 500 <span class="type-tab-count" id="cnt-sp500">&mdash;</span></button>
-      <button class="sub-tab" data-sub="FTSE100">FTSE 100 <span class="type-tab-count" id="cnt-ftse">&mdash;</span></button>
-      <button class="sub-tab" data-sub="Nikkei225">Nikkei 225 <span class="type-tab-count" id="cnt-nikkei">&mdash;</span></button>
-      <button class="sub-tab" data-sub="HSI">Hang Seng <span class="type-tab-count" id="cnt-hsi">&mdash;</span></button>
-      <button class="sub-tab" data-sub="NASDAQ100">NASDAQ 100 <span class="type-tab-count" id="cnt-nasdaq">&mdash;</span></button>
-    </div>
-    <!-- Crypto sub-tabs -->
-    <div class="sub-tabs" id="cryptoSubTabs" style="display:none">
-      <button class="sub-tab active" data-sub="all">All Crypto</button>
-      <button class="sub-tab" data-sub="Majors">Majors</button>
-    </div>
-    <!-- ETF sub-tabs -->
-    <div class="sub-tabs-wrap" id="etfSubWrap" style="display:none">
-      <div class="sub-tabs" id="etfSectorTabs">
-        <button class="sub-tab active" data-sub="all">All ETFs</button>
-        <button class="sub-tab" data-sub="sector:Technology">Technology</button>
-        <button class="sub-tab" data-sub="sector:Healthcare">Healthcare</button>
-        <button class="sub-tab" data-sub="sector:Financials">Financials</button>
-        <button class="sub-tab" data-sub="sector:Energy">Energy</button>
-        <button class="sub-tab" data-sub="sector:Industrials">Industrials</button>
-        <button class="sub-tab" data-sub="sector:Materials">Materials</button>
-        <button class="sub-tab" data-sub="sector:Utilities">Utilities</button>
-        <button class="sub-tab" data-sub="sector:Real Estate">Real Estate</button>
-        <button class="sub-tab" data-sub="sector:Consumer Discretionary">Consumer Disc.</button>
-        <button class="sub-tab" data-sub="sector:Consumer Staples">Consumer Staples</button>
-        <button class="sub-tab" data-sub="sector:Communication Services">Comms</button>
-      </div>
-      <div class="sub-tabs" id="etfIssuerTabs">
-        <span class="sub-tabs-label">Issuer:</span>
-        <button class="sub-tab active" data-issuer="all">All</button>
-        <button class="sub-tab" data-issuer="Vanguard">Vanguard</button>
-        <button class="sub-tab" data-issuer="iShares">iShares</button>
-        <button class="sub-tab" data-issuer="SPDR">SPDR</button>
-      </div>
-    </div>
-
     <!-- Score tabs (Performance | Position | GloRisk) -->
     <div class="score-tabs" id="scoreTabs">
       <button class="score-tab active" data-score-tab="performance">Performance</button>
@@ -514,50 +466,6 @@
     </div>
 
     <div class="browse-layout">
-      <div class="filter-sidebar">
-        <div class="filter-group">
-          <div class="filter-group-title">
-            Risk Level
-            <span class="filter-clear" id="clearFilters">Clear all</span>
-          </div>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="mood-filter" value="Very Healthy" checked>
-              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#60a5fa"></div>Very Stable</span>
-            </div>
-            <span class="filter-count" id="cnt-very-healthy">0</span>
-          </label>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="mood-filter" value="Healthy" checked>
-              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#22c55e"></div>Stable</span>
-            </div>
-            <span class="filter-count" id="cnt-healthy">0</span>
-          </label>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="mood-filter" value="Unsettled" checked>
-              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#f59e0b"></div>Unstable</span>
-            </div>
-            <span class="filter-count" id="cnt-unsettled">0</span>
-          </label>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="mood-filter" value="Stressed" checked>
-              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#f97316"></div>Stressed</span>
-            </div>
-            <span class="filter-count" id="cnt-stressed">0</span>
-          </label>
-          <label class="filter-check">
-            <div class="filter-check-left">
-              <input type="checkbox" class="mood-filter" value="Critical" checked>
-              <span class="filter-check-label"><div class="filter-mood-dot" style="background:#ef4444"></div>Critical</span>
-            </div>
-            <span class="filter-count" id="cnt-critical">0</span>
-          </label>
-        </div>
-      </div>
-
       <div class="cards-area">
         <div class="cards-count" id="cardsCount"></div>
         <div class="cards-grid" id="cardsGrid">

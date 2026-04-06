@@ -67,9 +67,6 @@ let selectedCoin = null;
 let chartInst    = null;
 let scoreChartInst = null;
 let favourites   = new Set();
-let activeType   = 'all';  // 'all', 'Stocks', 'Crypto', 'SectorETFs', 'Index'
-let activeSub    = 'all';  // 'all', 'SP500', 'FTSE100', 'Nikkei225', 'HSI', 'Mag7', 'Majors', 'sector:...'
-let activeIssuer = 'all';  // 'all', 'Vanguard', 'iShares', 'SPDR'
 let browseQuery  = '';     // text filter from browse search
 let activeScoreTab = 'performance'; // 'performance', 'position', 'glorisk'
 let wizardFilters = {
@@ -110,7 +107,6 @@ async function init() {
   if (landingHint) landingHint.innerHTML =
     `${allCoins.length} assets \u00b7 <a href="/methodology.html" style="color:var(--accent);text-decoration:none;opacity:0.7">GloRisk methodology \u2192</a>`;
 
-  updateCounts();
   renderCards();
 
   // Handle ?asset= URL parameter (deep link from market summary)
@@ -126,13 +122,7 @@ async function init() {
   }
   initSearch('navInput', 'navDropdown', 'navBtn');
 
-  document.querySelectorAll('.mood-filter').forEach(el =>
-    el.addEventListener('change', renderCards));
   document.getElementById('sortSelect').addEventListener('change', renderCards);
-  document.getElementById('clearFilters').addEventListener('click', () => {
-    document.querySelectorAll('.mood-filter').forEach(el => el.checked = true);
-    renderCards();
-  });
 
   // Browse text filter with dropdown suggestions
   const browseFilterEl = document.getElementById('browseFilter');
@@ -194,66 +184,6 @@ async function init() {
     });
   }
 
-  // Asset type tabs
-  document.getElementById('typeTabs').addEventListener('click', e => {
-    const tab = e.target.closest('.type-tab');
-    if (!tab) return;
-    document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    activeType = tab.dataset.type;
-    activeSub  = 'all';
-    // Show/hide sub-tabs
-    activeIssuer = 'all';
-    document.getElementById('subTabs').style.display = activeType === 'Stocks' ? 'flex' : 'none';
-    document.getElementById('cryptoSubTabs').style.display = activeType === 'Crypto' ? 'flex' : 'none';
-    document.getElementById('etfSubWrap').style.display = activeType === 'SectorETFs' ? 'block' : 'none';
-    // Reset sub-tab active states
-    document.querySelectorAll('#subTabs .sub-tab, #cryptoSubTabs .sub-tab, #etfSectorTabs .sub-tab').forEach(t =>
-      t.classList.toggle('active', t.dataset.sub === 'all'));
-    document.querySelectorAll('#etfIssuerTabs .sub-tab').forEach(t =>
-      t.classList.toggle('active', t.dataset.issuer === 'all'));
-    renderCards();
-  });
-
-  // Stock sub-tabs
-  document.getElementById('subTabs').addEventListener('click', e => {
-    const tab = e.target.closest('.sub-tab');
-    if (!tab) return;
-    document.querySelectorAll('#subTabs .sub-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    activeSub = tab.dataset.sub;
-    renderCards();
-  });
-
-  // Crypto sub-tabs
-  document.getElementById('cryptoSubTabs').addEventListener('click', e => {
-    const tab = e.target.closest('.sub-tab');
-    if (!tab) return;
-    document.querySelectorAll('#cryptoSubTabs .sub-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    activeSub = tab.dataset.sub;
-    renderCards();
-  });
-
-  // ETF sector sub-tabs
-  document.getElementById('etfSectorTabs').addEventListener('click', e => {
-    const tab = e.target.closest('.sub-tab');
-    if (!tab) return;
-    document.querySelectorAll('#etfSectorTabs .sub-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    activeSub = tab.dataset.sub;
-    renderCards();
-  });
-
-  // ETF issuer sub-tabs
-  document.getElementById('etfIssuerTabs').addEventListener('click', e => {
-    const tab = e.target.closest('.sub-tab');
-    if (!tab) return;
-    document.querySelectorAll('#etfIssuerTabs .sub-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    activeIssuer = tab.dataset.issuer;
-    renderCards();
-  });
   // Score tabs (Performance | Position | GloRisk)
   const scoreTabsEl = document.getElementById('scoreTabs');
   if (scoreTabsEl) {
@@ -510,73 +440,9 @@ function buildDropdownHTML(coins) {
   `).join('');
 }
 
-/* ── Tab-based filter logic ─────────────────────────────────────────── */
-
-const STOCK_GROUPS = ['SP500', 'FTSE100', 'Nikkei225', 'HSI', 'NASDAQ100'];
-const MAG7_TICKERS = ['MSFT', 'META', 'TSLA', 'GOOG', 'NVDA', 'AMZN', 'AAPL'];
-const CRYPTO_MAJORS = ['BTC', 'ETH', 'BNB', 'XRP', 'SOL'];
-
-// Detect ETF issuer from company name
-function etfIssuer(company) {
-  if (company.startsWith('Vanguard')) return 'Vanguard';
-  if (company.startsWith('iShares')) return 'iShares';
-  if (company.includes('SPDR')) return 'SPDR';
-  return 'Other';
-}
-
-function matchesTypeFilter(coin) {
-  if (activeType === 'all') return true;
-  if (activeType === 'Stocks') {
-    if (!STOCK_GROUPS.includes(coin.group)) return false;
-    if (activeSub === 'Mag7') return MAG7_TICKERS.includes(coin.ticker);
-    if (activeSub !== 'all' && coin.group !== activeSub) return false;
-    return true;
-  }
-  if (activeType === 'Crypto') {
-    if (coin.group !== 'Crypto') return false;
-    if (activeSub === 'Majors') return CRYPTO_MAJORS.includes(coin.ticker);
-    return true;
-  }
-  if (activeType === 'SectorETFs') {
-    if (coin.group !== 'SectorETFs') return false;
-    // Sector filter
-    if (activeSub !== 'all' && activeSub.startsWith('sector:')) {
-      if (coin.sector !== activeSub.replace('sector:', '')) return false;
-    }
-    // Issuer filter
-    if (activeIssuer !== 'all') {
-      if (etfIssuer(coin.company) !== activeIssuer) return false;
-    }
-    return true;
-  }
-  return coin.group === activeType;
-}
-
 /* ── Browse grid ───────────────────────────────────────────────────── */
 
-function updateCounts() {
-  const moodCounts  = { 'Very Healthy': 0, Healthy: 0, Unsettled: 0, Stressed: 0, Critical: 0 };
-  const groupCounts = { Crypto: 0, SP500: 0, FTSE100: 0, Nikkei225: 0, HSI: 0, SectorETFs: 0, Index: 0 };
-  allCoins.forEach(c => {
-    if (moodCounts[c.mood.label]  !== undefined) moodCounts[c.mood.label]++;
-    if (groupCounts[c.group] !== undefined) groupCounts[c.group]++;
-  });
-  document.getElementById('cnt-very-healthy').textContent = moodCounts['Very Healthy'];
-  document.getElementById('cnt-healthy').textContent      = moodCounts['Healthy'];
-  document.getElementById('cnt-unsettled').textContent    = moodCounts['Unsettled'];
-  document.getElementById('cnt-stressed').textContent     = moodCounts['Stressed'];
-  document.getElementById('cnt-critical').textContent     = moodCounts['Critical'];
-  document.getElementById('cnt-all').textContent           = allCoins.length;
-  document.getElementById('cnt-crypto').textContent       = groupCounts['Crypto'];
-  document.getElementById('cnt-stocks').textContent       = STOCK_GROUPS.reduce((s, g) => s + (groupCounts[g] || 0), 0);
-  document.getElementById('cnt-sp500').textContent        = groupCounts['SP500'];
-  document.getElementById('cnt-ftse').textContent         = groupCounts['FTSE100'];
-  document.getElementById('cnt-nikkei').textContent       = groupCounts['Nikkei225'];
-  document.getElementById('cnt-hsi').textContent          = groupCounts['HSI'];
-  document.getElementById('cnt-nasdaq').textContent       = groupCounts['NASDAQ100'];
-  document.getElementById('cnt-etfs').textContent         = groupCounts['SectorETFs'];
-  document.getElementById('cnt-index').textContent        = groupCounts['Index'];
-}
+const STOCK_GROUPS = ['SP500', 'FTSE100', 'Nikkei225', 'HSI', 'NASDAQ100'];
 
 function getSortedCoins() {
   const sort = document.getElementById('sortSelect').value;
@@ -592,7 +458,6 @@ function getSortedCoins() {
 function renderCards() {
   const grid        = document.getElementById('cardsGrid');
   const countEl     = document.getElementById('cardsCount');
-  const activeMoods = [...document.querySelectorAll('.mood-filter:checked')].map(el => el.value);
   const q = browseQuery.toLowerCase();
   const tab = activeScoreTab; // 'performance', 'position', 'glorisk'
 
@@ -600,7 +465,6 @@ function renderCards() {
   const isPositionTab = tab === 'position' || tab === 'glorisk';
 
   let coins = getSortedCoins().filter(c =>
-    activeMoods.includes(c.mood.label) && matchesTypeFilter(c) &&
     (!q || c.ticker.toLowerCase().includes(q) || c.company.toLowerCase().includes(q))
   );
 
