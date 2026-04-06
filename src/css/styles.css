@@ -933,6 +933,87 @@ body {
   margin-top: 0.5rem;
 }
 
+/* Fit breakdown panel */
+.fit-breakdown {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+.fit-bd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.fit-bd-title {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+.fit-bd-close {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 1.1rem;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fit-bd-close:hover { color: var(--text); border-color: var(--border2); }
+.fit-bd-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.78rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.fit-bd-table thead th {
+  padding: 8px 12px;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.fit-bd-table tbody td, .fit-bd-table tfoot td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.fit-bd-table tbody tr:last-child td { border-bottom: 1px solid var(--border); }
+.fit-bd-table tfoot td { background: var(--surface2); border-bottom: none; }
+.fit-bd-th-fit { text-align: right !important; white-space: nowrap; }
+.fit-bd-view {
+  display: block;
+  text-align: center;
+  margin-top: 1rem;
+  padding: 10px;
+  background: var(--accent);
+  color: #000;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.fit-bd-view:hover { opacity: 0.9; }
+@media (max-width: 768px) {
+  .fit-bd-table { font-size: 0.72rem; }
+  .fit-bd-table thead th, .fit-bd-table tbody td, .fit-bd-table tfoot td { padding: 6px 8px; }
+}
+
 /* Indicator blocks (10 colored squares) */
 .ind-blocks {
   display: flex;

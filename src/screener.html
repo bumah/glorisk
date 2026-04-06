@@ -82,19 +82,33 @@
   vertical-align: middle;
 }
 .screener-table tbody tr:last-child td { border-bottom: none; }
-.screener-table tbody tr { cursor: pointer; transition: background 0.1s; }
+.screener-table tbody tr { transition: background 0.1s; }
 .screener-table tbody tr:hover { background: var(--surface2); }
 .st-ticker { font-family: var(--font-display); font-weight: 700; font-size: 0.88rem; }
 .st-name { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
 .st-right { text-align: right; font-family: var(--font-mono); font-size: 0.78rem; }
 .st-fit { text-align: right; font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; }
-.st-label { text-align: right; font-family: var(--font-mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.04em; }
 .card-v2-change { font-family: var(--font-mono); font-size: 0.68rem; }
 .card-v2-change.pos { color: var(--green); }
 .card-v2-change.neg { color: var(--red); }
+.st-scoring {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  white-space: nowrap;
+}
+.st-view { text-align: center; }
+.st-view-link {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--accent);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.st-view-link:hover { text-decoration: underline; }
 @media (max-width: 768px) {
   .screener-controls { flex-direction: column; }
-  .st-th-pos, .st-td-pos { display: none; }
+  .st-th-1y, .st-td-1y, .st-scoring { display: none; }
 }
 </style>
 </head>
@@ -411,10 +425,11 @@
           <th class="st-th-left">Asset</th>
           <th class="st-th-right">Price</th>
           <th class="st-th-right">30D</th>
+          <th class="st-th-right st-th-1y">1Y</th>
           <th class="st-th-right">Perf</th>
-          <th class="st-th-right">Pos</th>
           <th class="st-th-right">Fit</th>
-          <th class="st-th-right">Label</th>
+          <th class="st-th-right">Scoring</th>
+          <th></th>
         </tr>
       </thead>
       <tbody id="screenerBody"></tbody>
@@ -433,7 +448,7 @@
 
 <script type="module">
 import { loadData } from '/js/data.js';
-import { getMoodBand, IND_ORDER, computeFitScore, getFitLabel, getFitColor, getProfile, saveProfile } from '/js/riskEngine.js';
+import { getMoodBand, IND_ORDER, computeFitScore, getFitLabel, getFitColor, getProfile, saveProfile, FIT_QUESTIONS } from '/js/riskEngine.js';
 import { getUser, signOut } from '/js/supabase.js';
 
 // gloriskScore helper (same as main.js)
@@ -577,6 +592,24 @@ function showResults(allCoins, profile) {
     renderTable();
   });
 
+  // Compute fit breakdown per indicator
+  function getFitBreakdown(indicators, profile) {
+    let strong = 0, partial = 0, low = 0;
+    const SCORE_MATRIX = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 0 }, C: { green: 1, amber: 1, red: 1 } };
+    const SCORE_MATRIX_Q9 = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 1 }, C: { green: 0, amber: 0.5, red: 1 } };
+    for (const q of FIT_QUESTIONS) {
+      const ind = indicators[q.key];
+      const answer = profile[q.key];
+      if (!ind || !answer) continue;
+      const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
+      const s = matrix[answer]?.[ind.color] ?? 0;
+      if (s === 1) strong++;
+      else if (s === 0.5) partial++;
+      else low++;
+    }
+    return { strong, partial, low };
+  }
+
   function renderTable() {
     let filtered = scored;
     if (filters.query) {
@@ -595,27 +628,21 @@ function showResults(allCoins, profile) {
 
     body.innerHTML = filtered.map(c => {
       const fitColor = getFitColor(c.fitScore);
-      const fitLabel = getFitLabel(c.fitScore);
       const change = c.priceChange || 0;
       const changeClass = change >= 0 ? 'pos' : 'neg';
+      const bd = getFitBreakdown(c.indicators, profile);
 
       return `<tr data-ticker="${c.ticker}">
         <td><div class="st-ticker">${c.ticker}</div><div class="st-name">${c.company}</div></td>
         <td class="st-right">${formatPrice(c.price, c.group)}</td>
         <td class="st-right"><span class="card-v2-change ${changeClass}">${change >= 0 ? '+' : ''}${change.toFixed(1)}%</span></td>
+        <td class="st-right st-td-1y">${c.indicators?.return1Y?.label || '\u2014'}</td>
         <td class="st-right">${c.perfScore}</td>
-        <td class="st-right st-td-pos">${c.positionScore || '\u2014'}</td>
         <td class="st-fit" style="color:${fitColor}">${c.fitScore}</td>
-        <td class="st-label" style="color:${fitColor}">${fitLabel}</td>
+        <td class="st-right st-scoring"><span style="color:var(--green)">${bd.strong}G</span> \u00b7 <span style="color:var(--amber)">${bd.partial}A</span> \u00b7 <span style="color:var(--red)">${bd.low}R</span></td>
+        <td class="st-view"><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="st-view-link">View \u2192</a></td>
       </tr>`;
     }).join('');
-
-    // Row click
-    body.querySelectorAll('tr').forEach(row => {
-      row.addEventListener('click', () => {
-        window.location.href = `/browse.html?asset=${encodeURIComponent(row.dataset.ticker)}`;
-      });
-    });
   }
 
   renderTable();

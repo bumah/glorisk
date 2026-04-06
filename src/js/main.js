@@ -6,7 +6,7 @@
 
 'use strict';
 
-import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE, computeFitScore, getFitLabel, getFitColor, getProfile } from './riskEngine.js';
+import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE, computeFitScore, getFitLabel, getFitColor, getProfile, FIT_QUESTIONS } from './riskEngine.js';
 import { loadData, searchCoins, fetchAssetData } from './data.js';
 import html2canvas from 'html2canvas';
 import { getUser, signOut } from './supabase.js';
@@ -710,6 +710,43 @@ function getScoreBand(score) {
 
 /* ── GloRisk Score (single headline card) ─────────────────────────── */
 
+function buildFitRows(coin) {
+  const profile = getProfile();
+  if (!profile) return '';
+  const SCORE_MATRIX = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 0 }, C: { green: 1, amber: 1, red: 1 } };
+  const SCORE_MATRIX_Q9 = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 1 }, C: { green: 0, amber: 0.5, red: 1 } };
+  let strong = 0, partial = 0, low = 0;
+
+  const rows = FIT_QUESTIONS.map(q => {
+    const ind = coin.indicators[q.key];
+    const answer = profile[q.key];
+    if (!ind || !answer) return '';
+    const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
+    const s = matrix[answer]?.[ind.color] ?? 0;
+    const fitDot = s === 1 ? '\u{1F7E2}' : s === 0.5 ? '\u{1F7E1}' : '\u{1F534}';
+    const fitLabel = s === 1 ? 'Strong' : s === 0.5 ? 'Partial' : 'Low';
+    const fitColor = s === 1 ? 'var(--green)' : s === 0.5 ? 'var(--amber)' : 'var(--red)';
+    if (s === 1) strong++; else if (s === 0.5) partial++; else low++;
+    const prefMap = { A: q.a.split(' ').slice(0, 3).join(' '), B: q.b.split(' ').slice(0, 3).join(' '), C: q.c.split(' ').slice(0, 3).join(' ') };
+    const meta = IND_META[q.key] || {};
+    return `<tr>
+      <td style="font-weight:500;color:var(--text)">${meta.label || q.key}</td>
+      <td style="color:var(--muted);font-weight:300">${meta.desc ? meta.desc.split('.')[0] : ''}</td>
+      <td style="font-family:var(--font-mono);font-size:0.78rem">${ind.label}</td>
+      <td style="font-size:0.72rem;color:var(--muted)">${prefMap[answer]}</td>
+      <td class="fit-bd-th-fit" style="color:${fitColor};font-weight:600"><span style="font-size:0.7rem">${fitDot}</span> ${fitLabel}</td>
+    </tr>`;
+  }).join('');
+
+  // Store totals for the tfoot (set via JS after render)
+  setTimeout(() => {
+    const totalEl = document.getElementById('fitBdTotal');
+    if (totalEl) totalEl.innerHTML = `<span style="color:var(--green)">${strong}G</span> \u00b7 <span style="color:var(--amber)">${partial}A</span> \u00b7 <span style="color:var(--red)">${low}R</span>`;
+  }, 0);
+
+  return rows;
+}
+
 function buildGloRiskCard(coin) {
   const mood = coin.mood;
   const band = getMoodBand(mood.label);
@@ -745,7 +782,36 @@ function buildGloRiskCard(coin) {
             <span class="rsb" id="gloriskSwotBadge" style="font-size:0.58rem;padding:2px 8px"></span>
           </div>
         </div>
-        <div style="margin-top:0.5rem"><a href="/screener.html" style="font-family:var(--font-mono);font-size:0.58rem;color:var(--accent);text-decoration:none;text-transform:uppercase;letter-spacing:0.08em">Edit Profile \u2192</a></div>
+        <div style="margin-top:0.5rem;display:flex;gap:8px;align-items:center">
+          <button class="screener-edit" id="fitBdToggle" style="font-size:0.62rem;padding:4px 10px">View Scoring</button>
+          <a href="/screener.html" style="font-family:var(--font-mono);font-size:0.58rem;color:var(--accent);text-decoration:none;text-transform:uppercase;letter-spacing:0.08em">Edit Profile \u2192</a>
+        </div>
+      </div>
+      <div id="fitBreakdownPanel" class="fit-breakdown" style="display:none">
+        <div class="fit-bd-header">
+          <div class="fit-bd-title">Fit Scoring Breakdown</div>
+          <button class="fit-bd-close" id="fitBdClose">&times;</button>
+        </div>
+        <table class="fit-bd-table">
+          <thead>
+            <tr>
+              <th>Indicator</th>
+              <th>Description</th>
+              <th>Value</th>
+              <th>Preference</th>
+              <th class="fit-bd-th-fit">Fit</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${buildFitRows(coin)}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4" style="text-align:right;font-family:var(--font-mono);font-size:0.68rem;color:var(--muted)">Total:</td>
+              <td id="fitBdTotal" class="fit-bd-th-fit"></td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
     `;
   }
@@ -997,6 +1063,16 @@ function renderReport(coin) {
 
   // Load deep analysis report (pre-generated static JSON)
   loadDeepAnalysis(coin.ticker);
+
+  // Fit breakdown toggle
+  document.getElementById('fitBdToggle')?.addEventListener('click', () => {
+    const panel = document.getElementById('fitBreakdownPanel');
+    if (panel) panel.style.display = panel.style.display === 'none' ? '' : 'none';
+  });
+  document.getElementById('fitBdClose')?.addEventListener('click', () => {
+    const panel = document.getElementById('fitBreakdownPanel');
+    if (panel) panel.style.display = 'none';
+  });
 
   // Wire share/export buttons
   wireReportActions(coin, shareText, shareUrl);
