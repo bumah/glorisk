@@ -724,7 +724,7 @@ function buildFitRows(coin) {
     const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
     const s = matrix[answer]?.[ind.color] ?? 0;
     const fitDot = s === 1 ? '\u{1F7E2}' : s === 0.5 ? '\u{1F7E1}' : '\u{1F534}';
-    const fitLabel = s === 1 ? 'Strong' : s === 0.5 ? 'Partial' : 'Low';
+    const fitLabel = s === 1 ? 'Strong (10)' : s === 0.5 ? 'Partial (5)' : 'Low (0)';
     const fitColor = s === 1 ? 'var(--green)' : s === 0.5 ? 'var(--amber)' : 'var(--red)';
     if (s === 1) strong++; else if (s === 0.5) partial++; else low++;
     const prefMap = { A: q.a.split(' ').slice(0, 3).join(' '), B: q.b.split(' ').slice(0, 3).join(' '), C: q.c.split(' ').slice(0, 3).join(' ') };
@@ -741,7 +741,7 @@ function buildFitRows(coin) {
   // Store totals for the tfoot (set via JS after render)
   setTimeout(() => {
     const totalEl = document.getElementById('fitBdTotal');
-    if (totalEl) totalEl.innerHTML = `<span style="color:var(--green)">${strong}G</span> \u00b7 <span style="color:var(--amber)">${partial}A</span> \u00b7 <span style="color:var(--red)">${low}R</span>`;
+    if (totalEl) totalEl.innerHTML = `<span style="color:var(--green)">Strong (${strong})</span> \u00b7 <span style="color:var(--amber)">Partial (${partial})</span> \u00b7 <span style="color:var(--red)">Low (${low})</span>`;
   }, 0);
 
   return rows;

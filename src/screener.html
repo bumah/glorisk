@@ -639,8 +639,8 @@ function showResults(allCoins, profile) {
         <td class="st-right st-td-1y">${c.indicators?.return1Y?.label || '\u2014'}</td>
         <td class="st-right">${c.perfScore}</td>
         <td class="st-fit" style="color:${fitColor}">${c.fitScore}</td>
-        <td class="st-right st-scoring"><span style="color:var(--green)">${bd.strong}G</span> \u00b7 <span style="color:var(--amber)">${bd.partial}A</span> \u00b7 <span style="color:var(--red)">${bd.low}R</span></td>
-        <td class="st-view"><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="st-view-link">View \u2192</a></td>
+        <td class="st-right st-scoring"><span style="color:var(--green)">Strong (${bd.strong})</span> \u00b7 <span style="color:var(--amber)">Partial (${bd.partial})</span> \u00b7 <span style="color:var(--red)">Low (${bd.low})</span></td>
+        <td class="st-view"><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="st-view-link">Scores \u2192</a></td>
       </tr>`;
     }).join('');
   }
