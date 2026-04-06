@@ -783,8 +783,8 @@ function buildGloRiskCard(coin) {
           </div>
         </div>
         <div style="margin-top:0.5rem;display:flex;gap:8px;align-items:center">
-          <button class="screener-edit" id="fitBdToggle" style="font-size:0.62rem;padding:4px 10px">View Scoring</button>
-          <a href="/screener.html" style="font-family:var(--font-mono);font-size:0.58rem;color:var(--accent);text-decoration:none;text-transform:uppercase;letter-spacing:0.08em">Edit Profile \u2192</a>
+          <button class="cta-link" id="fitBdToggle" style="background:none;cursor:pointer">View Scoring</button>
+          <a href="/screener.html" class="cta-link">Edit Profile \u2192</a>
         </div>
       </div>
     `;
@@ -853,7 +853,7 @@ function buildGloRiskCard(coin) {
           <span class="rsb" id="gloriskSwotBadge" style="font-size:0.58rem;padding:2px 8px"></span>
         </div>
       </div>
-      <div style="margin-top:0.75rem"><a href="/screener.html" style="display:inline-flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--accent);text-decoration:none;padding:6px 12px;border:1px solid var(--accent2);border-radius:6px">Get your personalised GloRisk Score \u2192</a></div>
+      <div style="margin-top:0.75rem"><a href="/screener.html" class="cta-link">Get your personalised GloRisk Score \u2192</a></div>
     </div>
   `;
 }

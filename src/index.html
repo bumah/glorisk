@@ -217,13 +217,7 @@
     <a href="/screener.html" class="gn-link">Screener</a>
     <a href="/browse.html" class="gn-link">Market</a>
     <a href="/tools.html" class="gn-link">Tools</a>
-    <div class="gn-dropdown">
-      <button class="gn-dropdown-trigger">About <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
-      <div class="gn-dropdown-menu">
-        <a href="/methodology.html" class="gn-dropdown-item"><span>Methodology</span> <span class="gn-dropdown-item-sub">How scores are calculated</span></a>
-        <a href="https://dailyfinn.com" target="_blank" rel="noopener" class="gn-dropdown-item"><span>About DailyFinn</span> <span class="gn-dropdown-item-sub">dailyfinn.com</span></a>
-      </div>
-    </div>
+    <a href="/methodology.html" class="gn-link">About</a>
   </div>
   <div class="gn-right" id="gnAuth">
     <span class="gn-date" id="gnDate"></span>
@@ -245,76 +239,6 @@
       <a href="/browse.html" class="landing-cta-btn" style="background:none;border:1px solid var(--border2);color:var(--text);padding:12px 28px;border-radius:var(--radius-sm);font-family:var(--font-display);font-weight:600;font-size:0.92rem;text-decoration:none;transition:all 0.15s">Browse Market</a>
     </div>
 
-    <div class="search-wrap" style="margin-top:1rem">
-      <div class="search-bar">
-        <input type="text" class="search-input" id="landingInput"
-          placeholder="Search any stock, crypto, or ETF&hellip;" autocomplete="off" />
-      </div>
-      <div class="search-dropdown" id="landingDropdown"></div>
-    </div>
-
-    <button class="wizard-toggle" id="homeWizardToggle" style="margin:8px auto;display:block">Advanced Filters</button>
-    <div class="wizard-panel" id="homeWizardPanel" style="display:none;max-width:600px;margin:0 auto 1rem">
-      <div class="wizard-section">
-        <div class="wizard-label">Market</div>
-        <div class="wizard-row">
-          <label class="wizard-check"><input type="checkbox" class="hwiz-market" value="SP500"><span>S&amp;P 500</span></label>
-          <label class="wizard-check"><input type="checkbox" class="hwiz-market" value="NASDAQ100"><span>NASDAQ 100</span></label>
-          <label class="wizard-check"><input type="checkbox" class="hwiz-market" value="FTSE100"><span>FTSE 100</span></label>
-          <label class="wizard-check"><input type="checkbox" class="hwiz-market" value="Nikkei225"><span>Nikkei 225</span></label>
-          <label class="wizard-check"><input type="checkbox" class="hwiz-market" value="HSI"><span>Hang Seng</span></label>
-          <label class="wizard-check"><input type="checkbox" class="hwiz-market" value="Crypto"><span>Crypto</span></label>
-          <label class="wizard-check"><input type="checkbox" class="hwiz-market" value="SectorETFs"><span>ETFs</span></label>
-          <label class="wizard-check"><input type="checkbox" class="hwiz-market" value="Index"><span>Index</span></label>
-        </div>
-      </div>
-      <div class="wizard-section">
-        <div class="wizard-label">Performance Rating</div>
-        <div class="wizard-row">
-          <button class="wiz-pill active" data-hperf="any">Any</button>
-          <button class="wiz-pill" data-hperf="Very Stable">Very Stable</button>
-          <button class="wiz-pill" data-hperf="Stable">Stable</button>
-          <button class="wiz-pill" data-hperf="Unstable">Unstable</button>
-          <button class="wiz-pill" data-hperf="Stressed">Stressed</button>
-          <button class="wiz-pill" data-hperf="Critical">Critical</button>
-        </div>
-      </div>
-      <div class="wizard-section">
-        <div class="wizard-label">Position</div>
-        <div class="wizard-row">
-          <button class="wiz-pill" data-hpos="Momentum">Momentum</button>
-          <button class="wiz-pill" data-hpos="Resilient">Resilient</button>
-          <button class="wiz-pill" data-hpos="Fragile">Fragile</button>
-          <button class="wiz-pill" data-hpos="Trouble">Trouble</button>
-        </div>
-      </div>
-      <div class="wizard-section">
-        <div class="wizard-label">Indicators</div>
-        <div class="wizard-ind-grid">
-          <div class="wizard-ind-row"><label>Daily Volatility</label><select class="hwiz-ind" data-ind="volatility"><option value="any">Any</option><option value="green">Healthy</option><option value="amber">Warning</option><option value="red">Critical</option></select></div>
-          <div class="wizard-ind-row"><label>Volatility Spike</label><select class="hwiz-ind" data-ind="volSpike"><option value="any">Any</option><option value="green">Healthy</option><option value="amber">Warning</option><option value="red">Critical</option></select></div>
-          <div class="wizard-ind-row"><label>Distance from Peak</label><select class="hwiz-ind" data-ind="vsPeak"><option value="any">Any</option><option value="green">Healthy</option><option value="amber">Warning</option><option value="red">Critical</option></select></div>
-          <div class="wizard-ind-row"><label>50-Day Trend</label><select class="hwiz-ind" data-ind="shortTrend"><option value="any">Any</option><option value="green">Healthy</option><option value="amber">Warning</option><option value="red">Critical</option></select></div>
-          <div class="wizard-ind-row"><label>200-Day Trend</label><select class="hwiz-ind" data-ind="longTrend"><option value="any">Any</option><option value="green">Healthy</option><option value="amber">Warning</option><option value="red">Critical</option></select></div>
-          <div class="wizard-ind-row"><label>Trend Direction</label><select class="hwiz-ind" data-ind="maCross"><option value="any">Any</option><option value="green">Healthy</option><option value="amber">Warning</option><option value="red">Critical</option></select></div>
-          <div class="wizard-ind-row"><label>30-Day Return</label><select class="hwiz-ind" data-ind="return1M"><option value="any">Any</option><option value="green">Healthy</option><option value="amber">Warning</option><option value="red">Critical</option></select></div>
-          <div class="wizard-ind-row"><label>12-Month Return</label><select class="hwiz-ind" data-ind="return1Y"><option value="any">Any</option><option value="green">Healthy</option><option value="amber">Warning</option><option value="red">Critical</option></select></div>
-          <div class="wizard-ind-row"><label>Position in Range</label><select class="hwiz-ind" data-ind="range52W"><option value="any">Any</option><option value="green">Healthy</option><option value="amber">Warning</option><option value="red">Critical</option></select></div>
-          <div class="wizard-ind-row"><label>3-Year Growth</label><select class="hwiz-ind" data-ind="cagr3Y"><option value="any">Any</option><option value="green">Healthy</option><option value="amber">Warning</option><option value="red">Critical</option></select></div>
-        </div>
-      </div>
-      <div class="wizard-section">
-        <div class="wizard-label">Price Change (30D)</div>
-        <div class="wizard-row">
-          <button class="wiz-pill active" data-hprice="any">Any</button>
-          <button class="wiz-pill" data-hprice="gainers">Gainers</button>
-          <button class="wiz-pill" data-hprice="losers">Losers</button>
-        </div>
-      </div>
-      <div class="wizard-footer">
-        <button class="wiz-reset" id="homeWizardSearch">Search &rarr;</button>
-      </div>
-    </div>
 
   </div>
 </div>
@@ -532,53 +456,6 @@ async function init() {
       </div>`;
     }).join('');
   }
-}
-
-// Home wizard toggle + search redirect
-const hwToggle = document.getElementById('homeWizardToggle');
-const hwPanel = document.getElementById('homeWizardPanel');
-if (hwToggle && hwPanel) {
-  hwToggle.addEventListener('click', () => {
-    const open = hwPanel.style.display === 'none';
-    hwPanel.style.display = open ? '' : 'none';
-    hwToggle.classList.toggle('active', open);
-  });
-
-  // Perf pills (single select)
-  hwPanel.querySelectorAll('[data-hperf]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      hwPanel.querySelectorAll('[data-hperf]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
-  // Position pills (multi select)
-  hwPanel.querySelectorAll('[data-hpos]').forEach(btn => {
-    btn.addEventListener('click', () => btn.classList.toggle('active'));
-  });
-  // Price pills (single select)
-  hwPanel.querySelectorAll('[data-hprice]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      hwPanel.querySelectorAll('[data-hprice]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
-
-  // Search button → redirect to browse with params
-  document.getElementById('homeWizardSearch')?.addEventListener('click', () => {
-    const params = new URLSearchParams();
-    const markets = [...hwPanel.querySelectorAll('.hwiz-market:checked')].map(el => el.value);
-    if (markets.length) params.set('markets', markets.join(','));
-    const perf = hwPanel.querySelector('[data-hperf].active')?.dataset.hperf;
-    if (perf && perf !== 'any') params.set('perf', perf);
-    const pos = [...hwPanel.querySelectorAll('[data-hpos].active')].map(b => b.dataset.hpos);
-    if (pos.length) params.set('pos', pos.join(','));
-    const inds = {};
-    hwPanel.querySelectorAll('.hwiz-ind').forEach(s => { if (s.value !== 'any') inds[s.dataset.ind] = s.value; });
-    if (Object.keys(inds).length) params.set('ind', JSON.stringify(inds));
-    const price = hwPanel.querySelector('[data-hprice].active')?.dataset.hprice;
-    if (price && price !== 'any') params.set('price', price);
-    window.location.href = '/browse.html' + (params.toString() ? '?' + params.toString() : '');
-  });
 }
 
 init().catch(console.error);

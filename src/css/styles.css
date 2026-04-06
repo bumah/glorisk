@@ -2207,3 +2207,21 @@ body {
 @media (max-width: 768px) {
   .wizard-ind-grid { grid-template-columns: 1fr; }
 }
+
+/* CTA link styling — blue border */
+.cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 4px 12px;
+  border: 1px solid var(--accent2);
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.cta-link:hover { background: rgba(0,212,255,0.08); border-color: var(--accent); }
