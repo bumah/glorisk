@@ -72,6 +72,14 @@ let activeSub    = 'all';  // 'all', 'SP500', 'FTSE100', 'Nikkei225', 'HSI', 'Ma
 let activeIssuer = 'all';  // 'all', 'Vanguard', 'iShares', 'SPDR'
 let browseQuery  = '';     // text filter from browse search
 let activeScoreTab = 'performance'; // 'performance', 'position', 'glorisk'
+let wizardFilters = {
+  markets: [],
+  perfRating: 'any',
+  posClass: [],
+  indicators: {},
+  priceChange: 'any',
+};
+let wizardOpen = false;
 
 /* ── Init ──────────────────────────────────────────────────────────── */
 
@@ -247,6 +255,75 @@ async function init() {
 
   document.getElementById('backLink').addEventListener('click', showLanding);
   document.getElementById('navLogo').addEventListener('click', showLanding);
+
+  // Wizard toggle
+  const wizToggle = document.getElementById('wizardToggle');
+  const wizPanel = document.getElementById('wizardPanel');
+  if (wizToggle && wizPanel) {
+    wizToggle.addEventListener('click', () => {
+      wizardOpen = !wizardOpen;
+      wizPanel.style.display = wizardOpen ? '' : 'none';
+      wizToggle.classList.toggle('active', wizardOpen);
+    });
+
+    // Market checkboxes
+    wizPanel.querySelectorAll('.wiz-market').forEach(cb => {
+      cb.addEventListener('change', () => {
+        wizardFilters.markets = [...wizPanel.querySelectorAll('.wiz-market:checked')].map(el => el.value);
+        renderCards();
+      });
+    });
+
+    // Performance rating pills (single select)
+    wizPanel.querySelectorAll('[data-perf]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        wizPanel.querySelectorAll('[data-perf]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        wizardFilters.perfRating = btn.dataset.perf;
+        renderCards();
+      });
+    });
+
+    // Position classification pills (multi-select toggle)
+    wizPanel.querySelectorAll('[data-pos]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        wizardFilters.posClass = [...wizPanel.querySelectorAll('[data-pos].active')].map(b => b.dataset.pos);
+        renderCards();
+      });
+    });
+
+    // Indicator dropdowns
+    wizPanel.querySelectorAll('.wiz-ind').forEach(sel => {
+      sel.addEventListener('change', () => {
+        const key = sel.dataset.ind;
+        if (sel.value === 'any') delete wizardFilters.indicators[key];
+        else wizardFilters.indicators[key] = sel.value;
+        renderCards();
+      });
+    });
+
+    // Price change pills (single select)
+    wizPanel.querySelectorAll('[data-price]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        wizPanel.querySelectorAll('[data-price]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        wizardFilters.priceChange = btn.dataset.price;
+        renderCards();
+      });
+    });
+
+    // Reset
+    document.getElementById('wizardReset')?.addEventListener('click', () => {
+      wizardFilters = { markets: [], perfRating: 'any', posClass: [], indicators: {}, priceChange: 'any' };
+      wizPanel.querySelectorAll('.wiz-market').forEach(cb => cb.checked = false);
+      wizPanel.querySelectorAll('.wiz-pill').forEach(b => b.classList.remove('active'));
+      wizPanel.querySelectorAll('[data-perf="any"]').forEach(b => b.classList.add('active'));
+      wizPanel.querySelectorAll('[data-price="any"]').forEach(b => b.classList.add('active'));
+      wizPanel.querySelectorAll('.wiz-ind').forEach(s => s.value = 'any');
+      renderCards();
+    });
+  }
 
   // Update nav sign in/out button
   const gnUser = await getUser();
@@ -428,6 +505,30 @@ function renderCards() {
     coins = coins.filter(c => STOCK_GROUPS.includes(c.group) && c.positionScore != null);
   }
 
+  // Wizard filters
+  if (wizardFilters.markets.length) {
+    coins = coins.filter(c => wizardFilters.markets.includes(c.group));
+  }
+  if (wizardFilters.perfRating !== 'any') {
+    // scoreBand is defined below, so inline the logic here
+    const bandLabel = (score) => {
+      if (score >= 90) return 'Very Stable';
+      if (score >= 80) return 'Stable';
+      if (score >= 60) return 'Unstable';
+      if (score >= 40) return 'Stressed';
+      return 'Critical';
+    };
+    coins = coins.filter(c => bandLabel(gloriskScore(c.mood)) === wizardFilters.perfRating);
+  }
+  if (wizardFilters.posClass.length) {
+    coins = coins.filter(c => c.positionLabel && wizardFilters.posClass.includes(c.positionLabel));
+  }
+  for (const [key, color] of Object.entries(wizardFilters.indicators)) {
+    coins = coins.filter(c => c.indicators[key]?.color === color);
+  }
+  if (wizardFilters.priceChange === 'gainers') coins = coins.filter(c => (c.priceChange || 0) > 0);
+  if (wizardFilters.priceChange === 'losers') coins = coins.filter(c => (c.priceChange || 0) < 0);
+
   // Sort by the relevant score (descending — highest first) when dropdown is default
   const sortVal = document.getElementById('sortSelect').value;
   if (sortVal === 'default') {
@@ -445,6 +546,10 @@ function renderCards() {
   }
 
   countEl.innerHTML = `Showing <span>${coins.length}</span> of ${allCoins.length} assets`;
+
+  // Update wizard count
+  const wizCount = document.getElementById('wizardCount');
+  if (wizCount) wizCount.textContent = coins.length;
 
   // Toggle 3-col grid class
   grid.classList.add('grid-3col');

@@ -243,6 +243,128 @@
   height: 6px;
   border-radius: 2px;
 }
+
+/* ── Advanced Filter Wizard ──────────────────────────────────────── */
+.wizard-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 6px 14px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.15s;
+}
+.wizard-toggle:hover, .wizard-toggle.active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.wizard-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-top: 10px;
+  margin-bottom: 1rem;
+}
+.wizard-section {
+  margin-bottom: 1rem;
+}
+.wizard-section:last-child { margin-bottom: 0; }
+.wizard-label {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted2);
+  margin-bottom: 0.4rem;
+}
+.wizard-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.wizard-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+.wizard-check input { accent-color: var(--accent); }
+.wizard-check:has(input:checked) { color: var(--text); }
+.wiz-pill {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.wiz-pill:hover { border-color: var(--border2); color: var(--text); }
+.wiz-pill.active { background: var(--accent); color: #000; border-color: var(--accent); }
+.wizard-ind-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+}
+.wizard-ind-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.wizard-ind-row label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.wiz-ind {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  padding: 4px 8px;
+  min-width: 80px;
+}
+.wizard-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.wiz-reset {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+.wiz-reset:hover { color: var(--text); border-color: var(--border2); }
+.wiz-count {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+@media (max-width: 768px) {
+  .wizard-ind-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -278,6 +400,161 @@
       <input type="text" id="browseFilter" class="search-input" placeholder="Search by ticker or name&hellip;" autocomplete="off"
         style="width:100%;background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:12px 16px;font-family:var(--font-body);font-size:0.9rem;color:var(--text);outline:none;caret-color:var(--accent)">
       <div class="search-dropdown" id="browseDropdown"></div>
+      <button class="wizard-toggle" id="wizardToggle">Advanced Filters</button>
+      <div class="wizard-panel" id="wizardPanel" style="display:none">
+
+        <!-- Section 1: Market -->
+        <div class="wizard-section">
+          <div class="wizard-label">Market</div>
+          <div class="wizard-row">
+            <label class="wizard-check"><input type="checkbox" class="wiz-market" value="SP500"><span>S&amp;P 500</span></label>
+            <label class="wizard-check"><input type="checkbox" class="wiz-market" value="NASDAQ100"><span>NASDAQ 100</span></label>
+            <label class="wizard-check"><input type="checkbox" class="wiz-market" value="FTSE100"><span>FTSE 100</span></label>
+            <label class="wizard-check"><input type="checkbox" class="wiz-market" value="Nikkei225"><span>Nikkei 225</span></label>
+            <label class="wizard-check"><input type="checkbox" class="wiz-market" value="HSI"><span>Hang Seng</span></label>
+            <label class="wizard-check"><input type="checkbox" class="wiz-market" value="Crypto"><span>Crypto</span></label>
+            <label class="wizard-check"><input type="checkbox" class="wiz-market" value="SectorETFs"><span>ETFs</span></label>
+            <label class="wizard-check"><input type="checkbox" class="wiz-market" value="Index"><span>Index</span></label>
+          </div>
+        </div>
+
+        <!-- Section 2: Performance Rating (single select) -->
+        <div class="wizard-section">
+          <div class="wizard-label">Performance Rating</div>
+          <div class="wizard-row">
+            <button class="wiz-pill active" data-perf="any">Any</button>
+            <button class="wiz-pill" data-perf="Very Stable">Very Stable</button>
+            <button class="wiz-pill" data-perf="Stable">Stable</button>
+            <button class="wiz-pill" data-perf="Unstable">Unstable</button>
+            <button class="wiz-pill" data-perf="Stressed">Stressed</button>
+            <button class="wiz-pill" data-perf="Critical">Critical</button>
+          </div>
+        </div>
+
+        <!-- Section 3: Position (multi-select) -->
+        <div class="wizard-section">
+          <div class="wizard-label">Position</div>
+          <div class="wizard-row">
+            <button class="wiz-pill" data-pos="Momentum">Momentum</button>
+            <button class="wiz-pill" data-pos="Resilient">Resilient</button>
+            <button class="wiz-pill" data-pos="Fragile">Fragile</button>
+            <button class="wiz-pill" data-pos="Trouble">Trouble</button>
+          </div>
+        </div>
+
+        <!-- Section 4: Indicators (10 dropdowns, 2 columns) -->
+        <div class="wizard-section">
+          <div class="wizard-label">Indicators</div>
+          <div class="wizard-ind-grid">
+            <div class="wizard-ind-row">
+              <label>Daily Volatility</label>
+              <select class="wiz-ind" data-ind="volatility">
+                <option value="any">Any</option>
+                <option value="green">Healthy</option>
+                <option value="amber">Warning</option>
+                <option value="red">Critical</option>
+              </select>
+            </div>
+            <div class="wizard-ind-row">
+              <label>Volatility Spike</label>
+              <select class="wiz-ind" data-ind="volSpike">
+                <option value="any">Any</option>
+                <option value="green">Healthy</option>
+                <option value="amber">Warning</option>
+                <option value="red">Critical</option>
+              </select>
+            </div>
+            <div class="wizard-ind-row">
+              <label>Distance from Peak</label>
+              <select class="wiz-ind" data-ind="vsPeak">
+                <option value="any">Any</option>
+                <option value="green">Healthy</option>
+                <option value="amber">Warning</option>
+                <option value="red">Critical</option>
+              </select>
+            </div>
+            <div class="wizard-ind-row">
+              <label>50-Day Trend</label>
+              <select class="wiz-ind" data-ind="shortTrend">
+                <option value="any">Any</option>
+                <option value="green">Healthy</option>
+                <option value="amber">Warning</option>
+                <option value="red">Critical</option>
+              </select>
+            </div>
+            <div class="wizard-ind-row">
+              <label>200-Day Trend</label>
+              <select class="wiz-ind" data-ind="longTrend">
+                <option value="any">Any</option>
+                <option value="green">Healthy</option>
+                <option value="amber">Warning</option>
+                <option value="red">Critical</option>
+              </select>
+            </div>
+            <div class="wizard-ind-row">
+              <label>Trend Direction</label>
+              <select class="wiz-ind" data-ind="maCross">
+                <option value="any">Any</option>
+                <option value="green">Healthy</option>
+                <option value="amber">Warning</option>
+                <option value="red">Critical</option>
+              </select>
+            </div>
+            <div class="wizard-ind-row">
+              <label>30-Day Return</label>
+              <select class="wiz-ind" data-ind="return1M">
+                <option value="any">Any</option>
+                <option value="green">Healthy</option>
+                <option value="amber">Warning</option>
+                <option value="red">Critical</option>
+              </select>
+            </div>
+            <div class="wizard-ind-row">
+              <label>12-Month Return</label>
+              <select class="wiz-ind" data-ind="return1Y">
+                <option value="any">Any</option>
+                <option value="green">Healthy</option>
+                <option value="amber">Warning</option>
+                <option value="red">Critical</option>
+              </select>
+            </div>
+            <div class="wizard-ind-row">
+              <label>Position in Range</label>
+              <select class="wiz-ind" data-ind="range52W">
+                <option value="any">Any</option>
+                <option value="green">Healthy</option>
+                <option value="amber">Warning</option>
+                <option value="red">Critical</option>
+              </select>
+            </div>
+            <div class="wizard-ind-row">
+              <label>3-Year Growth</label>
+              <select class="wiz-ind" data-ind="cagr3Y">
+                <option value="any">Any</option>
+                <option value="green">Healthy</option>
+                <option value="amber">Warning</option>
+                <option value="red">Critical</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 5: Price Change (single select) -->
+        <div class="wizard-section">
+          <div class="wizard-label">Price Change</div>
+          <div class="wizard-row">
+            <button class="wiz-pill active" data-price="any">Any</button>
+            <button class="wiz-pill" data-price="gainers">Gainers</button>
+            <button class="wiz-pill" data-price="losers">Losers</button>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="wizard-footer">
+          <button class="wiz-reset" id="wizardReset">Reset All</button>
+          <span class="wiz-count">Showing: <strong id="wizardCount">0</strong> assets</span>
+        </div>
+      </div>
     </div>
 
     <div class="browse-header">
