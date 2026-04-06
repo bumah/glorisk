@@ -8,239 +8,62 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/css/styles.css">
 <style>
-
-body { background: var(--bg); color: var(--text); }
-
-/* ── Page shell ─────────────────────────────────────────────────────── */
-.page-nav {
-  position: sticky; top: 0; z-index: 50;
-  background: rgba(10,12,15,0.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 2rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.page-nav .logo-text { font-size: 1.1rem; }
-.page-nav a.back {
-  margin-left: auto;
-  font-size: 0.8rem;
-  color: var(--muted);
-  text-decoration: none;
-  transition: color 0.15s;
-}
-.page-nav a.back:hover { color: var(--accent); }
-
-.page-body {
-  max-width: none;
-  margin: 0;
-  padding: 0 0 2rem;
-}
-
-/* ── Typography ─────────────────────────────────────────────────────── */
-.page-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--accent);
-  margin-bottom: 1rem;
-  opacity: 0.8;
-}
-
-.page-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  font-weight: 800;
-  letter-spacing: -1px;
-  line-height: 1.1;
-  margin-bottom: 1.25rem;
-}
-
-.page-intro {
-  font-size: 1rem;
-  line-height: 1.78;
-  color: var(--muted);
-  font-weight: 300;
-  margin-bottom: 3rem;
-  padding-bottom: 2.5rem;
-  border-bottom: 1px solid var(--border);
-}
-
-/* ── Section ────────────────────────────────────────────────────────── */
-.method-section { margin-bottom: 3rem; }
-
-.method-heading {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: -0.2px;
-  margin-bottom: 0.85rem;
-  color: var(--text);
-}
-
-.method-body {
-  font-size: 0.93rem;
-  line-height: 1.8;
-  color: var(--muted);
-  font-weight: 300;
-}
-.method-body p { margin-bottom: 0.85rem; }
-.method-body p:last-child { margin-bottom: 0; }
-.method-body strong { color: var(--text); font-weight: 500; }
-
-/* ── Scoring chips ───────────────────────────────────────────────────── */
-.score-chips {
-  display: flex;
-  gap: 8px;
-  margin: 1.25rem 0 0;
-  flex-wrap: wrap;
-}
-.score-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-family: var(--font-mono);
-  font-weight: 500;
-}
-.score-chip--green { background: rgba(34,197,94,0.12);  color: var(--green); }
-.score-chip--amber { background: rgba(245,158,11,0.12); color: var(--amber); }
-.score-chip--red   { background: rgba(239,68,68,0.12);  color: var(--red); }
-
-/* ── Indicator groups ────────────────────────────────────────────────── */
-.ind-group { margin: 1.75rem 0 0; }
-
-.ind-group-label {
-  font-family: var(--font-mono);
-  font-size: 0.64rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--muted2);
-  margin-bottom: 0.6rem;
-  padding-left: 2px;
-}
-
-.ind-list {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  margin-bottom: 1.25rem;
-}
-
-.ind-list-item {
-  display: grid;
-  grid-template-columns: 148px 1fr;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.88rem;
-}
-.ind-list-item:last-child { border-bottom: none; }
-
-.ind-list-name {
-  padding: 13px 16px;
-  font-family: var(--font-mono);
-  font-size: 0.77rem;
-  font-weight: 500;
-  color: var(--accent);
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  align-items: flex-start;
-  padding-top: 14px;
-}
-
-.ind-list-desc {
-  padding: 13px 16px;
-  color: var(--muted);
-  line-height: 1.55;
-  background: var(--surface);
-  font-size: 0.87rem;
-  font-weight: 300;
-}
-
-/* ── Mood table ──────────────────────────────────────────────────────── */
-.mood-table {
-  width: 100%;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  margin: 1.5rem 0 0;
-}
-.mood-table-row {
-  display: grid;
-  grid-template-columns: 140px 100px 1fr;
-  border-bottom: 1px solid var(--border);
-}
-.mood-table--2col .mood-table-row {
-  grid-template-columns: 160px 1fr;
-}
-.mood-table-row:last-child { border-bottom: none; }
-.mood-table-row.header {
-  background: var(--surface2);
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  color: var(--muted);
-}
-.mood-table-cell {
-  padding: 12px 16px;
-  border-right: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
-}
-.mood-table-cell:last-child { border-right: none; }
-.mood-table-cell.pct {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--muted);
-}
-.mood-table-cell.desc { color: var(--muted); font-weight: 300; line-height: 1.55; font-size: 0.82rem; }
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+.lp { font-family: 'DM Sans', system-ui, sans-serif; }
+.lp * { box-sizing: border-box; }
+.lp-sec { width: 100%; padding: 56px 40px; }
+.lp-centered { text-align: center; display: flex; flex-direction: column; align-items: center; }
+.lp-navy { background: #0D1B3E; }
+.lp-warm { background: #F8F7F4; }
+.lp-white { background: #FFFFFF; }
+.lp-divider { height: 0.5px; background: #E2E8F0; width: 100%; }
+.lp-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #7B8EC8; margin-bottom: 14px; }
+.lp-eyebrow-light { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 14px; }
+.lp h1 { font-size: 36px; font-weight: 600; line-height: 1.15; color: #F8F7F4; margin-bottom: 18px; font-family: Georgia, serif; }
+.lp h1 span { color: #4F46E5; }
+.lp h2 { font-size: 22px; font-weight: 600; color: #1A1A2E; margin-bottom: 12px; font-family: Georgia, serif; }
+.lp h3 { font-size: 14px; font-weight: 600; color: #1A1A2E; margin-bottom: 6px; }
+.lp p { font-size: 14px; line-height: 1.8; color: #4A5568; }
+.lp-sub-dark { font-size: 15px; line-height: 1.8; color: rgba(255,255,255,0.6); max-width: 520px; }
+.lp-sub-light { font-size: 15px; line-height: 1.8; color: #4A5568; max-width: 540px; }
+.lp-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #4F46E5; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; text-decoration: none; transition: all 0.2s; }
+.lp-btn:hover { background: #4338CA; }
+.body-block { max-width: 600px; display: flex; flex-direction: column; gap: 16px; text-align: left; }
+.lead { font-size: 18px; font-weight: 600; color: #1A1A2E; line-height: 1.5; font-family: Georgia, serif; }
+.highlight { font-weight: 700; color: #1A1A2E; }
+.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 700px; margin-top: 28px; }
+.stat-card { background: #FFFFFF; border: 0.5px solid #E2E8F0; border-radius: 10px; padding: 20px; text-align: center; }
+.stat-num { font-size: 30px; font-weight: 700; color: #4F46E5; margin-bottom: 4px; font-family: Georgia, serif; }
+.stat-label { font-size: 11px; color: #4A5568; }
+.pact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; max-width: 700px; margin-top: 28px; }
+.pact-card { background: #FFFFFF; border: 0.5px solid #E2E8F0; border-radius: 12px; padding: 26px; text-align: left; }
+.pact-letter { font-size: 52px; font-weight: 700; color: #4F46E5; line-height: 1; margin-bottom: 6px; font-family: Georgia, serif; }
+.pact-word { font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #7B8EC8; margin-bottom: 10px; }
+.principle-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 700px; margin-top: 28px; }
+.principle-card { background: #FFFFFF; border: 0.5px solid #E2E8F0; border-radius: 12px; padding: 22px; text-align: left; }
+.principle-num { font-size: 10px; font-weight: 700; color: #4F46E5; letter-spacing: 0.08em; margin-bottom: 10px; }
+.manifesto-sec { padding: 72px 40px; text-align: center; background: #0D1B3E; }
+.m-muted { font-size: 24px; color: rgba(255,255,255,0.3); font-family: Georgia, serif; line-height: 1.5; }
+.m-bold { font-size: 26px; font-weight: 600; color: #F8F7F4; font-family: Georgia, serif; margin-top: 6px; }
+.m-bold span { color: #4F46E5; }
+.lp-cta-sec { padding: 72px 40px; text-align: center; display: flex; flex-direction: column; align-items: center; background: #F8F7F4; }
+.lp-footer { padding: 24px 40px; border-top: 0.5px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: #FFFFFF; }
+.lp-footer-logo { font-size: 15px; font-weight: 700; color: #0D1B3E; font-family: Georgia, serif; }
+.lp-footer-logo span { color: #4F46E5; }
+.lp-footer-links { display: flex; gap: 20px; }
+.lp-footer-link { font-size: 12px; color: #4A5568; text-decoration: none; }
+.lp-footer-disc { font-size: 11px; color: #A0AEC0; margin-top: 8px; width: 100%; }
 @media (max-width: 768px) {
-  .mood-table-row { grid-template-columns: 110px 80px 1fr; }
-  .mood-table--2col .mood-table-row { grid-template-columns: 130px 1fr; }
-  .mood-table-cell { padding: 10px 12px; font-size: 0.78rem; }
+  .lp-sec { padding: 40px 20px; }
+  .lp h1 { font-size: 26px; }
+  .stat-row { grid-template-columns: 1fr; }
+  .pact-grid { grid-template-columns: 1fr; }
+  .principle-grid { grid-template-columns: 1fr; }
+  .manifesto-sec { padding: 48px 20px; }
+  .m-muted { font-size: 18px; }
+  .m-bold { font-size: 20px; }
+  .lp-cta-sec { padding: 48px 20px; }
 }
-.mood-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-/* ── Divider ─────────────────────────────────────────────────────────── */
-.method-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 2.5rem 0;
-}
-
-/* ── Disclaimer ──────────────────────────────────────────────────────── */
-.method-disclaimer {
-  margin-top: 3rem;
-  padding: 1.25rem 1.5rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 0.8rem;
-  line-height: 1.7;
-  color: var(--muted);
-  font-style: italic;
-}
-
-/* ── About hero ─────────────────────────────────────────────────────── */
-.about-hero { text-align: center; max-width: 700px; margin: 4rem auto 0; padding: 0 1rem; }
-.about-hero h1 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; }
-.about-hero h1 span { color: var(--accent); }
-.about-hero p { color: var(--muted); font-size: 1rem; font-weight: 300; line-height: 1.75; }
-
-/* ── Method table wrap ─────────────────────────────────────────────── */
-.method-table-wrap { max-width: 800px; margin: 2rem auto 0; }
-
 </style>
 </head>
 <body>
@@ -259,153 +82,126 @@ body { background: var(--bg); color: var(--text); }
   </div>
 </nav>
 
-<div class="page-body">
+<div class="lp">
 
   <!-- Hero -->
-  <div class="about-hero">
-    <h1>Your Global <span>Risk</span> Companion</h1>
-    <p>Most investors rely on hype, hope, and instinct — without a clear understanding of risk. They enter positions without knowing how unstable an asset is, how much it can drop, or whether it matches how they invest.</p>
+  <div class="lp-sec lp-navy lp-centered">
+    <div class="lp-eyebrow-light">About GloRisk</div>
+    <h1>Investment Rankings<span>.</span> For You<span>.</span><br>Not the Crowd<span>.</span></h1>
+    <p class="lp-sub-dark">Risk is personal. Most investment tools forgot that.</p>
   </div>
 
-  <!-- What is GloRisk -->
-  <section class="section section--alt">
-    <div class="container">
-      <div class="split">
-        <div>
-          <div class="eyebrow">What is GloRisk?</div>
-          <h2 class="section-h2">A risk intelligence layer for your investments.</h2>
-          <p class="section-p">So you invest with discipline, clarity, and control.</p>
-        </div>
-        <div class="benefit-cards">
-          <div class="benefit-card"><strong>Clear view of risk</strong> across global assets</div>
-          <div class="benefit-card"><strong>Compare</strong> opportunities objectively</div>
-          <div class="benefit-card"><strong>Understand your downside</strong> before you invest</div>
-          <div class="benefit-card"><strong>Personalised score</strong> based on how you invest</div>
-        </div>
+  <!-- Body -->
+  <div class="lp-sec lp-white lp-centered">
+    <div class="body-block">
+      <p class="lead">Every screener, every top pick list, every analyst recommendation is built on the same flawed assumption — that risk means the same thing to everyone.</p>
+      <p>It doesn't. Your risk appetite depends on your goals, your timeline, your tolerance for loss. Yet the tools available to most investors ignore this entirely — ranking assets against a generic benchmark that represents nobody in particular.</p>
+      <p>The financial industry has spent decades perfecting recommendations for the average investor. The problem? <span class="highlight">The average investor doesn't exist.</span></p>
+      <p>GloRisk is built differently. We score every stock, crypto, and ETF globally against your personal risk profile — so the ranking you see is built for you. Not the crowd. Not the analyst. Not an algorithm trained on someone else's preferences.</p>
+    </div>
+  </div>
+
+  <div class="lp-divider"></div>
+
+  <!-- Mission -->
+  <div class="lp-sec lp-warm lp-centered">
+    <div class="lp-eyebrow">Our mission</div>
+    <h2>Make personal risk intelligence available to everyone</h2>
+    <p class="lp-sub-light">Not just institutions. Not just professionals. Every investor deserves a ranking built around their risk — not the market's.</p>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-num">1k+</div><div class="stat-label">Assets scored globally</div></div>
+      <div class="stat-card"><div class="stat-num">100%</div><div class="stat-label">Based on your profile</div></div>
+      <div class="stat-card"><div class="stat-num">0</div><div class="stat-label">Generic recommendations</div></div>
+    </div>
+  </div>
+
+  <div class="lp-divider"></div>
+
+  <!-- PACT -->
+  <div class="lp-sec lp-white lp-centered">
+    <div class="lp-eyebrow">Our PACT</div>
+    <h2>Four commitments behind everything we build</h2>
+    <p class="lp-sub-light" style="font-size:14px">Every decision at GloRisk traces back to four principles. This is what we hold ourselves to.</p>
+    <div class="pact-grid">
+      <div class="pact-card">
+        <div class="pact-letter">P</div>
+        <div class="pact-word">Personal</div>
+        <h3>Your risk profile. Yours alone.</h3>
+        <p style="font-size:13px;margin-top:6px">Not a template. Not a default. Built around how you actually invest — your goals, your timeline, your tolerance for loss.</p>
+      </div>
+      <div class="pact-card">
+        <div class="pact-letter">A</div>
+        <div class="pact-word">Adapts</div>
+        <h3>Your appetite changes. So do your rankings.</h3>
+        <p style="font-size:13px;margin-top:6px">Risk isn't static. As your profile evolves — your life, your goals, your confidence — GloRisk evolves with you.</p>
+      </div>
+      <div class="pact-card">
+        <div class="pact-letter">C</div>
+        <div class="pact-word">Comprehensive</div>
+        <h3>One profile. Every market.</h3>
+        <p style="font-size:13px;margin-top:6px">Stocks, crypto, and ETFs across all major global markets. One risk profile drives every ranking, every score, every alert.</p>
+      </div>
+      <div class="pact-card">
+        <div class="pact-letter">T</div>
+        <div class="pact-word">Trust</div>
+        <h3>No black boxes. No hidden agendas.</h3>
+        <p style="font-size:13px;margin-top:6px">Everything is data-driven. Our methodology is open for anyone to read — because trust is built on transparency.</p>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- What We Calculate -->
-  <section class="section">
-    <div class="container">
-      <div class="eyebrow center">What We Calculate</div>
-      <h2 class="section-h2 center">Four scores for every asset</h2>
-      <div class="method-table-wrap">
-        <div class="mood-table">
-          <div class="mood-table-row header">
-            <div class="mood-table-cell">Score</div>
-            <div class="mood-table-cell">What it measures</div>
-            <div class="mood-table-cell">How it works</div>
-          </div>
-          <div class="mood-table-row">
-            <div class="mood-table-cell"><strong>GloRisk Score</strong></div>
-            <div class="mood-table-cell desc">Your personalised risk fit</div>
-            <div class="mood-table-cell desc">You tell us your preferences. We score every asset against your profile. The result is unique to you.</div>
-          </div>
-          <div class="mood-table-row">
-            <div class="mood-table-cell"><strong>Market Performance</strong></div>
-            <div class="mood-table-cell desc">Price-based risk signals</div>
-            <div class="mood-table-cell desc">10 indicators across volatility, trend, and returns. Calculated from daily price data. Same for everyone.</div>
-          </div>
-          <div class="mood-table-row">
-            <div class="mood-table-cell"><strong>Market Position</strong></div>
-            <div class="mood-table-cell desc">Fundamental business quality</div>
-            <div class="mood-table-cell desc">10 factors covering business moat, financials, leadership, regulation, and industry outlook. AI-researched.</div>
-          </div>
-          <div class="mood-table-row">
-            <div class="mood-table-cell"><strong>Market Composite</strong></div>
-            <div class="mood-table-cell desc">Combined market score</div>
-            <div class="mood-table-cell desc">Average of Performance and Position. Only available when both scores exist for an asset.</div>
-          </div>
-        </div>
+  <div class="lp-divider"></div>
+
+  <!-- Principles -->
+  <div class="lp-sec lp-warm lp-centered">
+    <div class="lp-eyebrow">What we believe</div>
+    <h2>Three principles behind GloRisk</h2>
+    <div class="principle-grid">
+      <div class="principle-card">
+        <div class="principle-num">01</div>
+        <h3>Risk is personal</h3>
+        <p style="font-size:13px">No two investors carry the same risk appetite. A tool that treats them the same serves neither.</p>
+      </div>
+      <div class="principle-card">
+        <div class="principle-num">02</div>
+        <h3>Returns aren't everything</h3>
+        <p style="font-size:13px">The best investment isn't the highest return. It's the one that fits your risk profile and lets you sleep at night.</p>
+      </div>
+      <div class="principle-card">
+        <div class="principle-num">03</div>
+        <h3>Clarity beats complexity</h3>
+        <p style="font-size:13px">Risk intelligence shouldn't require a finance degree. GloRisk makes it simple, visual, and actionable.</p>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- How GloRisk Score Works -->
-  <section class="section section--alt">
-    <div class="container">
-      <div class="eyebrow center">How The GloRisk Score Works</div>
-      <h2 class="section-h2 center">Your profile, your scores</h2>
-      <div class="method-body" style="max-width:700px;margin:0 auto">
-        <p>You complete a 10-question profile about your investment preferences — how you feel about volatility, drawdowns, trends, returns, and growth.</p>
-        <p>Each question maps to one of our 10 risk indicators. Your answer determines how strictly you score each indicator:</p>
-        <p><strong>Strict</strong> — only green indicators score well. Amber and red are penalised.<br>
-        <strong>Moderate</strong> — green and amber score well. Red is penalised.<br>
-        <strong>Open</strong> — all indicator states score well. You're comfortable with risk.</p>
-        <p>The result is a score from 0 to 100 that tells you how well each asset <strong>fits your risk profile</strong> — not whether it's objectively good or bad.</p>
-        <p>A conservative investor and an aggressive investor will see completely different scores for the same stock. That's the point.</p>
-      </div>
-    </div>
-  </section>
+  <!-- Manifesto -->
+  <div class="manifesto-sec lp-centered">
+    <p class="m-muted">Not what analysts recommend.</p>
+    <p class="m-muted">Not what's trending.</p>
+    <p class="m-bold" style="margin-top:8px">What fits <span>your</span> risk.</p>
+  </div>
 
-  <!-- Rating Scale -->
-  <section class="section">
-    <div class="container">
-      <div class="eyebrow center">Rating Scale</div>
-      <h2 class="section-h2 center">All scores use the same 0–100 scale</h2>
-      <div class="method-table-wrap">
-        <div class="mood-table">
-          <div class="mood-table-row header">
-            <div class="mood-table-cell">Rating</div>
-            <div class="mood-table-cell">Score</div>
-            <div class="mood-table-cell">What it means</div>
-          </div>
-          <div class="mood-table-row">
-            <div class="mood-table-cell"><div class="mood-dot" style="background:#60a5fa"></div>Very Stable</div>
-            <div class="mood-table-cell pct">90 – 100</div>
-            <div class="mood-table-cell desc">Excellent across all dimensions.</div>
-          </div>
-          <div class="mood-table-row">
-            <div class="mood-table-cell"><div class="mood-dot" style="background:#22c55e"></div>Stable</div>
-            <div class="mood-table-cell pct">80 – 89</div>
-            <div class="mood-table-cell desc">Strong with minor concerns.</div>
-          </div>
-          <div class="mood-table-row">
-            <div class="mood-table-cell"><div class="mood-dot" style="background:#f59e0b"></div>Unstable</div>
-            <div class="mood-table-cell pct">60 – 79</div>
-            <div class="mood-table-cell desc">Mixed signals. Elevated but not extreme.</div>
-          </div>
-          <div class="mood-table-row">
-            <div class="mood-table-cell"><div class="mood-dot" style="background:#f97316"></div>Stressed</div>
-            <div class="mood-table-cell pct">40 – 59</div>
-            <div class="mood-table-cell desc">Multiple warning signals active.</div>
-          </div>
-          <div class="mood-table-row">
-            <div class="mood-table-cell"><div class="mood-dot" style="background:#ef4444"></div>Critical</div>
-            <div class="mood-table-cell pct">0 – 39</div>
-            <div class="mood-table-cell desc">Widespread issues across multiple dimensions.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Important -->
-  <section class="section section--alt">
-    <div class="container" style="max-width:700px">
-      <div class="eyebrow center">Important</div>
-      <h2 class="section-h2 center">What GloRisk is — and isn't</h2>
-      <div class="method-body">
-        <p>GloRisk is a <strong>risk awareness tool</strong>, not a prediction engine. It tells you where an asset sits today — not where it will be tomorrow.</p>
-        <p>Scores change as markets move. An asset that fits your profile today may not fit next month. That's why tracking matters.</p>
-        <p>Nothing on GloRisk constitutes financial advice. Always do your own research before making investment decisions.</p>
-      </div>
-    </div>
-  </section>
-
-  <div class="method-disclaimer" style="max-width:700px;margin:2rem auto;padding:0 1rem">
-    GloRisk is a risk awareness tool, not investment advice. Scores are based on historical data and AI research. Past performance is not indicative of future results. Always conduct your own research.
+  <!-- CTA -->
+  <div class="lp-cta-sec">
+    <div class="lp-eyebrow">Get started</div>
+    <h2 style="font-size:26px;max-width:380px;line-height:1.3;font-family:Georgia,serif">Your risk appetite.<br>Your rankings.</h2>
+    <p class="lp-sub-light" style="margin-top:10px;margin-bottom:24px;font-size:14px">Takes two minutes to set up. Free to start. No account needed.</p>
+    <a href="/screener.html" class="lp-btn" style="font-size:14px;padding:14px 28px">Start free — no account needed →</a>
+    <p style="font-size:12px;color:#A0AEC0;margin-top:12px">Not financial advice. Always do your own research.</p>
   </div>
 
 </div>
 
-<footer class="site-footer">
-  <div class="site-footer-inner">
-    <div class="site-footer-logo">Glo<span>Risk</span></div>
-    <p>GloRisk is a free research tool and not a commercial product. Data is refreshed at least weekly. Nothing on this site constitutes financial advice. Always do your own research.</p>
-    <p><a href="mailto:contact@terencebumah.com">contact@terencebumah.com</a></p>
+<footer class="site-footer lp">
+  <div class="lp-footer">
+    <div class="lp-footer-logo">Glo<span>Risk</span></div>
+    <div class="lp-footer-links">
+      <a href="/" class="lp-footer-link">Home</a>
+      <a href="/tools.html" class="lp-footer-link">Tools</a>
+      <a href="mailto:contact@terencebumah.com" class="lp-footer-link">Contact</a>
+    </div>
+    <p class="lp-footer-disc">GloRisk — Risk intelligence for everyday investors. Not financial advice. Always do your own research.</p>
   </div>
 </footer>
 
