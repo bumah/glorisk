@@ -104,6 +104,10 @@
   text-decoration: none;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 .st-view-link:hover { text-decoration: underline; }
 @media (max-width: 768px) {
@@ -594,6 +598,80 @@ function showResults(allCoins, profile) {
     renderTable();
   });
 
+  // Scores modal
+  function openScoresModal(coin, profile) {
+    let modal = document.getElementById('scoresModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'scoresModal';
+      modal.className = 'fit-modal-overlay';
+      document.body.appendChild(modal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal || e.target.classList.contains('fit-bd-close')) modal.style.display = 'none';
+      });
+    }
+
+    const SCORE_MATRIX = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 0 }, C: { green: 1, amber: 1, red: 1 } };
+    const SCORE_MATRIX_Q9 = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 1 }, C: { green: 0, amber: 0.5, red: 1 } };
+    const indMeta = {
+      volatility: { label: 'Daily Volatility', desc: 'Day-to-day price swings' },
+      volSpike: { label: 'Volatility Spike', desc: 'Recent vs average volatility' },
+      vsPeak: { label: 'Distance from Peak', desc: 'Drop from 3-year high' },
+      shortTrend: { label: '50-Day Trend', desc: 'Price vs 50-day average' },
+      longTrend: { label: '200-Day Trend', desc: 'Price vs 200-day average' },
+      maCross: { label: 'Trend Direction', desc: 'Golden or Death Cross' },
+      return1M: { label: '30-Day Return', desc: 'Past month return' },
+      return1Y: { label: '12-Month Return', desc: 'Past year return' },
+      range52W: { label: 'Position in Range', desc: 'Where in 52-week range' },
+      cagr3Y: { label: '3-Year Growth', desc: 'Compound annual growth' },
+    };
+
+    let strong = 0, partial = 0, low = 0;
+    const rows = FIT_QUESTIONS.map(q => {
+      const ind = coin.indicators[q.key];
+      const answer = profile[q.key];
+      if (!ind || !answer) return '';
+      const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
+      const s = matrix[answer]?.[ind.color] ?? 0;
+      const fitColor = s === 1 ? 'var(--green)' : s === 0.5 ? 'var(--amber)' : 'var(--red)';
+      const fitLabel = s === 1 ? 'Strong (10)' : s === 0.5 ? 'Partial (5)' : 'Low (0)';
+      if (s === 1) strong++; else if (s === 0.5) partial++; else low++;
+      const prefMap = { A: q.a.split(' ').slice(0, 3).join(' '), B: q.b.split(' ').slice(0, 3).join(' '), C: q.c.split(' ').slice(0, 3).join(' ') };
+      const meta = indMeta[q.key] || {};
+      return `<tr>
+        <td style="font-weight:500;color:var(--text)">${meta.label}</td>
+        <td style="color:var(--muted);font-weight:300">${meta.desc}</td>
+        <td style="font-family:var(--font-mono);font-size:0.78rem">${ind.label}</td>
+        <td style="font-size:0.72rem;color:var(--muted)">${prefMap[answer]}</td>
+        <td class="fit-bd-th-fit" style="color:${fitColor};font-weight:600">${fitLabel}</td>
+      </tr>`;
+    }).join('');
+
+    const fitScore = coin.fitScore;
+    const fitColor = getFitColor(fitScore);
+    const fitLabel = getFitLabel(fitScore);
+
+    modal.innerHTML = `
+      <div class="fit-modal">
+        <div class="fit-bd-header">
+          <div class="fit-bd-title">${coin.ticker} \u2014 Fit Scoring (${fitScore} ${fitLabel})</div>
+          <button class="fit-bd-close">\u00d7</button>
+        </div>
+        <div class="fit-modal-body">
+          <table class="fit-bd-table">
+            <thead><tr><th>Indicator</th><th>Description</th><th>Value</th><th>Preference</th><th class="fit-bd-th-fit">Fit</th></tr></thead>
+            <tbody>${rows}</tbody>
+            <tfoot><tr>
+              <td colspan="4" style="text-align:right;font-family:var(--font-mono);font-size:0.68rem;color:var(--muted)">Total:</td>
+              <td class="fit-bd-th-fit"><span style="color:var(--green)">Strong (${strong})</span> \u00b7 <span style="color:var(--amber)">Partial (${partial})</span> \u00b7 <span style="color:var(--red)">Low (${low})</span></td>
+            </tr></tfoot>
+          </table>
+        </div>
+        <a href="/browse.html?asset=${encodeURIComponent(coin.ticker)}" class="fit-bd-view">View Full Asset \u2192</a>
+      </div>`;
+    modal.style.display = 'flex';
+  }
+
   // Compute fit breakdown per indicator
   function getFitBreakdown(indicators, profile) {
     let strong = 0, partial = 0, low = 0;
@@ -642,10 +720,20 @@ function showResults(allCoins, profile) {
         <td class="st-right">${c.perfScore}</td>
         <td class="st-fit" style="color:${fitColor}">${c.fitScore}</td>
         <td class="st-right st-scoring"><span style="color:var(--green)">Strong (${bd.strong})</span> <span style="color:var(--amber)">Partial (${bd.partial})</span> <span style="color:var(--red)">Low (${bd.low})</span></td>
-        <td class="st-view"><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}#scoring" class="st-view-link">Scores</a></td>
+        <td class="st-view"><button class="st-view-link st-scores-btn" data-ticker="${c.ticker}">Scores</button></td>
         <td class="st-view"><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="st-view-link">View</a></td>
       </tr>`;
     }).join('');
+
+    // Wire Scores buttons to open modal
+    body.querySelectorAll('.st-scores-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const ticker = btn.dataset.ticker;
+        const coin = scored.find(c => c.ticker === ticker);
+        if (coin) openScoresModal(coin, profile);
+      });
+    });
   }
 
   renderTable();
