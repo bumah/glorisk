@@ -81,6 +81,20 @@ let wizardFilters = {
 };
 let wizardOpen = false;
 
+function getSavedFilters() {
+  try { return JSON.parse(localStorage.getItem('glorisk-saved-filters') || '[]'); } catch { return []; }
+}
+function saveFilter(name, filters) {
+  const saved = getSavedFilters();
+  saved.push({ name, filters: JSON.parse(JSON.stringify(filters)), created: Date.now() });
+  localStorage.setItem('glorisk-saved-filters', JSON.stringify(saved));
+}
+function deleteFilter(idx) {
+  const saved = getSavedFilters();
+  saved.splice(idx, 1);
+  localStorage.setItem('glorisk-saved-filters', JSON.stringify(saved));
+}
+
 /* ── Init ──────────────────────────────────────────────────────────── */
 
 async function init() {
@@ -261,6 +275,12 @@ async function init() {
   const wizPanel = document.getElementById('wizardPanel');
   if (wizToggle && wizPanel) {
     const urlParams = new URLSearchParams(window.location.search);
+      // If screener=1, just open the wizard
+      if (urlParams.get('screener') === '1' && !urlParams.has('markets') && !urlParams.has('perf')) {
+        wizardOpen = true;
+        wizPanel.style.display = '';
+        wizToggle.classList.add('active');
+      }
     if (urlParams.has('markets') || urlParams.has('perf') || urlParams.has('pos') || urlParams.has('ind') || urlParams.has('price')) {
       // Open wizard and apply params
       wizardOpen = true;
@@ -356,6 +376,57 @@ async function init() {
       wizPanel.querySelectorAll('.wiz-ind').forEach(s => s.value = 'any');
       renderCards();
     });
+
+  // Save filter button
+  document.getElementById('wizardSave')?.addEventListener('click', () => {
+    const hasFilters = wizardFilters.markets.length || wizardFilters.perfRating !== 'any' || wizardFilters.posClass.length || Object.keys(wizardFilters.indicators).length || wizardFilters.priceChange !== 'any';
+    if (!hasFilters) return;
+    const name = prompt('Name this filter:');
+    if (!name?.trim()) return;
+    saveFilter(name.trim(), wizardFilters);
+    renderSavedFilters();
+  });
+
+  // Render saved filters
+  function renderSavedFilters() {
+    const container = document.getElementById('savedFiltersList');
+    if (!container) return;
+    const saved = getSavedFilters();
+    if (!saved.length) {
+      container.innerHTML = '<div style="color:var(--muted2);font-size:0.68rem;padding:4px 0">No saved filters yet</div>';
+      return;
+    }
+    container.innerHTML = saved.map((s, i) => `
+      <div class="saved-filter-item">
+        <button class="saved-filter-btn" data-sf-idx="${i}">${s.name}</button>
+        <button class="saved-filter-del" data-sf-del="${i}" title="Delete">&times;</button>
+      </div>
+    `).join('');
+    container.querySelectorAll('.saved-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const s = getSavedFilters()[btn.dataset.sfIdx];
+        if (!s) return;
+        wizardFilters = JSON.parse(JSON.stringify(s.filters));
+        // Apply to UI
+        wizPanel.querySelectorAll('.wiz-market').forEach(cb => cb.checked = wizardFilters.markets.includes(cb.value));
+        wizPanel.querySelectorAll('[data-perf]').forEach(b => b.classList.toggle('active', b.dataset.perf === wizardFilters.perfRating));
+        wizPanel.querySelectorAll('[data-pos]').forEach(b => b.classList.toggle('active', wizardFilters.posClass.includes(b.dataset.pos)));
+        wizPanel.querySelectorAll('.wiz-ind').forEach(s => s.value = wizardFilters.indicators[s.dataset.ind] || 'any');
+        wizPanel.querySelectorAll('[data-price]').forEach(b => b.classList.toggle('active', b.dataset.price === wizardFilters.priceChange));
+        // Open wizard if closed
+        if (!wizardOpen) { wizardOpen = true; wizPanel.style.display = ''; wizToggle.classList.add('active'); }
+        renderCards();
+      });
+    });
+    container.querySelectorAll('.saved-filter-del').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteFilter(parseInt(btn.dataset.sfDel));
+        renderSavedFilters();
+      });
+    });
+  }
+  renderSavedFilters();
   }
 
   // Update nav sign in/out button

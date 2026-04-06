@@ -2068,6 +2068,46 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+.saved-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+.saved-filter-btn {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.72rem;
+  padding: 6px 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+.saved-filter-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.saved-filter-del {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.saved-filter-del:hover {
+  color: var(--red);
+  border-color: var(--red);
+}
 @media (max-width: 768px) {
   .wizard-ind-grid { grid-template-columns: 1fr; }
 }
