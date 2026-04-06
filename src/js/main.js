@@ -256,10 +256,43 @@ async function init() {
   document.getElementById('backLink').addEventListener('click', showLanding);
   document.getElementById('navLogo').addEventListener('click', showLanding);
 
-  // Wizard toggle
+  // Read wizard params from URL (set by home page wizard redirect)
   const wizToggle = document.getElementById('wizardToggle');
   const wizPanel = document.getElementById('wizardPanel');
   if (wizToggle && wizPanel) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('markets') || urlParams.has('perf') || urlParams.has('pos') || urlParams.has('ind') || urlParams.has('price')) {
+      // Open wizard and apply params
+      wizardOpen = true;
+      wizPanel.style.display = '';
+      wizToggle.classList.add('active');
+      if (urlParams.has('markets')) {
+        const m = urlParams.get('markets').split(',');
+        wizardFilters.markets = m;
+        m.forEach(v => { const cb = wizPanel.querySelector(`.wiz-market[value="${v}"]`); if (cb) cb.checked = true; });
+      }
+      if (urlParams.has('perf')) {
+        wizardFilters.perfRating = urlParams.get('perf');
+        wizPanel.querySelectorAll('[data-perf]').forEach(b => b.classList.toggle('active', b.dataset.perf === wizardFilters.perfRating));
+      }
+      if (urlParams.has('pos')) {
+        const p = urlParams.get('pos').split(',');
+        wizardFilters.posClass = p;
+        p.forEach(v => { const btn = wizPanel.querySelector(`[data-pos="${v}"]`); if (btn) btn.classList.add('active'); });
+      }
+      if (urlParams.has('ind')) {
+        try { wizardFilters.indicators = JSON.parse(urlParams.get('ind')); } catch {}
+        for (const [k, v] of Object.entries(wizardFilters.indicators)) {
+          const sel = wizPanel.querySelector(`.wiz-ind[data-ind="${k}"]`); if (sel) sel.value = v;
+        }
+      }
+      if (urlParams.has('price')) {
+        wizardFilters.priceChange = urlParams.get('price');
+        wizPanel.querySelectorAll('[data-price]').forEach(b => b.classList.toggle('active', b.dataset.price === wizardFilters.priceChange));
+      }
+    }
+
+  // Wizard toggle
     wizToggle.addEventListener('click', () => {
       wizardOpen = !wizardOpen;
       wizPanel.style.display = wizardOpen ? '' : 'none';
