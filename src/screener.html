@@ -607,7 +607,7 @@ function showResults(allCoins, profile) {
       modal.className = 'fit-modal-overlay';
       document.body.appendChild(modal);
       modal.addEventListener('click', (e) => {
-        if (e.target === modal || e.target.classList.contains('fit-bd-close')) modal.style.display = 'none';
+        if (e.target === modal || e.target.closest('.fit-bd-close')) modal.style.display = 'none';
       });
     }
 
