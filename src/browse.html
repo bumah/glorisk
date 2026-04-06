@@ -244,6 +244,30 @@
   border-radius: 2px;
 }
 
+/* ── View toggle ───────────────────────────────────────────────── */
+.view-toggle { display: flex; gap: 2px; }
+.vt-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.vt-btn:first-child { border-radius: 6px 0 0 6px; }
+.vt-btn:last-child { border-radius: 0 6px 6px 0; }
+.vt-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+.browse-table-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem 2rem;
+  overflow-x: auto;
+}
+
 /* ── Advanced Filter Wizard ──────────────────────────────────────── */
 /* Wizard CSS moved to styles.css */
 </style>
@@ -441,14 +465,20 @@
 
     <div class="browse-header">
       <div class="browse-title">Browse Assets</div>
-      <select class="sort-select" id="sortSelect">
-        <option value="default">Default order</option>
-        <option value="risk-high">Highest Risk</option>
-        <option value="risk-low">Lowest Risk</option>
-        <option value="price-high">Price: High &rarr; Low</option>
-        <option value="price-low">Price: Low &rarr; High</option>
-        <option value="change">Biggest Movers</option>
-      </select>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="view-toggle" id="viewToggle">
+          <button class="vt-btn active" data-view="table">Table</button>
+          <button class="vt-btn" data-view="cards">Cards</button>
+        </div>
+        <select class="sort-select" id="sortSelect">
+          <option value="default">Default order</option>
+          <option value="risk-high">Highest Risk</option>
+          <option value="risk-low">Lowest Risk</option>
+          <option value="price-high">Price: High &rarr; Low</option>
+          <option value="price-low">Price: Low &rarr; High</option>
+          <option value="change">Biggest Movers</option>
+        </select>
+      </div>
     </div>
 
     <!-- Score tabs (Performance | Position | GloRisk) -->
@@ -461,13 +491,27 @@
     <div class="browse-layout">
       <div class="cards-area">
         <div class="cards-count" id="cardsCount"></div>
-        <div class="cards-grid" id="cardsGrid">
+        <div class="cards-grid" id="cardsGrid" style="display:none">
           <div class="loading-state" style="grid-column:1/-1">
             <div class="ai-spinner"></div>
             Calculating risk indicators&hellip;
           </div>
         </div>
       </div>
+    </div>
+    <div class="browse-table-wrap" id="browseTableWrap">
+      <table class="screener-table" id="browseTable">
+        <thead>
+          <tr>
+            <th class="st-th-left">Asset</th>
+            <th class="st-th-right">Price</th>
+            <th class="st-th-right">30D</th>
+            <th class="st-th-right">Score</th>
+            <th class="st-th-right">Status</th>
+          </tr>
+        </thead>
+        <tbody id="browseTableBody"></tbody>
+      </table>
     </div>
   </div>
 </div>

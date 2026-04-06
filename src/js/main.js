@@ -77,6 +77,7 @@ let wizardFilters = {
   priceChange: 'any',
 };
 let wizardOpen = false;
+let activeView = 'table';
 
 function getSavedFilters() {
   try { return JSON.parse(localStorage.getItem('glorisk-saved-filters') || '[]'); } catch { return []; }
@@ -183,6 +184,16 @@ async function init() {
       }
     });
   }
+
+  // View toggle (Table / Cards)
+  document.getElementById('viewToggle')?.querySelectorAll('.vt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeView = btn.dataset.view;
+      renderCards();
+    });
+  });
 
   // Score tabs (Performance | Position | GloRisk)
   const scoreTabsEl = document.getElementById('scoreTabs');
@@ -615,6 +626,56 @@ function renderCards() {
       if (coin) showReport(coin);
     });
   });
+
+  // Toggle view
+  const cardsGrid = document.getElementById('cardsGrid');
+  const tableWrap = document.getElementById('browseTableWrap');
+  const tableBody = document.getElementById('browseTableBody');
+  if (cardsGrid && tableWrap) {
+    if (activeView === 'table') {
+      cardsGrid.style.display = 'none';
+      tableWrap.style.display = '';
+      // Render table rows
+      if (tableBody) {
+        tableBody.innerHTML = coins.map(c => {
+          const perfScore = gloriskScore(c.mood);
+          const perfBand = scoreBand(perfScore);
+          const change = c.priceChange || 0;
+          const changeClass = change >= 0 ? 'pos' : 'neg';
+
+          let score, scoreColor, labelText;
+          if (tab === 'performance') {
+            score = perfScore; scoreColor = perfBand.color; labelText = perfBand.label;
+          } else if (tab === 'position') {
+            score = c.positionScore || 0;
+            const pb = scoreBand(score); scoreColor = pb.color; labelText = c.positionLabel || pb.label;
+          } else {
+            const posScore = c.positionScore || 0;
+            score = Math.round((perfScore + posScore) / 2);
+            const cb = scoreBand(score); scoreColor = cb.color; labelText = cb.label;
+          }
+
+          return `<tr style="cursor:pointer" data-ticker="${c.ticker}">
+            <td><div class="st-ticker">${c.ticker}</div><div class="st-name">${c.company}</div></td>
+            <td class="st-right">${formatPrice(c.price, c.group)}</td>
+            <td class="st-right"><span class="card-v2-change ${changeClass}">${change >= 0 ? '+' : ''}${change.toFixed(1)}%</span></td>
+            <td class="st-right" style="font-family:var(--font-display);font-weight:700;color:${scoreColor}">${score}</td>
+            <td class="st-right" style="font-family:var(--font-mono);font-size:0.62rem;text-transform:uppercase;color:${scoreColor}">${labelText}</td>
+          </tr>`;
+        }).join('');
+
+        tableBody.querySelectorAll('tr').forEach(row => {
+          row.addEventListener('click', () => {
+            const coin = allCoins.find(c => c.ticker === row.dataset.ticker);
+            if (coin) showReport(coin);
+          });
+        });
+      }
+    } else {
+      cardsGrid.style.display = '';
+      tableWrap.style.display = 'none';
+    }
+  }
 }
 
 /* ── Page transitions ──────────────────────────────────────────────── */
