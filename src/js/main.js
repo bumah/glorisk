@@ -1073,6 +1073,11 @@ function renderReport(coin) {
     const panel = document.getElementById('fitBreakdownPanel');
     if (panel) panel.style.display = 'none';
   });
+  // Auto-open scoring if #scoring hash
+  if (window.location.hash === '#scoring') {
+    const panel = document.getElementById('fitBreakdownPanel');
+    if (panel) { panel.style.display = ''; panel.scrollIntoView({ behavior: 'smooth' }); }
+  }
 
   // Wire share/export buttons
   wireReportActions(coin, shareText, shareUrl);

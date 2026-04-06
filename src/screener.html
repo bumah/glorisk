@@ -390,7 +390,6 @@
         <label class="wizard-check"><input type="checkbox" class="swiz-market" value="HSI"><span>Hang Seng</span></label>
         <label class="wizard-check"><input type="checkbox" class="swiz-market" value="Crypto"><span>Crypto</span></label>
         <label class="wizard-check"><input type="checkbox" class="swiz-market" value="SectorETFs"><span>ETFs</span></label>
-        <label class="wizard-check"><input type="checkbox" class="swiz-market" value="Index"><span>Index</span></label>
       </div>
     </div>
     <div class="wizard-section">
@@ -429,6 +428,7 @@
           <th class="st-th-right">Perf</th>
           <th class="st-th-right">Fit</th>
           <th class="st-th-right">Scoring</th>
+          <th></th>
           <th></th>
         </tr>
       </thead>
@@ -526,11 +526,13 @@ function showResults(allCoins, profile) {
   document.getElementById('profileForm').style.display = 'none';
   document.getElementById('screenerResults').style.display = '';
 
-  const scored = allCoins.map(c => ({
-    ...c,
-    fitScore: computeFitScore(c.indicators, profile),
-    perfScore: gloriskScore(c.mood),
-  })).filter(c => c.fitScore !== null).sort((a, b) => b.fitScore - a.fitScore);
+  const scored = allCoins
+    .filter(c => c.group !== 'Index') // exclude indices
+    .map(c => ({
+      ...c,
+      fitScore: computeFitScore(c.indicators, profile),
+      perfScore: gloriskScore(c.mood),
+    })).filter(c => c.fitScore !== null).sort((a, b) => b.fitScore - a.fitScore);
 
   const body = document.getElementById('screenerBody');
   const countEl = document.getElementById('screenerCount');
@@ -639,8 +641,9 @@ function showResults(allCoins, profile) {
         <td class="st-right st-td-1y">${c.indicators?.return1Y?.label || '\u2014'}</td>
         <td class="st-right">${c.perfScore}</td>
         <td class="st-fit" style="color:${fitColor}">${c.fitScore}</td>
-        <td class="st-right st-scoring"><span style="color:var(--green)">Strong (${bd.strong})</span> \u00b7 <span style="color:var(--amber)">Partial (${bd.partial})</span> \u00b7 <span style="color:var(--red)">Low (${bd.low})</span></td>
-        <td class="st-view"><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="st-view-link">Scores \u2192</a></td>
+        <td class="st-right st-scoring"><span style="color:var(--green)">Strong (${bd.strong})</span> <span style="color:var(--amber)">Partial (${bd.partial})</span> <span style="color:var(--red)">Low (${bd.low})</span></td>
+        <td class="st-view"><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}#scoring" class="st-view-link">Scores</a></td>
+        <td class="st-view"><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="st-view-link">View</a></td>
       </tr>`;
     }).join('');
   }
