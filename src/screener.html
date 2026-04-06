@@ -42,10 +42,10 @@ html,body{overflow-y:auto !important;}
 .tab-d{padding:6px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);cursor:pointer;border-radius:6px 6px 0 0;border:0.5px solid transparent;background:none;font-family:inherit;}
 .tab-d.active{background:var(--navy-light);color:var(--warm-white);border-color:var(--border-dark);border-bottom-color:var(--navy-light);}
 .table-wrap-d{margin:0 32px 28px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:0 10px 10px 10px;overflow-x:auto;}
-.t-head{display:grid;grid-template-columns:2.2fr 80px 68px 68px 56px 90px 110px 90px;padding:10px 16px;border-bottom:0.5px solid var(--border-dark);}
+.t-head{display:grid;grid-template-columns:2fr 70px 90px 72px 60px 60px 50px 68px 60px 60px 56px 56px 60px 80px;padding:10px 16px;border-bottom:0.5px solid var(--border-dark);}
 .th{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.22);text-align:right;}
 .th:first-child{text-align:left;}
-.t-row{display:grid;grid-template-columns:2.2fr 80px 68px 68px 56px 90px 110px 90px;padding:13px 16px;border-bottom:0.5px solid var(--border-dark);align-items:center;cursor:pointer;}
+.t-row{display:grid;grid-template-columns:2fr 70px 90px 72px 60px 60px 50px 68px 60px 60px 56px 56px 60px 80px;padding:13px 16px;border-bottom:0.5px solid var(--border-dark);align-items:center;cursor:pointer;}
 .t-row:last-child{border-bottom:none;}
 .t-row:hover{background:rgba(79,70,229,0.05);}
 .aname{font-size:13px;font-weight:700;color:var(--warm-white);}
@@ -88,7 +88,8 @@ html,body{overflow-y:auto !important;}
 @media(max-width:768px){
 .page-head,.search-row,.tabs-d{padding-left:16px;padding-right:16px;}
 .profile-bar,.summary-row,.legend,.table-wrap-d{margin-left:16px;margin-right:16px;}
-.t-head,.t-row{grid-template-columns:1.5fr 70px 60px 60px 50px 80px 90px 80px;font-size:10px;padding:10px 12px;}
+.t-head,.t-row{grid-template-columns:1.5fr 55px 75px 60px 50px 50px;font-size:10px;padding:10px 12px;}
+.hide-m{display:none !important;}
 .summary-row{flex-wrap:wrap;}
 .sum-card{min-width:calc(50% - 4px);}
 .pf-wrap{padding:2rem 1rem;}
@@ -297,12 +298,18 @@ html,body{overflow-y:auto !important;}
   <div class="table-wrap-d">
     <div class="t-head">
       <div class="th">Asset</div>
+      <div class="th">Fit</div>
+      <div class="th" style="text-align:center">Rating</div>
       <div class="th">Price</div>
       <div class="th">30D</div>
       <div class="th">1Y</div>
       <div class="th">Perf</div>
-      <div class="th">Fit score</div>
-      <div class="th" style="text-align:center">Rating</div>
+      <div class="th hide-m">Perf Rating</div>
+      <div class="th hide-m">50D</div>
+      <div class="th hide-m">200D</div>
+      <div class="th hide-m">Trend</div>
+      <div class="th hide-m">Range</div>
+      <div class="th hide-m">3Y</div>
       <div class="th">Actions</div>
     </div>
     <div id="screenerBody"></div>
@@ -616,14 +623,29 @@ function showResults(allCoins, profile) {
       const fitClass = getFitClass(c.fitScore);
       const change = c.priceChange || 0;
 
+      // Performance rating band
+      const perfBand = c.perfScore >= 90 ? 'Very Stable' : c.perfScore >= 80 ? 'Stable' : c.perfScore >= 60 ? 'Unstable' : c.perfScore >= 40 ? 'Stressed' : 'Critical';
+      const ind = c.indicators || {};
+      const trend50 = ind.shortTrend?.label || '\u2014';
+      const trend200 = ind.longTrend?.label || '\u2014';
+      const trendDir = ind.maCross?.color === 'green' ? 'Golden' : ind.maCross?.color === 'red' ? 'Death' : '\u2014';
+      const range = ind.range52W?.label || '\u2014';
+      const growth3y = ind.cagr3Y?.label || '\u2014';
+
       return `<div class="t-row" data-ticker="${c.ticker}">
         <div><div class="aname">${c.ticker}</div><div class="asub">${c.company}</div></div>
-        <div class="cell">${formatPrice(c.price, c.group)}</div>
-        <div class="${change >= 0 ? 'cell-pos' : 'cell-neg'}">${change >= 0 ? '+' : ''}${change.toFixed(1)}%</div>
-        <div class="cell">${c.indicators?.return1Y?.label || '\u2014'}</div>
-        <div class="cell">${c.perfScore}</div>
         <div class="score-cell"><span class="score-val" style="color:${fitColor}">${c.fitScore}</span><div class="bar-mini"><div class="bar-fill-d" style="width:${c.fitScore}%;background:${fitColor}"></div></div></div>
         <div style="text-align:center"><span class="badge-d badge-${fitClass}">${fitLabel}</span></div>
+        <div class="cell">${formatPrice(c.price, c.group)}</div>
+        <div class="${change >= 0 ? 'cell-pos' : 'cell-neg'}">${change >= 0 ? '+' : ''}${change.toFixed(1)}%</div>
+        <div class="cell">${ind.return1Y?.label || '\u2014'}</div>
+        <div class="cell">${c.perfScore}</div>
+        <div class="cell hide-m">${perfBand}</div>
+        <div class="cell hide-m">${trend50}</div>
+        <div class="cell hide-m">${trend200}</div>
+        <div class="cell hide-m">${trendDir}</div>
+        <div class="cell hide-m">${range}</div>
+        <div class="cell hide-m">${growth3y}</div>
         <div class="actions-d"><button class="act-d act-s st-scores-btn" data-ticker="${c.ticker}">Scores</button><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="act-d act-v">View</a></div>
       </div>`;
     }).join('');
