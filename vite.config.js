@@ -17,6 +17,7 @@ export default defineConfig({
         stresstest: resolve(import.meta.dirname, 'src/stress-test.html'),
         watchlist: resolve(import.meta.dirname, 'src/watchlist.html'),
         screener: resolve(import.meta.dirname, 'src/screener.html'),
+        tools: resolve(import.meta.dirname, 'src/tools.html'),
       },
     },
   },
