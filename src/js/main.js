@@ -655,12 +655,18 @@ function renderCards() {
             const cb = scoreBand(score); scoreColor = cb.color; labelText = cb.label;
           }
 
+          const return1Y = c.indicators?.return1Y?.label || '\u2014';
+          const posScore = c.positionScore || null;
+
           return `<tr style="cursor:pointer" data-ticker="${c.ticker}">
             <td><div class="st-ticker">${c.ticker}</div><div class="st-name">${c.company}</div></td>
             <td class="st-right">${formatPrice(c.price, c.group)}</td>
             <td class="st-right"><span class="card-v2-change ${changeClass}">${change >= 0 ? '+' : ''}${change.toFixed(1)}%</span></td>
-            <td class="st-right" style="font-family:var(--font-display);font-weight:700;color:${scoreColor}">${score}</td>
-            <td class="st-right" style="font-family:var(--font-mono);font-size:0.62rem;text-transform:uppercase;color:${scoreColor}">${labelText}</td>
+            <td class="st-right st-td-1y">${return1Y}</td>
+            <td class="st-fit" style="color:${scoreColor}">${score}</td>
+            <td class="st-label" style="color:${scoreColor}">${labelText}</td>
+            <td class="st-right st-td-1y">${perfScore}</td>
+            <td class="st-right st-td-1y">${posScore || '\u2014'}</td>
           </tr>`;
         }).join('');
 

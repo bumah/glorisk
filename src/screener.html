@@ -426,6 +426,7 @@ html, body { overflow-y: auto !important; }
           <th class="st-th-right st-th-1y">1Y</th>
           <th class="st-th-right">Perf</th>
           <th class="st-th-right">Fit</th>
+          <th class="st-th-right">Rating</th>
           <th class="st-th-right">Scoring</th>
           <th></th>
           <th></th>
@@ -714,6 +715,7 @@ function showResults(allCoins, profile) {
         <td class="st-right st-td-1y">${c.indicators?.return1Y?.label || '\u2014'}</td>
         <td class="st-right">${c.perfScore}</td>
         <td class="st-fit" style="color:${fitColor}">${c.fitScore}</td>
+        <td class="st-label" style="color:${fitColor}">${getFitLabel(c.fitScore)}</td>
         <td class="st-right st-scoring"><span style="color:var(--green)">Strong (${bd.strong})</span> <span style="color:var(--amber)">Partial (${bd.partial})</span> <span style="color:var(--red)">Low (${bd.low})</span></td>
         <td class="st-view"><button class="st-view-link st-scores-btn" data-ticker="${c.ticker}">Scores</button></td>
         <td class="st-view"><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="st-view-link">View</a></td>
