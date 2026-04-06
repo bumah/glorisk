@@ -933,14 +933,29 @@ body {
   margin-top: 0.5rem;
 }
 
-/* Fit breakdown panel */
-.fit-breakdown {
+/* Fit breakdown modal */
+.fit-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+.fit-modal {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.25rem;
-  margin-top: 1rem;
-  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.fit-modal-body {
+  overflow-x: auto;
 }
 .fit-bd-header {
   display: flex;

@@ -787,33 +787,47 @@ function buildGloRiskCard(coin) {
           <a href="/screener.html" style="font-family:var(--font-mono);font-size:0.58rem;color:var(--accent);text-decoration:none;text-transform:uppercase;letter-spacing:0.08em">Edit Profile \u2192</a>
         </div>
       </div>
-      <div id="fitBreakdownPanel" class="fit-breakdown" style="display:none">
-        <div class="fit-bd-header">
-          <div class="fit-bd-title">Fit Scoring Breakdown</div>
-          <button class="fit-bd-close" id="fitBdClose">&times;</button>
-        </div>
-        <table class="fit-bd-table">
-          <thead>
-            <tr>
-              <th>Indicator</th>
-              <th>Description</th>
-              <th>Value</th>
-              <th>Preference</th>
-              <th class="fit-bd-th-fit">Fit</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${buildFitRows(coin)}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="4" style="text-align:right;font-family:var(--font-mono);font-size:0.68rem;color:var(--muted)">Total:</td>
-              <td id="fitBdTotal" class="fit-bd-th-fit"></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
     `;
+  // Append modal to body after render (deferred)
+  setTimeout(() => {
+    let modal = document.getElementById('fitModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'fitModal';
+      modal.className = 'fit-modal-overlay';
+      modal.style.display = 'none';
+      modal.innerHTML = `
+        <div class="fit-modal">
+          <div class="fit-bd-header">
+            <div class="fit-bd-title">Fit Scoring Breakdown</div>
+            <button class="fit-bd-close" id="fitBdClose">\u00d7</button>
+          </div>
+          <div class="fit-modal-body">
+            <table class="fit-bd-table">
+              <thead>
+                <tr>
+                  <th>Indicator</th>
+                  <th>Description</th>
+                  <th>Value</th>
+                  <th>Preference</th>
+                  <th class="fit-bd-th-fit">Fit</th>
+                </tr>
+              </thead>
+              <tbody>${buildFitRows(coin)}</tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4" style="text-align:right;font-family:var(--font-mono);font-size:0.68rem;color:var(--muted)">Total:</td>
+                  <td id="fitBdTotal" class="fit-bd-th-fit"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <a href="/browse.html?asset=${encodeURIComponent(coin.ticker)}" class="fit-bd-view">View Full Asset \u2192</a>
+        </div>`;
+      document.body.appendChild(modal);
+    }
+  }, 0);
+  return html;
   }
 
   // No profile — show Performance Score with CTA
@@ -1064,19 +1078,23 @@ function renderReport(coin) {
   // Load deep analysis report (pre-generated static JSON)
   loadDeepAnalysis(coin.ticker);
 
-  // Fit breakdown toggle
+  // Fit modal toggle
   document.getElementById('fitBdToggle')?.addEventListener('click', () => {
-    const panel = document.getElementById('fitBreakdownPanel');
-    if (panel) panel.style.display = panel.style.display === 'none' ? '' : 'none';
+    const modal = document.getElementById('fitModal');
+    if (modal) modal.style.display = 'flex';
   });
-  document.getElementById('fitBdClose')?.addEventListener('click', () => {
-    const panel = document.getElementById('fitBreakdownPanel');
-    if (panel) panel.style.display = 'none';
+  document.addEventListener('click', (e) => {
+    if (e.target.id === 'fitBdClose' || e.target.classList.contains('fit-modal-overlay')) {
+      const modal = document.getElementById('fitModal');
+      if (modal) modal.style.display = 'none';
+    }
   });
-  // Auto-open scoring if #scoring hash
+  // Auto-open scoring modal if #scoring hash
   if (window.location.hash === '#scoring') {
-    const panel = document.getElementById('fitBreakdownPanel');
-    if (panel) { panel.style.display = ''; panel.scrollIntoView({ behavior: 'smooth' }); }
+    setTimeout(() => {
+      const modal = document.getElementById('fitModal');
+      if (modal) modal.style.display = 'flex';
+    }, 500);
   }
 
   // Wire share/export buttons
