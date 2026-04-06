@@ -44,7 +44,7 @@ function moodRsbClass(label) {
 
 // Map data group to user-friendly asset type
 function assetTypeLabel(group) {
-  const STOCK_GROUPS = ['SP500', 'FTSE100', 'Nikkei225', 'HSI'];
+  const STOCK_GROUPS = ['SP500', 'FTSE100', 'Nikkei225', 'HSI', 'NASDAQ100'];
   if (group === 'Crypto') return 'Crypto';
   if (STOCK_GROUPS.includes(group)) return 'Stock';
   if (group === 'SectorETFs') return 'ETF';
@@ -331,7 +331,7 @@ function buildDropdownHTML(coins) {
 
 /* ── Tab-based filter logic ─────────────────────────────────────────── */
 
-const STOCK_GROUPS = ['SP500', 'FTSE100', 'Nikkei225', 'HSI'];
+const STOCK_GROUPS = ['SP500', 'FTSE100', 'Nikkei225', 'HSI', 'NASDAQ100'];
 const MAG7_TICKERS = ['MSFT', 'META', 'TSLA', 'GOOG', 'NVDA', 'AMZN', 'AAPL'];
 const CRYPTO_MAJORS = ['BTC', 'ETH', 'BNB', 'XRP', 'SOL'];
 
@@ -392,6 +392,7 @@ function updateCounts() {
   document.getElementById('cnt-ftse').textContent         = groupCounts['FTSE100'];
   document.getElementById('cnt-nikkei').textContent       = groupCounts['Nikkei225'];
   document.getElementById('cnt-hsi').textContent          = groupCounts['HSI'];
+  document.getElementById('cnt-nasdaq').textContent       = groupCounts['NASDAQ100'];
   document.getElementById('cnt-etfs').textContent         = groupCounts['SectorETFs'];
   document.getElementById('cnt-index').textContent        = groupCounts['Index'];
 }
