@@ -3,117 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DailyFinn — Screener</title>
+<title>GloRisk — Screener</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/styles.css">
 <style>
-html, body { overflow-y: auto !important; }
-.profile-form { max-width: 600px; margin: 0 auto; padding: 2rem 1rem; }
-.profile-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; text-align: center; }
-.profile-sub { text-align: center; color: var(--muted); font-size: 0.88rem; font-weight: 300; margin-top: 0.5rem; margin-bottom: 2rem; }
-.pf-question { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 12px; transition: border-color 0.2s; }
-.pf-num { font-family: var(--font-mono); font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted2); margin-bottom: 0.4rem; }
-.pf-text { font-family: var(--font-display); font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.75rem; }
-.pf-options { display: flex; flex-direction: column; gap: 8px; }
-.pf-option { display: flex; align-items: center; gap: 10px; font-size: 0.82rem; color: var(--muted); cursor: pointer; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; transition: all 0.15s; }
-.pf-option:hover { border-color: var(--border2); color: var(--text); }
-.pf-option:has(input:checked) { border-color: var(--accent); color: var(--text); background: rgba(0,212,255,0.03); }
-.pf-option input { display: none; }
-.pf-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.pf-submit { display: block; width: 100%; padding: 14px; margin-top: 1.5rem; background: var(--accent); color: #000; border: none; border-radius: var(--radius); font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
-.pf-submit:hover { opacity: 0.9; }
-.screener-header { display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 2rem auto 1rem; padding: 0 1rem; }
-.screener-title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; }
-.screener-edit { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--muted); font-size: 0.72rem; padding: 6px 14px; cursor: pointer; }
-.screener-edit:hover { color: var(--accent); border-color: var(--accent); }
-.screener-controls {
-  max-width: 1200px;
-  margin: 0 auto 0.75rem;
-  padding: 0 1rem;
-  display: flex;
-  gap: 8px;
-  align-items: center;
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+html,body{overflow-y:auto !important;}
+:root{
+--navy:#0D1B3E;--navy-mid:#162347;--navy-light:#1E2E52;--indigo:#4F46E5;--indigo-light:#EEF2FF;--indigo-mid:#7B8EC8;--warm-white:#F8F7F4;--border-dark:rgba(255,255,255,0.08);
+--teal:#1D9E75;--teal-muted:#5DCAA5;--teal-bg:rgba(29,158,117,0.15);--teal-muted-bg:rgba(93,202,165,0.12);
+--amber-d:#EF9F27;--amber-bg:rgba(239,159,39,0.15);
+--red-d:#E24B4A;--red-muted:#F09595;--red-bg:rgba(226,75,74,0.12);--red-muted-bg:rgba(240,149,149,0.12);
 }
-.screener-search {
-  flex: 1;
-  background: var(--surface);
-  border: 1.5px solid var(--border2);
-  border-radius: var(--radius-sm);
-  padding: 10px 16px;
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  color: var(--text);
-  outline: none;
-  caret-color: var(--accent);
-}
-.screener-table-wrap {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem 2rem;
-  overflow-x: auto;
-}
-.screener-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.screener-table thead th {
-  padding: 10px 14px;
-  text-align: left;
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  background: var(--surface2);
-  border-bottom: 1px solid var(--border);
-  font-weight: 500;
-  white-space: nowrap;
-}
-.st-th-right { text-align: right !important; }
-.screener-table tbody td {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.82rem;
-  vertical-align: middle;
-}
-.screener-table tbody tr:last-child td { border-bottom: none; }
-.screener-table tbody tr { transition: background 0.1s; }
-.screener-table tbody tr:hover { background: var(--surface2); }
-.st-ticker { font-family: var(--font-display); font-weight: 700; font-size: 0.88rem; }
-.st-name { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
-.st-right { text-align: right; font-family: var(--font-mono); font-size: 0.78rem; }
-.st-fit { text-align: right; font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; }
-.card-v2-change { font-family: var(--font-mono); font-size: 0.68rem; }
-.card-v2-change.pos { color: var(--green); }
-.card-v2-change.neg { color: var(--red); }
-.st-scoring {
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  white-space: nowrap;
-}
-.st-view { text-align: center; }
-.st-view-link {
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  color: var(--accent);
-  text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-}
-.st-view-link:hover { text-decoration: underline; }
-@media (max-width: 768px) {
-  .screener-controls { flex-direction: column; }
-  .st-th-1y, .st-td-1y, .st-scoring { display: none; }
+.dash{background:var(--navy);font-family:'DM Sans',system-ui,sans-serif;min-height:100vh;color:var(--warm-white);}
+.page-head{padding:24px 32px 0;}
+.page-title{font-size:22px;font-weight:700;color:var(--warm-white);font-family:Georgia,serif;margin-bottom:3px;}
+.page-sub{font-size:12px;color:var(--indigo-mid);}
+.profile-bar{margin:16px 32px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ppill{display:flex;align-items:center;gap:6px;background:rgba(79,70,229,0.1);border:0.5px solid rgba(79,70,229,0.2);border-radius:20px;padding:4px 12px;}
+.ppill-label{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--indigo-mid);}
+.ppill-val{font-size:11px;font-weight:600;color:var(--warm-white);}
+.profile-edit{margin-left:auto;font-size:11px;color:var(--indigo);font-weight:600;cursor:pointer;border:0.5px solid rgba(79,70,229,0.25);border-radius:6px;padding:4px 12px;background:none;font-family:inherit;}
+.summary-row{display:flex;gap:8px;padding:0 32px;margin:16px 0;}
+.sum-card{flex:1;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:8px;padding:12px 14px;text-align:center;}
+.sum-num{font-size:20px;font-weight:700;font-family:Georgia,serif;margin-bottom:2px;}
+.sum-label{font-size:10px;color:rgba(255,255,255,0.3);}
+.legend{margin:0 32px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.legend-label{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-right:4px;}
+.l-chip{font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;display:flex;align-items:center;gap:5px;}
+.l-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.search-row{padding:0 32px;margin-bottom:12px;display:flex;gap:8px;}
+.search-d{flex:1;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:8px;padding:9px 14px;font-size:12px;color:var(--warm-white);font-family:inherit;outline:none;}
+.search-d::placeholder{color:rgba(255,255,255,0.2);}
+.filter-btn{padding:8px 14px;background:transparent;border:0.5px solid var(--border-dark);border-radius:8px;font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);cursor:pointer;font-family:inherit;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;}
+.tabs-d{padding:0 32px;display:flex;gap:3px;margin-bottom:0;}
+.tab-d{padding:6px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);cursor:pointer;border-radius:6px 6px 0 0;border:0.5px solid transparent;background:none;font-family:inherit;}
+.tab-d.active{background:var(--navy-light);color:var(--warm-white);border-color:var(--border-dark);border-bottom-color:var(--navy-light);}
+.table-wrap-d{margin:0 32px 28px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:0 10px 10px 10px;overflow-x:auto;}
+.t-head{display:grid;grid-template-columns:2.2fr 80px 68px 68px 56px 90px 110px 90px;padding:10px 16px;border-bottom:0.5px solid var(--border-dark);}
+.th{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.22);text-align:right;}
+.th:first-child{text-align:left;}
+.t-row{display:grid;grid-template-columns:2.2fr 80px 68px 68px 56px 90px 110px 90px;padding:13px 16px;border-bottom:0.5px solid var(--border-dark);align-items:center;cursor:pointer;}
+.t-row:last-child{border-bottom:none;}
+.t-row:hover{background:rgba(79,70,229,0.05);}
+.aname{font-size:13px;font-weight:700;color:var(--warm-white);}
+.asub{font-size:10px;color:rgba(255,255,255,0.28);margin-top:2px;}
+.cell{font-size:12px;color:rgba(255,255,255,0.45);text-align:right;font-family:monospace;}
+.cell-pos{color:var(--teal);font-size:12px;text-align:right;font-family:monospace;}
+.cell-neg{color:#F09595;font-size:12px;text-align:right;font-family:monospace;}
+.score-cell{text-align:right;}
+.score-val{font-size:13px;font-weight:700;font-family:monospace;}
+.bar-mini{width:56px;height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;margin-left:auto;margin-top:4px;}
+.bar-fill-d{height:100%;border-radius:2px;}
+.badge-d{display:inline-flex;padding:3px 9px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;}
+.badge-vs{background:var(--teal-bg);color:var(--teal);}
+.badge-s{background:var(--teal-muted-bg);color:var(--teal-muted);}
+.badge-b{background:var(--amber-bg);color:var(--amber-d);}
+.badge-p{background:var(--red-muted-bg);color:var(--red-muted);}
+.badge-vp{background:var(--red-bg);color:var(--red-d);}
+.actions-d{display:flex;gap:5px;justify-content:flex-end;}
+.act-d{font-size:9px;font-weight:700;letter-spacing:0.05em;padding:4px 9px;border-radius:5px;cursor:pointer;border:none;font-family:inherit;text-transform:uppercase;text-decoration:none;}
+.act-s{background:rgba(79,70,229,0.15);color:var(--indigo-mid);}
+.act-v{background:rgba(79,70,229,0.25);color:#A5B4FC;}
+/* Profile form */
+.pf-wrap{max-width:600px;margin:0 auto;padding:3rem 1.5rem;}
+.pf-title{font-size:26px;font-weight:700;color:var(--warm-white);font-family:Georgia,serif;text-align:center;margin-bottom:6px;}
+.pf-sub{text-align:center;color:var(--indigo-mid);font-size:13px;margin-bottom:2rem;}
+.pf-q{background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:10px;padding:20px;margin-bottom:10px;transition:border-color 0.2s;}
+.pf-num{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--indigo-mid);margin-bottom:8px;}
+.pf-text{font-size:14px;font-weight:600;color:var(--warm-white);margin-bottom:12px;}
+.pf-opts{display:flex;flex-direction:column;gap:6px;}
+.pf-opt{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.5);cursor:pointer;padding:10px 14px;border:0.5px solid var(--border-dark);border-radius:8px;transition:all 0.15s;}
+.pf-opt:hover{border-color:rgba(79,70,229,0.3);color:var(--warm-white);}
+.pf-opt:has(input:checked){border-color:var(--indigo);color:var(--warm-white);background:rgba(79,70,229,0.08);}
+.pf-opt input{display:none;}
+.pf-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.pf-submit{display:block;width:100%;padding:14px;margin-top:1.5rem;background:var(--indigo);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.2s;}
+.pf-submit:hover{background:#4338CA;}
+/* Footer */
+.dash-footer{padding:20px 32px;border-top:0.5px solid var(--border-dark);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:11px;color:rgba(255,255,255,0.2);}
+.dash-footer a{color:var(--indigo-mid);text-decoration:none;}
+@media(max-width:768px){
+.page-head,.search-row,.tabs-d{padding-left:16px;padding-right:16px;}
+.profile-bar,.summary-row,.legend,.table-wrap-d{margin-left:16px;margin-right:16px;}
+.t-head,.t-row{grid-template-columns:1.5fr 70px 60px 60px 50px 80px 90px 80px;font-size:10px;padding:10px 12px;}
+.summary-row{flex-wrap:wrap;}
+.sum-card{min-width:calc(50% - 4px);}
+.pf-wrap{padding:2rem 1rem;}
 }
 </style>
 </head>
@@ -134,230 +112,108 @@ html, body { overflow-y: auto !important; }
   </div>
 </nav>
 
-<div id="profileForm">
-  <div class="profile-form">
-    <div class="profile-header">
-      <h1 class="profile-title">Set Up Your Risk Profile</h1>
-      <p class="profile-sub">Answer 10 questions to get personalised GloRisk fit scores for every asset.</p>
-    </div>
+<div id="profileForm" class="dash">
+  <div class="pf-wrap">
+    <div class="pf-title">Set Up Your Risk Profile</div>
+    <div class="pf-sub">Answer 10 questions to get personalised risk scores for every asset.</div>
 
-    <div class="pf-question" data-key="volatility">
+    <div class="pf-q" data-key="volatility">
       <div class="pf-num">1 / 10</div>
       <div class="pf-text">How much price movement are you comfortable with?</div>
-      <div class="pf-options">
-        <label class="pf-option">
-          <input type="radio" name="volatility" value="A">
-          <span class="pf-dot" style="background:var(--green)"></span>
-          <span>I prefer steady, stable stocks</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="volatility" value="B">
-          <span class="pf-dot" style="background:var(--amber)"></span>
-          <span>I'm okay with some ups and downs</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="volatility" value="C">
-          <span class="pf-dot" style="background:var(--red)"></span>
-          <span>I'm comfortable with big swings</span>
-        </label>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="volatility" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>I prefer steady, stable stocks</span></label>
+        <label class="pf-opt"><input type="radio" name="volatility" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>I'm okay with some ups and downs</span></label>
+        <label class="pf-opt"><input type="radio" name="volatility" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I'm comfortable with big swings</span></label>
       </div>
     </div>
 
-    <div class="pf-question" data-key="volSpike">
+    <div class="pf-q" data-key="volSpike">
       <div class="pf-num">2 / 10</div>
       <div class="pf-text">If a stock suddenly becomes more unstable, what would you do?</div>
-      <div class="pf-options">
-        <label class="pf-option">
-          <input type="radio" name="volSpike" value="A">
-          <span class="pf-dot" style="background:var(--green)"></span>
-          <span>I'd avoid it or sell</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="volSpike" value="B">
-          <span class="pf-dot" style="background:var(--amber)"></span>
-          <span>I'd keep an eye on it</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="volSpike" value="C">
-          <span class="pf-dot" style="background:var(--red)"></span>
-          <span>I'd stay invested</span>
-        </label>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="volSpike" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>I'd avoid it or sell</span></label>
+        <label class="pf-opt"><input type="radio" name="volSpike" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>I'd keep an eye on it</span></label>
+        <label class="pf-opt"><input type="radio" name="volSpike" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I'd stay invested</span></label>
       </div>
     </div>
 
-    <div class="pf-question" data-key="vsPeak">
+    <div class="pf-q" data-key="vsPeak">
       <div class="pf-num">3 / 10</div>
       <div class="pf-text">If a stock drops from its peak, how much is acceptable to you?</div>
-      <div class="pf-options">
-        <label class="pf-option">
-          <input type="radio" name="vsPeak" value="A">
-          <span class="pf-dot" style="background:var(--green)"></span>
-          <span>Only small drops</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="vsPeak" value="B">
-          <span class="pf-dot" style="background:var(--amber)"></span>
-          <span>Some decline is fine</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="vsPeak" value="C">
-          <span class="pf-dot" style="background:var(--red)"></span>
-          <span>Big drops don't bother me</span>
-        </label>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="vsPeak" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Only small drops</span></label>
+        <label class="pf-opt"><input type="radio" name="vsPeak" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Some decline is fine</span></label>
+        <label class="pf-opt"><input type="radio" name="vsPeak" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Big drops don't bother me</span></label>
       </div>
     </div>
 
-    <div class="pf-question" data-key="shortTrend">
+    <div class="pf-q" data-key="shortTrend">
       <div class="pf-num">4 / 10</div>
       <div class="pf-text">What do you want to see in the short term?</div>
-      <div class="pf-options">
-        <label class="pf-option">
-          <input type="radio" name="shortTrend" value="A">
-          <span class="pf-dot" style="background:var(--green)"></span>
-          <span>The price going up</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="shortTrend" value="B">
-          <span class="pf-dot" style="background:var(--amber)"></span>
-          <span>Moving sideways is fine</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="shortTrend" value="C">
-          <span class="pf-dot" style="background:var(--red)"></span>
-          <span>I'm okay if it drops short term</span>
-        </label>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="shortTrend" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>The price going up</span></label>
+        <label class="pf-opt"><input type="radio" name="shortTrend" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Moving sideways is fine</span></label>
+        <label class="pf-opt"><input type="radio" name="shortTrend" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I'm okay if it drops short term</span></label>
       </div>
     </div>
 
-    <div class="pf-question" data-key="longTrend">
+    <div class="pf-q" data-key="longTrend">
       <div class="pf-num">5 / 10</div>
       <div class="pf-text">Over time, what kind of trend do you prefer?</div>
-      <div class="pf-options">
-        <label class="pf-option">
-          <input type="radio" name="longTrend" value="A">
-          <span class="pf-dot" style="background:var(--green)"></span>
-          <span>Clear upward growth</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="longTrend" value="B">
-          <span class="pf-dot" style="background:var(--amber)"></span>
-          <span>Mixed or uncertain trend</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="longTrend" value="C">
-          <span class="pf-dot" style="background:var(--red)"></span>
-          <span>I'm okay taking risks for potential upside</span>
-        </label>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="longTrend" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Clear upward growth</span></label>
+        <label class="pf-opt"><input type="radio" name="longTrend" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Mixed or uncertain trend</span></label>
+        <label class="pf-opt"><input type="radio" name="longTrend" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I'm okay taking risks for potential upside</span></label>
       </div>
     </div>
 
-    <div class="pf-question" data-key="maCross">
+    <div class="pf-q" data-key="maCross">
       <div class="pf-num">6 / 10</div>
       <div class="pf-text">How important is it that the stock is clearly trending upward?</div>
-      <div class="pf-options">
-        <label class="pf-option">
-          <input type="radio" name="maCross" value="A">
-          <span class="pf-dot" style="background:var(--green)"></span>
-          <span>Very important</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="maCross" value="B">
-          <span class="pf-dot" style="background:var(--amber)"></span>
-          <span>Somewhat important</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="maCross" value="C">
-          <span class="pf-dot" style="background:var(--red)"></span>
-          <span>Not important</span>
-        </label>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="maCross" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Very important</span></label>
+        <label class="pf-opt"><input type="radio" name="maCross" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Somewhat important</span></label>
+        <label class="pf-opt"><input type="radio" name="maCross" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Not important</span></label>
       </div>
     </div>
 
-    <div class="pf-question" data-key="return1M">
+    <div class="pf-q" data-key="return1M">
       <div class="pf-num">7 / 10</div>
       <div class="pf-text">Over the past month, what would you prefer?</div>
-      <div class="pf-options">
-        <label class="pf-option">
-          <input type="radio" name="return1M" value="A">
-          <span class="pf-dot" style="background:var(--green)"></span>
-          <span>Gains</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="return1M" value="B">
-          <span class="pf-dot" style="background:var(--amber)"></span>
-          <span>Flat performance</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="return1M" value="C">
-          <span class="pf-dot" style="background:var(--red)"></span>
-          <span>I'm okay with losses</span>
-        </label>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="return1M" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Gains</span></label>
+        <label class="pf-opt"><input type="radio" name="return1M" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Flat performance</span></label>
+        <label class="pf-opt"><input type="radio" name="return1M" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I'm okay with losses</span></label>
       </div>
     </div>
 
-    <div class="pf-question" data-key="return1Y">
+    <div class="pf-q" data-key="return1Y">
       <div class="pf-num">8 / 10</div>
       <div class="pf-text">Over the past year, what are you aiming for?</div>
-      <div class="pf-options">
-        <label class="pf-option">
-          <input type="radio" name="return1Y" value="A">
-          <span class="pf-dot" style="background:var(--green)"></span>
-          <span>Steady, reliable growth</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="return1Y" value="B">
-          <span class="pf-dot" style="background:var(--amber)"></span>
-          <span>Moderate growth</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="return1Y" value="C">
-          <span class="pf-dot" style="background:var(--red)"></span>
-          <span>High returns even if risky</span>
-        </label>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="return1Y" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Steady, reliable growth</span></label>
+        <label class="pf-opt"><input type="radio" name="return1Y" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Moderate growth</span></label>
+        <label class="pf-opt"><input type="radio" name="return1Y" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>High returns even if risky</span></label>
       </div>
     </div>
 
-    <div class="pf-question" data-key="range52W">
+    <div class="pf-q" data-key="range52W">
       <div class="pf-num">9 / 10</div>
       <div class="pf-text">When do you prefer to buy a stock?</div>
-      <div class="pf-options">
-        <label class="pf-option">
-          <input type="radio" name="range52W" value="A">
-          <span class="pf-dot" style="background:var(--green)"></span>
-          <span>When it's already doing well</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="range52W" value="B">
-          <span class="pf-dot" style="background:var(--amber)"></span>
-          <span>Anytime</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="range52W" value="C">
-          <span class="pf-dot" style="background:var(--red)"></span>
-          <span>When it's dropped (cheap but risky)</span>
-        </label>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="range52W" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>When it's already doing well</span></label>
+        <label class="pf-opt"><input type="radio" name="range52W" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Anytime</span></label>
+        <label class="pf-opt"><input type="radio" name="range52W" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>When it's dropped (cheap but risky)</span></label>
       </div>
     </div>
 
-    <div class="pf-question" data-key="cagr3Y">
+    <div class="pf-q" data-key="cagr3Y">
       <div class="pf-num">10 / 10</div>
       <div class="pf-text">What matters more to you?</div>
-      <div class="pf-options">
-        <label class="pf-option">
-          <input type="radio" name="cagr3Y" value="A">
-          <span class="pf-dot" style="background:var(--green)"></span>
-          <span>Protecting my money</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="cagr3Y" value="B">
-          <span class="pf-dot" style="background:var(--amber)"></span>
-          <span>A balance of safety and growth</span>
-        </label>
-        <label class="pf-option">
-          <input type="radio" name="cagr3Y" value="C">
-          <span class="pf-dot" style="background:var(--red)"></span>
-          <span>Maximising growth</span>
-        </label>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="cagr3Y" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Protecting my money</span></label>
+        <label class="pf-opt"><input type="radio" name="cagr3Y" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>A balance of safety and growth</span></label>
+        <label class="pf-opt"><input type="radio" name="cagr3Y" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Maximising growth</span></label>
       </div>
     </div>
 
@@ -365,89 +221,102 @@ html, body { overflow-y: auto !important; }
   </div>
 </div>
 
-<div id="screenerResults" style="display:none">
-  <div class="screener-header">
-    <div class="screener-title">Your GloRisk Scores</div>
-    <div style="display:flex;gap:8px">
-      <button class="screener-edit" id="editProfile">Edit Profile</button>
-    </div>
+<div id="screenerResults" class="dash" style="display:none">
+  <div class="page-head">
+    <div class="page-title">Your GloRisk Rankings</div>
+    <div class="page-sub">Global assets ranked by your personal risk appetite</div>
   </div>
 
-  <div class="screener-controls">
-    <input type="text" id="screenerSearch" placeholder="Search by ticker or name…" autocomplete="off" class="screener-search">
-    <button class="wizard-toggle" id="screenerWizToggle">Advanced Filters</button>
+  <div class="profile-bar">
+    <div class="ppill"><span class="ppill-label">Risk</span><span class="ppill-val" id="profRisk">&mdash;</span></div>
+    <div class="ppill"><span class="ppill-label">Assets</span><span class="ppill-val" id="profAssets">&mdash;</span></div>
+    <button class="profile-edit" id="editProfile">Edit profile &rarr;</button>
   </div>
 
-  <div class="wizard-panel" id="screenerWizPanel" style="display:none;max-width:1200px;margin:0 auto 1rem;padding:1.25rem">
+  <div class="summary-row" id="summaryRow"></div>
+
+  <div class="legend">
+    <span class="legend-label">Rating scale</span>
+    <span class="l-chip" style="background:var(--teal-bg);color:var(--teal)"><div class="l-dot" style="background:var(--teal)"></div>Very Strong &middot; 85&ndash;100</span>
+    <span class="l-chip" style="background:var(--teal-muted-bg);color:var(--teal-muted)"><div class="l-dot" style="background:var(--teal-muted)"></div>Strong &middot; 65&ndash;84</span>
+    <span class="l-chip" style="background:var(--amber-bg);color:var(--amber-d)"><div class="l-dot" style="background:var(--amber-d)"></div>Borderline &middot; 40&ndash;64</span>
+    <span class="l-chip" style="background:var(--red-muted-bg);color:var(--red-muted)"><div class="l-dot" style="background:var(--red-muted)"></div>Poor &middot; 20&ndash;39</span>
+    <span class="l-chip" style="background:var(--red-bg);color:var(--red-d)"><div class="l-dot" style="background:var(--red-d)"></div>Very Poor &middot; 0&ndash;19</span>
+  </div>
+
+  <div class="search-row">
+    <input class="search-d" id="screenerSearch" placeholder="Search by ticker or name..." />
+    <button class="filter-btn" id="screenerWizToggle">Advanced filters</button>
+  </div>
+
+  <div id="screenerWizPanel" style="display:none;margin:0 32px 12px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:10px;padding:20px;">
     <div class="wizard-section">
-      <div class="wizard-label">Market</div>
-      <div class="wizard-row">
-        <label class="wizard-check"><input type="checkbox" class="swiz-market" value="SP500"><span>S&amp;P 500</span></label>
-        <label class="wizard-check"><input type="checkbox" class="swiz-market" value="NASDAQ100"><span>NASDAQ 100</span></label>
-        <label class="wizard-check"><input type="checkbox" class="swiz-market" value="FTSE100"><span>FTSE 100</span></label>
-        <label class="wizard-check"><input type="checkbox" class="swiz-market" value="Nikkei225"><span>Nikkei 225</span></label>
-        <label class="wizard-check"><input type="checkbox" class="swiz-market" value="HSI"><span>Hang Seng</span></label>
-        <label class="wizard-check"><input type="checkbox" class="swiz-market" value="Crypto"><span>Crypto</span></label>
-        <label class="wizard-check"><input type="checkbox" class="swiz-market" value="SectorETFs"><span>ETFs</span></label>
+      <div class="wizard-label" style="font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px;">Market</div>
+      <div class="wizard-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+        <label class="wizard-check" style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.5);cursor:pointer;"><input type="checkbox" class="swiz-market" value="SP500"><span>S&amp;P 500</span></label>
+        <label class="wizard-check" style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.5);cursor:pointer;"><input type="checkbox" class="swiz-market" value="NASDAQ100"><span>NASDAQ 100</span></label>
+        <label class="wizard-check" style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.5);cursor:pointer;"><input type="checkbox" class="swiz-market" value="FTSE100"><span>FTSE 100</span></label>
+        <label class="wizard-check" style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.5);cursor:pointer;"><input type="checkbox" class="swiz-market" value="Nikkei225"><span>Nikkei 225</span></label>
+        <label class="wizard-check" style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.5);cursor:pointer;"><input type="checkbox" class="swiz-market" value="HSI"><span>Hang Seng</span></label>
+        <label class="wizard-check" style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.5);cursor:pointer;"><input type="checkbox" class="swiz-market" value="Crypto"><span>Crypto</span></label>
+        <label class="wizard-check" style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.5);cursor:pointer;"><input type="checkbox" class="swiz-market" value="SectorETFs"><span>ETFs</span></label>
       </div>
     </div>
     <div class="wizard-section">
-      <div class="wizard-label">Fit Score</div>
-      <div class="wizard-row">
-        <button class="wiz-pill active" data-sfit="any">Any</button>
-        <button class="wiz-pill" data-sfit="Perfect Fit">Perfect Fit</button>
-        <button class="wiz-pill" data-sfit="Great Fit">Great Fit</button>
-        <button class="wiz-pill" data-sfit="Good Fit">Good Fit</button>
-        <button class="wiz-pill" data-sfit="Moderate Fit">Moderate Fit</button>
-        <button class="wiz-pill" data-sfit="Poor Fit">Poor Fit</button>
+      <div class="wizard-label" style="font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px;">Fit Score</div>
+      <div class="wizard-row" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+        <button class="wiz-pill active" data-sfit="any" style="padding:4px 12px;border-radius:20px;font-size:10px;font-weight:600;border:0.5px solid var(--border-dark);background:rgba(79,70,229,0.1);color:var(--warm-white);cursor:pointer;font-family:inherit;">Any</button>
+        <button class="wiz-pill" data-sfit="Perfect Fit" style="padding:4px 12px;border-radius:20px;font-size:10px;font-weight:600;border:0.5px solid var(--border-dark);background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;font-family:inherit;">Perfect Fit</button>
+        <button class="wiz-pill" data-sfit="Great Fit" style="padding:4px 12px;border-radius:20px;font-size:10px;font-weight:600;border:0.5px solid var(--border-dark);background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;font-family:inherit;">Great Fit</button>
+        <button class="wiz-pill" data-sfit="Good Fit" style="padding:4px 12px;border-radius:20px;font-size:10px;font-weight:600;border:0.5px solid var(--border-dark);background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;font-family:inherit;">Good Fit</button>
+        <button class="wiz-pill" data-sfit="Moderate Fit" style="padding:4px 12px;border-radius:20px;font-size:10px;font-weight:600;border:0.5px solid var(--border-dark);background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;font-family:inherit;">Moderate Fit</button>
+        <button class="wiz-pill" data-sfit="Poor Fit" style="padding:4px 12px;border-radius:20px;font-size:10px;font-weight:600;border:0.5px solid var(--border-dark);background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;font-family:inherit;">Poor Fit</button>
       </div>
     </div>
     <div class="wizard-section">
-      <div class="wizard-label">Price Change (30D)</div>
-      <div class="wizard-row">
-        <button class="wiz-pill active" data-sprice="any">Any</button>
-        <button class="wiz-pill" data-sprice="gainers">Gainers</button>
-        <button class="wiz-pill" data-sprice="losers">Losers</button>
+      <div class="wizard-label" style="font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px;">Price Change (30D)</div>
+      <div class="wizard-row" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+        <button class="wiz-pill active" data-sprice="any" style="padding:4px 12px;border-radius:20px;font-size:10px;font-weight:600;border:0.5px solid var(--border-dark);background:rgba(79,70,229,0.1);color:var(--warm-white);cursor:pointer;font-family:inherit;">Any</button>
+        <button class="wiz-pill" data-sprice="gainers" style="padding:4px 12px;border-radius:20px;font-size:10px;font-weight:600;border:0.5px solid var(--border-dark);background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;font-family:inherit;">Gainers</button>
+        <button class="wiz-pill" data-sprice="losers" style="padding:4px 12px;border-radius:20px;font-size:10px;font-weight:600;border:0.5px solid var(--border-dark);background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;font-family:inherit;">Losers</button>
       </div>
     </div>
-    <div class="wizard-footer">
-      <button class="wiz-reset" id="screenerWizReset">Reset All</button>
-      <span class="wiz-count">Showing: <strong id="screenerCount">0</strong> assets</span>
+    <div class="wizard-footer" style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:0.5px solid var(--border-dark);">
+      <button class="wiz-reset" id="screenerWizReset" style="font-size:10px;color:var(--indigo-mid);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;">Reset All</button>
+      <span class="wiz-count" style="font-size:10px;color:rgba(255,255,255,0.3);">Showing: <strong id="screenerCount" style="color:var(--warm-white)">0</strong> assets</span>
     </div>
   </div>
 
-  <div class="screener-table-wrap">
-    <table class="screener-table" id="screenerTable">
-      <thead>
-        <tr>
-          <th class="st-th-left">Asset</th>
-          <th class="st-th-right">Price</th>
-          <th class="st-th-right">30D</th>
-          <th class="st-th-right st-th-1y">1Y</th>
-          <th class="st-th-right">Perf</th>
-          <th class="st-th-right">Fit</th>
-          <th class="st-th-right">Rating</th>
-          <th class="st-th-right">Scoring</th>
-          <th></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="screenerBody"></tbody>
-    </table>
+  <div class="tabs-d" id="assetTabs">
+    <button class="tab-d active" data-tab="all">All assets</button>
+    <button class="tab-d" data-tab="SectorETFs">ETFs</button>
+    <button class="tab-d" data-tab="stocks">Stocks</button>
+    <button class="tab-d" data-tab="Crypto">Crypto</button>
+  </div>
+
+  <div class="table-wrap-d">
+    <div class="t-head">
+      <div class="th">Asset</div>
+      <div class="th">Price</div>
+      <div class="th">30D</div>
+      <div class="th">1Y</div>
+      <div class="th">Perf</div>
+      <div class="th">Fit score</div>
+      <div class="th" style="text-align:center">Rating</div>
+      <div class="th">Actions</div>
+    </div>
+    <div id="screenerBody"></div>
+  </div>
+
+  <div class="dash-footer">
+    <span>GloRisk &mdash; Risk intelligence for everyday investors</span>
+    <a href="mailto:contact@terencebumah.com">contact@terencebumah.com</a>
   </div>
 </div>
 
-<footer class="site-footer">
-  <div class="site-footer-inner">
-    <div class="site-footer-logo">Glo<span>Risk</span></div>
-    <p>GloRisk is a free research tool and not a commercial product. Data is refreshed at least weekly. Nothing on this site constitutes financial advice. Always do your own research.</p>
-    <p><a href="mailto:contact@terencebumah.com">contact@terencebumah.com</a></p>
-  </div>
-</footer>
-
 <script type="module">
 import { loadData } from '/js/data.js';
-import { getMoodBand, IND_ORDER, computeFitScore, getFitLabel, getFitColor, getProfile, saveProfile, FIT_QUESTIONS } from '/js/riskEngine.js';
+import { getMoodBand, IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, saveProfile, FIT_QUESTIONS, getProfileSummary } from '/js/riskEngine.js';
 import { getUser, signOut } from '/js/supabase.js';
 
 // gloriskScore helper (same as main.js)
@@ -465,6 +334,8 @@ function formatPrice(p, group) {
   return sym + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+const STOCK_GROUPS = ['SP500', 'NASDAQ100', 'FTSE100', 'Nikkei225', 'HSI'];
+
 async function init() {
   const data = await loadData();
   const allCoins = data.coins;
@@ -479,12 +350,12 @@ async function init() {
   // Submit handler
   document.getElementById('profileSubmit')?.addEventListener('click', () => {
     const profile = {};
-    const questions = document.querySelectorAll('.pf-question');
+    const questions = document.querySelectorAll('.pf-q');
     let allAnswered = true;
     questions.forEach(q => {
       const key = q.dataset.key;
       const checked = q.querySelector('input:checked');
-      if (!checked) { allAnswered = false; q.style.borderColor = 'var(--red)'; }
+      if (!checked) { allAnswered = false; q.style.borderColor = 'var(--red-d)'; }
       else { profile[key] = checked.value; q.style.borderColor = ''; }
     });
     if (!allAnswered) return;
@@ -533,6 +404,25 @@ function showResults(allCoins, profile) {
       perfScore: gloriskScore(c.mood),
     })).filter(c => c.fitScore !== null).sort((a, b) => b.fitScore - a.fitScore);
 
+  // Populate profile bar
+  const summary = getProfileSummary(profile);
+  document.getElementById('profRisk').textContent = summary?.riskLevel || '\u2014';
+  document.getElementById('profAssets').textContent = scored.length;
+
+  // Populate summary cards
+  const vs = scored.filter(c => c.fitScore >= 85).length;
+  const s = scored.filter(c => c.fitScore >= 65 && c.fitScore < 85).length;
+  const b = scored.filter(c => c.fitScore >= 40 && c.fitScore < 65).length;
+  const p = scored.filter(c => c.fitScore >= 20 && c.fitScore < 40).length;
+  const vp = scored.filter(c => c.fitScore < 20).length;
+  document.getElementById('summaryRow').innerHTML = `
+    <div class="sum-card"><div class="sum-num" style="color:var(--teal)">${vs}</div><div class="sum-label">Very Strong</div></div>
+    <div class="sum-card"><div class="sum-num" style="color:var(--teal-muted)">${s}</div><div class="sum-label">Strong</div></div>
+    <div class="sum-card"><div class="sum-num" style="color:var(--amber-d)">${b}</div><div class="sum-label">Borderline</div></div>
+    <div class="sum-card"><div class="sum-num" style="color:var(--red-muted)">${p}</div><div class="sum-label">Poor</div></div>
+    <div class="sum-card"><div class="sum-num" style="color:var(--red-d)">${vp}</div><div class="sum-label">Very Poor</div></div>
+  `;
+
   const body = document.getElementById('screenerBody');
   const countEl = document.getElementById('screenerCount');
   const searchInput = document.getElementById('screenerSearch');
@@ -540,14 +430,13 @@ function showResults(allCoins, profile) {
   const wizPanel = document.getElementById('screenerWizPanel');
 
   // Filter state
-  let filters = { query: '', markets: [], fitLabel: 'any', priceChange: 'any' };
+  let filters = { query: '', markets: [], fitLabel: 'any', priceChange: 'any', tab: 'all' };
 
   // Wizard toggle
   let wizOpen = false;
   wizToggle?.addEventListener('click', () => {
     wizOpen = !wizOpen;
     wizPanel.style.display = wizOpen ? '' : 'none';
-    wizToggle.classList.toggle('active', wizOpen);
   });
 
   // Market checkboxes
@@ -561,8 +450,14 @@ function showResults(allCoins, profile) {
   // Fit label pills (single select)
   wizPanel?.querySelectorAll('[data-sfit]').forEach(btn => {
     btn.addEventListener('click', () => {
-      wizPanel.querySelectorAll('[data-sfit]').forEach(b => b.classList.remove('active'));
+      wizPanel.querySelectorAll('[data-sfit]').forEach(b => {
+        b.style.background = 'transparent';
+        b.style.color = 'rgba(255,255,255,0.4)';
+        b.classList.remove('active');
+      });
       btn.classList.add('active');
+      btn.style.background = 'rgba(79,70,229,0.1)';
+      btn.style.color = 'var(--warm-white)';
       filters.fitLabel = btn.dataset.sfit;
       renderTable();
     });
@@ -571,8 +466,14 @@ function showResults(allCoins, profile) {
   // Price change pills
   wizPanel?.querySelectorAll('[data-sprice]').forEach(btn => {
     btn.addEventListener('click', () => {
-      wizPanel.querySelectorAll('[data-sprice]').forEach(b => b.classList.remove('active'));
+      wizPanel.querySelectorAll('[data-sprice]').forEach(b => {
+        b.style.background = 'transparent';
+        b.style.color = 'rgba(255,255,255,0.4)';
+        b.classList.remove('active');
+      });
       btn.classList.add('active');
+      btn.style.background = 'rgba(79,70,229,0.1)';
+      btn.style.color = 'var(--warm-white)';
       filters.priceChange = btn.dataset.sprice;
       renderTable();
     });
@@ -580,10 +481,18 @@ function showResults(allCoins, profile) {
 
   // Reset
   document.getElementById('screenerWizReset')?.addEventListener('click', () => {
-    filters = { query: filters.query, markets: [], fitLabel: 'any', priceChange: 'any' };
+    filters = { query: filters.query, markets: [], fitLabel: 'any', priceChange: 'any', tab: filters.tab };
     wizPanel?.querySelectorAll('.swiz-market').forEach(cb => cb.checked = false);
-    wizPanel?.querySelectorAll('.wiz-pill').forEach(b => b.classList.remove('active'));
-    wizPanel?.querySelectorAll('[data-sfit="any"],[data-sprice="any"]').forEach(b => b.classList.add('active'));
+    wizPanel?.querySelectorAll('.wiz-pill').forEach(b => {
+      b.classList.remove('active');
+      b.style.background = 'transparent';
+      b.style.color = 'rgba(255,255,255,0.4)';
+    });
+    wizPanel?.querySelectorAll('[data-sfit="any"],[data-sprice="any"]').forEach(b => {
+      b.classList.add('active');
+      b.style.background = 'rgba(79,70,229,0.1)';
+      b.style.color = 'var(--warm-white)';
+    });
     renderTable();
   });
 
@@ -591,6 +500,16 @@ function showResults(allCoins, profile) {
   searchInput?.addEventListener('input', () => {
     filters.query = searchInput.value.trim().toLowerCase();
     renderTable();
+  });
+
+  // Asset tabs
+  document.getElementById('assetTabs')?.querySelectorAll('.tab-d').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab-d').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      filters.tab = tab.dataset.tab;
+      renderTable();
+    });
   });
 
   // Scores modal
@@ -627,10 +546,10 @@ function showResults(allCoins, profile) {
       const answer = profile[q.key];
       if (!ind || !answer) return '';
       const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
-      const s = matrix[answer]?.[ind.color] ?? 0;
-      const fitColor = s === 1 ? 'var(--green)' : s === 0.5 ? 'var(--amber)' : 'var(--red)';
-      const fitLabel = s === 1 ? 'Strong' : s === 0.5 ? 'Partial' : 'Low';
-      if (s === 1) strong++; else if (s === 0.5) partial++; else low++;
+      const sc = matrix[answer]?.[ind.color] ?? 0;
+      const fitColor = sc === 1 ? 'var(--teal)' : sc === 0.5 ? 'var(--amber-d)' : 'var(--red-d)';
+      const fitLbl = sc === 1 ? 'Strong' : sc === 0.5 ? 'Partial' : 'Low';
+      if (sc === 1) strong++; else if (sc === 0.5) partial++; else low++;
       const prefMap = { A: q.a.split(' ').slice(0, 3).join(' '), B: q.b.split(' ').slice(0, 3).join(' '), C: q.c.split(' ').slice(0, 3).join(' ') };
       const meta = indMeta[q.key] || {};
       return `<tr>
@@ -638,18 +557,18 @@ function showResults(allCoins, profile) {
         <td style="color:var(--muted);font-weight:300">${meta.desc}</td>
         <td style="font-family:var(--font-mono);font-size:0.78rem">${ind.label}</td>
         <td style="font-size:0.72rem;color:var(--muted)">${prefMap[answer]}</td>
-        <td class="fit-bd-th-fit" style="color:${fitColor};font-weight:600">${fitLabel}</td>
+        <td class="fit-bd-th-fit" style="color:${fitColor};font-weight:600">${fitLbl}</td>
       </tr>`;
     }).join('');
 
     const fitScore = coin.fitScore;
     const fitColor = getFitColor(fitScore);
-    const fitLabel = getFitLabel(fitScore);
+    const fitLabelText = getFitLabel(fitScore);
 
     modal.innerHTML = `
       <div class="fit-modal">
         <div class="fit-bd-header">
-          <div class="fit-bd-title">${coin.ticker} \u2014 Fit Scoring (${fitScore} ${fitLabel})</div>
+          <div class="fit-bd-title">${coin.ticker} \u2014 Fit Scoring (${fitScore} ${fitLabelText})</div>
           <button class="fit-bd-close">\u00d7</button>
         </div>
         <div class="fit-modal-body">
@@ -658,7 +577,7 @@ function showResults(allCoins, profile) {
             <tbody>${rows}</tbody>
             <tfoot><tr>
               <td colspan="4" style="text-align:right;font-family:var(--font-mono);font-size:0.68rem;color:var(--muted)">Total:</td>
-              <td class="fit-bd-th-fit"><span style="color:var(--green)">Strong (${strong})</span> \u00b7 <span style="color:var(--amber)">Partial (${partial})</span> \u00b7 <span style="color:var(--red)">Low (${low})</span></td>
+              <td class="fit-bd-th-fit"><span style="color:var(--teal)">Strong (${strong})</span> \u00b7 <span style="color:var(--amber-d)">Partial (${partial})</span> \u00b7 <span style="color:var(--red-d)">Low (${low})</span></td>
             </tr></tfoot>
           </table>
         </div>
@@ -667,26 +586,16 @@ function showResults(allCoins, profile) {
     modal.style.display = 'flex';
   }
 
-  // Compute fit breakdown per indicator
-  function getFitBreakdown(indicators, profile) {
-    let strong = 0, partial = 0, low = 0;
-    const SCORE_MATRIX = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 0 }, C: { green: 1, amber: 1, red: 1 } };
-    const SCORE_MATRIX_Q9 = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 1 }, C: { green: 0, amber: 0.5, red: 1 } };
-    for (const q of FIT_QUESTIONS) {
-      const ind = indicators[q.key];
-      const answer = profile[q.key];
-      if (!ind || !answer) continue;
-      const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
-      const s = matrix[answer]?.[ind.color] ?? 0;
-      if (s === 1) strong++;
-      else if (s === 0.5) partial++;
-      else low++;
-    }
-    return { strong, partial, low };
-  }
-
   function renderTable() {
     let filtered = scored;
+
+    // Tab filtering
+    if (filters.tab === 'stocks') {
+      filtered = filtered.filter(c => STOCK_GROUPS.includes(c.group));
+    } else if (filters.tab !== 'all') {
+      filtered = filtered.filter(c => c.group === filters.tab);
+    }
+
     if (filters.query) {
       filtered = filtered.filter(c => c.ticker.toLowerCase().includes(filters.query) || c.company.toLowerCase().includes(filters.query));
     }
@@ -703,22 +612,20 @@ function showResults(allCoins, profile) {
 
     body.innerHTML = filtered.map(c => {
       const fitColor = getFitColor(c.fitScore);
+      const fitLabel = getFitLabel(c.fitScore);
+      const fitClass = getFitClass(c.fitScore);
       const change = c.priceChange || 0;
-      const changeClass = change >= 0 ? 'pos' : 'neg';
-      const bd = getFitBreakdown(c.indicators, profile);
 
-      return `<tr data-ticker="${c.ticker}">
-        <td><div class="st-ticker">${c.ticker}</div><div class="st-name">${c.company}</div></td>
-        <td class="st-right">${formatPrice(c.price, c.group)}</td>
-        <td class="st-right"><span class="card-v2-change ${changeClass}">${change >= 0 ? '+' : ''}${change.toFixed(1)}%</span></td>
-        <td class="st-right st-td-1y">${c.indicators?.return1Y?.label || '\u2014'}</td>
-        <td class="st-right">${c.perfScore}</td>
-        <td class="st-fit" style="color:${fitColor}">${c.fitScore}</td>
-        <td class="st-label" style="color:${fitColor}">${getFitLabel(c.fitScore)}</td>
-        <td class="st-right st-scoring"><span style="color:var(--green)">Strong (${bd.strong})</span> <span style="color:var(--amber)">Partial (${bd.partial})</span> <span style="color:var(--red)">Low (${bd.low})</span></td>
-        <td class="st-view"><button class="st-view-link st-scores-btn" data-ticker="${c.ticker}">Scores</button></td>
-        <td class="st-view"><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="st-view-link">View</a></td>
-      </tr>`;
+      return `<div class="t-row" data-ticker="${c.ticker}">
+        <div><div class="aname">${c.ticker}</div><div class="asub">${c.company}</div></div>
+        <div class="cell">${formatPrice(c.price, c.group)}</div>
+        <div class="${change >= 0 ? 'cell-pos' : 'cell-neg'}">${change >= 0 ? '+' : ''}${change.toFixed(1)}%</div>
+        <div class="cell">${c.indicators?.return1Y?.label || '\u2014'}</div>
+        <div class="cell">${c.perfScore}</div>
+        <div class="score-cell"><span class="score-val" style="color:${fitColor}">${c.fitScore}</span><div class="bar-mini"><div class="bar-fill-d" style="width:${c.fitScore}%;background:${fitColor}"></div></div></div>
+        <div style="text-align:center"><span class="badge-d badge-${fitClass}">${fitLabel}</span></div>
+        <div class="actions-d"><button class="act-d act-s st-scores-btn" data-ticker="${c.ticker}">Scores</button><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="act-d act-v">View</a></div>
+      </div>`;
     }).join('');
 
     // Wire Scores buttons to open modal

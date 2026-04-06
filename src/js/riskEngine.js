@@ -466,21 +466,46 @@ export function computeFitScore(indicators, profile) {
  * Get fit label from score.
  */
 export function getFitLabel(score) {
-  if (score >= 90) return 'Perfect Fit';
-  if (score >= 80) return 'Great Fit';
-  if (score >= 60) return 'Good Fit';
-  if (score >= 40) return 'Moderate Fit';
-  return 'Poor Fit';
+  if (score >= 85) return 'Very Strong';
+  if (score >= 65) return 'Strong';
+  if (score >= 40) return 'Borderline';
+  if (score >= 20) return 'Poor';
+  return 'Very Poor';
 }
 
 /**
  * Get fit color from score.
  */
 export function getFitColor(score) {
-  if (score >= 80) return '#22c55e';
-  if (score >= 60) return '#f59e0b';
-  if (score >= 40) return '#f97316';
-  return '#ef4444';
+  if (score >= 85) return '#1D9E75';
+  if (score >= 65) return '#5DCAA5';
+  if (score >= 40) return '#EF9F27';
+  if (score >= 20) return '#F09595';
+  return '#E24B4A';
+}
+
+/**
+ * Get fit CSS class for badge styling.
+ */
+export function getFitClass(score) {
+  if (score >= 85) return 'vs';
+  if (score >= 65) return 's';
+  if (score >= 40) return 'b';
+  if (score >= 20) return 'p';
+  return 'vp';
+}
+
+/**
+ * Derive profile summary from answers.
+ */
+export function getProfileSummary(profile) {
+  if (!profile) return null;
+  // Risk level: count how many C (aggressive) answers
+  const answers = Object.values(profile);
+  const cCount = answers.filter(a => a === 'C').length;
+  const aCount = answers.filter(a => a === 'A').length;
+  const riskLevel = cCount >= 6 ? 'Aggressive' : cCount >= 3 ? 'Moderate' : 'Conservative';
+  return { riskLevel };
 }
 
 /**
