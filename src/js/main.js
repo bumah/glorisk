@@ -6,7 +6,7 @@
 
 'use strict';
 
-import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE } from './riskEngine.js';
+import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE, computeFitScore, getFitLabel, getFitColor, getProfile } from './riskEngine.js';
 import { loadData, searchCoins, fetchAssetData } from './data.js';
 import html2canvas from 'html2canvas';
 import { getUser, signOut } from './supabase.js';
@@ -715,7 +715,42 @@ function buildGloRiskCard(coin) {
   const band = getMoodBand(mood.label);
   const ps   = gloriskScore(mood);
 
-  // Show Performance Score initially; upgraded to GloRisk composite when Position loads
+  // Check for personalised fit score
+  const profile = getProfile();
+  const fitScore = profile ? computeFitScore(coin.indicators, profile) : null;
+  const fitLabel = fitScore !== null ? getFitLabel(fitScore) : '';
+  const fitColor = fitScore !== null ? getFitColor(fitScore) : '';
+
+  // If user has a profile, show fit score as headline; otherwise show Performance
+  if (fitScore !== null) {
+    return `
+      <div class="glorisk-card" id="gloriskCard">
+        <div class="gc-header">
+          <div class="sd-label">YOUR GLORISK FIT</div>
+          <span class="rsb" id="gloriskBadge" style="font-size:0.72rem;padding:3px 12px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:${fitColor}">${fitLabel}</span>
+        </div>
+        <div class="sd-score-row">
+          <span class="sd-score glorisk-headline" style="color:${fitColor}">${fitScore}</span>
+          <span class="sd-max">/ 100</span>
+        </div>
+        <div class="gc-breakdown" id="gloriskBreakdown">
+          <div class="gc-row">
+            <span class="gc-row-label">Market Performance:</span>
+            <span class="gc-row-value" id="gloriskPerfValue">${ps}</span>
+            <span class="rsb ${moodRsbClass(mood.label)}" style="font-size:0.58rem;padding:2px 8px">${band.displayLabel ?? mood.label}</span>
+          </div>
+          <div class="gc-row" id="gloriskPosRow" style="display:none">
+            <span class="gc-row-label">Market Position:</span>
+            <span class="gc-row-value" id="gloriskSwotValue"></span>
+            <span class="rsb" id="gloriskSwotBadge" style="font-size:0.58rem;padding:2px 8px"></span>
+          </div>
+        </div>
+        <div style="margin-top:0.5rem"><a href="/screener.html" style="font-family:var(--font-mono);font-size:0.58rem;color:var(--accent);text-decoration:none;text-transform:uppercase;letter-spacing:0.08em">Edit Profile \u2192</a></div>
+      </div>
+    `;
+  }
+
+  // No profile — show Performance Score with CTA
   return `
     <div class="glorisk-card" id="gloriskCard">
       <div class="gc-header">
@@ -738,6 +773,7 @@ function buildGloRiskCard(coin) {
           <span class="rsb" id="gloriskSwotBadge" style="font-size:0.58rem;padding:2px 8px"></span>
         </div>
       </div>
+      <div style="margin-top:0.75rem"><a href="/screener.html" style="display:inline-flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--accent);text-decoration:none;padding:6px 12px;border:1px solid var(--accent2);border-radius:6px">Get your personalised GloRisk Score \u2192</a></div>
     </div>
   `;
 }

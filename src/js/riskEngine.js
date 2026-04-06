@@ -406,3 +406,89 @@ export function enrichCoin(raw) {
   const mood       = computeMood(indicators);
   return { ...raw, indicators, mood };
 }
+
+/* ── GloRisk Fit Score — personalised scoring engine ───────────────────── */
+
+// Scoring matrices per answer type
+// Standard: A=strict, B=lenient, C=neutral
+const SCORE_MATRIX = {
+  A: { green: 1, amber: 0.5, red: 0 },
+  B: { green: 1, amber: 1,   red: 0 },
+  C: { green: 1, amber: 1,   red: 1 },
+};
+
+// Q9 (range52W) is inverted: A=buy winners, B=anytime, C=buy dips
+const SCORE_MATRIX_Q9 = {
+  A: { green: 1, amber: 0.5, red: 0 },
+  B: { green: 1, amber: 1,   red: 1 },
+  C: { green: 0, amber: 0.5, red: 1 },
+};
+
+// Profile questions mapped to indicator keys
+export const FIT_QUESTIONS = [
+  { key: 'volatility', q: 'How much price movement are you comfortable with?', a: 'I prefer steady, stable stocks', b: "I'm okay with some ups and downs", c: "I'm comfortable with big swings" },
+  { key: 'volSpike',   q: 'If a stock suddenly becomes more unstable, what would you do?', a: "I'd avoid it or sell", b: "I'd keep an eye on it", c: "I'd stay invested" },
+  { key: 'vsPeak',     q: 'If a stock drops from its peak, how much is acceptable to you?', a: 'Only small drops', b: 'Some decline is fine', c: "Big drops don't bother me" },
+  { key: 'shortTrend', q: 'What do you want to see in the short term?', a: 'The price going up', b: 'Moving sideways is fine', c: "I'm okay if it drops short term" },
+  { key: 'longTrend',  q: 'Over time, what kind of trend do you prefer?', a: 'Clear upward growth', b: 'Mixed or uncertain trend', c: "I'm okay taking risks for potential upside" },
+  { key: 'maCross',    q: 'How important is it that the stock is clearly trending upward?', a: 'Very important', b: 'Somewhat important', c: 'Not important' },
+  { key: 'return1M',   q: 'Over the past month, what would you prefer?', a: 'Gains', b: 'Flat performance', c: "I'm okay with losses" },
+  { key: 'return1Y',   q: 'Over the past year, what are you aiming for?', a: 'Steady, reliable growth', b: 'Moderate growth', c: 'High returns even if risky' },
+  { key: 'range52W',   q: 'When do you prefer to buy a stock?', a: "When it's already doing well", b: 'Anytime', c: "When it's dropped (cheap but risky)", inverted: true },
+  { key: 'cagr3Y',     q: 'What matters more to you?', a: 'Protecting my money', b: 'A balance of safety and growth', c: 'Maximising growth' },
+];
+
+/**
+ * Compute the GloRisk Fit Score for a coin against a user profile.
+ * @param {object} indicators — coin.indicators (keyed by IND_ORDER)
+ * @param {object} profile — { volatility: 'A'|'B'|'C', volSpike: 'A'|'B'|'C', ... }
+ * @returns {number} 0–100 fit score
+ */
+export function computeFitScore(indicators, profile) {
+  if (!indicators || !profile) return null;
+  let sum = 0;
+  let count = 0;
+  for (const q of FIT_QUESTIONS) {
+    const ind = indicators[q.key];
+    const answer = profile[q.key];
+    if (!ind || !answer) continue;
+    const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
+    const scores = matrix[answer];
+    if (!scores) continue;
+    sum += scores[ind.color] ?? 0;
+    count++;
+  }
+  if (!count) return null;
+  return Math.round((sum / count) * 100);
+}
+
+/**
+ * Get fit label from score.
+ */
+export function getFitLabel(score) {
+  if (score >= 90) return 'Perfect Fit';
+  if (score >= 80) return 'Great Fit';
+  if (score >= 60) return 'Good Fit';
+  if (score >= 40) return 'Moderate Fit';
+  return 'Poor Fit';
+}
+
+/**
+ * Get fit color from score.
+ */
+export function getFitColor(score) {
+  if (score >= 80) return '#22c55e';
+  if (score >= 60) return '#f59e0b';
+  if (score >= 40) return '#f97316';
+  return '#ef4444';
+}
+
+/**
+ * Load/save profile from localStorage.
+ */
+export function getProfile() {
+  try { return JSON.parse(localStorage.getItem('glorisk-profile')); } catch { return null; }
+}
+export function saveProfile(profile) {
+  localStorage.setItem('glorisk-profile', JSON.stringify(profile));
+}
