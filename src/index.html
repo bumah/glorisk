@@ -46,14 +46,14 @@
 }
 .landing-headline {
   font-family: var(--font-display);
-  font-size: clamp(1rem, 2.2vw, 1.3rem);
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 0.5rem;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  color: var(--text);
+  margin-bottom: 1rem;
 }
+.landing-headline span { color: var(--accent); }
 .rotating-wrap {
   height: clamp(3.5rem, 8vw, 5.5rem);
   overflow: hidden;
@@ -85,11 +85,14 @@
   text-shadow: 0 0 40px rgba(0,212,255,0.3);
 }
 .landing-sub {
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   color: var(--muted);
   font-weight: 300;
-  margin-bottom: 2rem;
-  letter-spacing: 0.04em;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .landing-sub span { color: var(--text); font-weight: 500; }
 .landing-cta {
@@ -234,7 +237,7 @@
   <div class="landing-glow"></div>
   <div class="landing-inner">
 
-    <h1 class="landing-headline">Know Your Risk</h1>
+    <h1 class="landing-headline">Know Your <span>Risk</span></h1>
     <p class="landing-sub">Get a personalised risk score for every stock, crypto, and ETF &mdash; based on how you invest.</p>
 
     <div style="display:flex;gap:10px;justify-content:center;margin:1.5rem 0">
