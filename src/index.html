@@ -197,11 +197,13 @@
   flex: 1;
 }
 
+.split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
 @media (max-width: 768px) {
   #landing { min-height: auto; padding-bottom: 1rem; }
   .landing-headline { font-size: clamp(1.4rem, 4vw, 2rem); }
   .solutions-section { padding: 2rem 1rem; }
   .solutions-grid { grid-template-columns: repeat(2, 1fr); }
+  .split-grid { grid-template-columns: 1fr; gap: 1.5rem; }
 }
 @media (max-width: 480px) {
   .solutions-grid { grid-template-columns: 1fr; }
@@ -231,71 +233,57 @@
   <div class="landing-glow"></div>
   <div class="landing-inner">
 
-    <h1 class="landing-headline">Know Your <span>Risk</span></h1>
-    <p class="landing-sub">Get a personalised risk score for every stock, crypto, and ETF &mdash; based on how you invest.</p>
-
-    <div style="display:flex;gap:10px;justify-content:center;margin:1.5rem 0">
-      <a href="/screener.html" class="landing-cta-btn" style="background:var(--accent);color:#000;padding:12px 28px;border-radius:var(--radius-sm);font-family:var(--font-display);font-weight:700;font-size:0.92rem;text-decoration:none;transition:opacity 0.15s">Check Your Fit &rarr;</a>
-      <a href="/browse.html" class="landing-cta-btn" style="background:none;border:1px solid var(--border2);color:var(--text);padding:12px 28px;border-radius:var(--radius-sm);font-family:var(--font-display);font-weight:600;font-size:0.92rem;text-decoration:none;transition:all 0.15s">Browse Market</a>
-    </div>
-
-
-  </div>
-</div>
-
-<!-- ── SAMPLE CARDS ────────────────────────────────────────────────── -->
-<div class="solutions-section" style="padding:2rem 0">
-  <div class="solutions-inner">
-    <div class="solutions-header" style="margin-bottom:1.5rem">
-      <div class="solutions-eyebrow">Sample Scores</div>
-      <div class="solutions-title">See how assets score against your profile</div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:900px;margin:0 auto">
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div><div style="font-family:var(--font-display);font-weight:700">AAPL</div><div style="font-size:0.72rem;color:var(--muted)">Apple Inc</div></div>
-          <div style="text-align:right"><span style="font-family:var(--font-display);font-weight:800;font-size:1.3rem;color:var(--green)">82</span><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted);text-transform:uppercase">Great Fit</div></div>
+    <div class="split-grid" style="align-items:center;max-width:1000px;margin:0 auto;padding:0 1rem">
+      <div>
+        <h1 class="landing-headline">Know Your <span>Risk</span></h1>
+        <p class="landing-sub">Get a personalised risk score for every stock, crypto, and ETF — based on how you invest.</p>
+        <div style="display:flex;gap:10px;margin-top:1.5rem">
+          <a href="/screener.html" style="background:var(--accent);color:#000;padding:14px 28px;border-radius:var(--radius-sm);font-family:var(--font-display);font-weight:700;font-size:0.92rem;text-decoration:none;transition:opacity 0.15s">Check Your Fit &rarr;</a>
+          <a href="/browse.html" style="background:none;border:1px solid var(--border2);color:var(--text);padding:14px 28px;border-radius:var(--radius-sm);font-family:var(--font-display);font-weight:600;font-size:0.92rem;text-decoration:none;transition:all 0.15s">Browse Market</a>
         </div>
-        <div style="margin-top:0.5rem;font-family:var(--font-mono);font-size:0.58rem;color:var(--muted)">Strong (8) &middot; Partial (1) &middot; Low (1)</div>
       </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div><div style="font-family:var(--font-display);font-weight:700">TSLA</div><div style="font-size:0.72rem;color:var(--muted)">Tesla Inc</div></div>
-          <div style="text-align:right"><span style="font-family:var(--font-display);font-weight:800;font-size:1.3rem;color:var(--red)">31</span><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted);text-transform:uppercase">Poor Fit</div></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div><div style="font-family:var(--font-display);font-weight:700">AAPL</div><div style="font-size:0.72rem;color:var(--muted)">Apple Inc</div></div>
+            <div style="text-align:right"><span style="font-family:var(--font-display);font-weight:800;font-size:1.3rem;color:var(--green)">82</span><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted);text-transform:uppercase">Great Fit</div></div>
+          </div>
         </div>
-        <div style="margin-top:0.5rem;font-family:var(--font-mono);font-size:0.58rem;color:var(--muted)">Strong (2) &middot; Partial (1) &middot; Low (7)</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div><div style="font-family:var(--font-display);font-weight:700">BTC</div><div style="font-size:0.72rem;color:var(--muted)">Bitcoin</div></div>
-          <div style="text-align:right"><span style="font-family:var(--font-display);font-weight:800;font-size:1.3rem;color:var(--amber)">65</span><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted);text-transform:uppercase">Good Fit</div></div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div><div style="font-family:var(--font-display);font-weight:700">TSLA</div><div style="font-size:0.72rem;color:var(--muted)">Tesla Inc</div></div>
+            <div style="text-align:right"><span style="font-family:var(--font-display);font-weight:800;font-size:1.3rem;color:var(--red)">31</span><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted);text-transform:uppercase">Poor Fit</div></div>
+          </div>
         </div>
-        <div style="margin-top:0.5rem;font-family:var(--font-mono);font-size:0.58rem;color:var(--muted)">Strong (5) &middot; Partial (3) &middot; Low (2)</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div><div style="font-family:var(--font-display);font-weight:700">BTC</div><div style="font-size:0.72rem;color:var(--muted)">Bitcoin</div></div>
+            <div style="text-align:right"><span style="font-family:var(--font-display);font-weight:800;font-size:1.3rem;color:var(--amber)">65</span><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted);text-transform:uppercase">Good Fit</div></div>
+          </div>
+        </div>
       </div>
     </div>
+
   </div>
 </div>
 
 <!-- ── WHY GLORISK? ────────────────────────────────────────────────── -->
-<div class="solutions-section" style="padding:2.5rem 0">
+<div class="solutions-section" style="padding:3rem 0">
   <div class="solutions-inner">
-    <div class="solutions-header" style="margin-bottom:1.5rem">
-      <div class="solutions-eyebrow">Why GloRisk?</div>
-      <div class="solutions-title">Most people invest based on hype, hope, and hunch.</div>
+    <div class="split-grid" style="align-items:center;max-width:1000px;margin:0 auto">
+      <div>
+        <div class="solutions-eyebrow">Why GloRisk?</div>
+        <div class="solutions-title" style="text-align:left;margin-bottom:1rem">Most people invest based on hype, hope, and hunch.</div>
+        <p style="color:var(--muted);font-size:0.88rem;font-weight:300;line-height:1.7;margin-bottom:1.5rem">They chase returns without knowing how volatile an asset is, how far it can fall, or whether it fits how they invest. The result? Unnecessary risk and avoidable losses when markets turn.</p>
+        <p style="color:var(--accent);font-family:var(--font-display);font-weight:600;font-size:0.92rem">Invest with discipline, not emotion.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem"><strong style="color:var(--text)">See the real risk</strong><span style="color:var(--muted);font-weight:300"> behind any asset</span></div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem"><strong style="color:var(--text)">Compare</strong><span style="color:var(--muted);font-weight:300"> opportunities side by side</span></div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem"><strong style="color:var(--text)">Understand your downside</strong><span style="color:var(--muted);font-weight:300"> before committing</span></div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem"><strong style="color:var(--text)">Get a personalised score</strong><span style="color:var(--muted);font-weight:300"> based on how you invest</span></div>
+      </div>
     </div>
-    <p style="text-align:center;color:var(--muted);font-size:0.92rem;font-weight:300;max-width:580px;margin:0 auto 2rem;line-height:1.7">They chase returns without knowing how volatile an asset is, how far it can fall, or whether it fits how they invest. The result? Unnecessary risk and avoidable losses when markets turn.</p>
-
-    <div class="solutions-header" style="margin-bottom:1rem">
-      <div class="solutions-eyebrow">Your Risk Companion</div>
-      <div class="solutions-title">GloRisk gives you clarity before you invest</div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:600px;margin:0 auto">
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;font-size:0.85rem;color:var(--muted);font-weight:300;line-height:1.5"><strong style="color:var(--text)">See the real risk</strong> behind any asset</div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;font-size:0.85rem;color:var(--muted);font-weight:300;line-height:1.5"><strong style="color:var(--text)">Compare</strong> opportunities side by side</div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;font-size:0.85rem;color:var(--muted);font-weight:300;line-height:1.5"><strong style="color:var(--text)">Understand your downside</strong> before committing</div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;font-size:0.85rem;color:var(--muted);font-weight:300;line-height:1.5"><strong style="color:var(--text)">Get a personalised score</strong> based on how you invest</div>
-    </div>
-    <p style="text-align:center;color:var(--accent);font-family:var(--font-display);font-weight:600;font-size:0.92rem;margin-top:1.5rem">Invest with discipline, not emotion.</p>
   </div>
 </div>
 
@@ -332,8 +320,7 @@
 <footer class="site-footer" id="siteFooter">
   <div class="site-footer-inner">
     <div class="site-footer-logo">Glo<span>Risk</span></div>
-    <p>GloRisk is a free research tool and not a commercial product. GloRisk is part of <a href="https://dailyfinn.com" target="_blank" rel="noopener">DailyFinn</a> and was built to help people assess risk across global markets more clearly.</p>
-    <p>Data is refreshed at least weekly. Nothing on this site constitutes financial advice. Always do your own research before making investment decisions.</p>
+    <p>GloRisk is a free research tool and not a commercial product. Data is refreshed at least weekly. Nothing on this site constitutes financial advice. Always do your own research before making investment decisions.</p>
     <p>For questions or feedback, get in touch: <a href="mailto:contact@terencebumah.com">contact@terencebumah.com</a></p>
   </div>
 </footer>
