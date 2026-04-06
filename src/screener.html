@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/css/styles.css">
 <style>
+html, body { overflow-y: auto !important; }
 .profile-form { max-width: 600px; margin: 0 auto; padding: 2rem 1rem; }
 .profile-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; text-align: center; }
 .profile-sub { text-align: center; color: var(--muted); font-size: 0.88rem; font-weight: 300; margin-top: 0.5rem; margin-bottom: 2rem; }
@@ -634,7 +635,7 @@ function showResults(allCoins, profile) {
       const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
       const s = matrix[answer]?.[ind.color] ?? 0;
       const fitColor = s === 1 ? 'var(--green)' : s === 0.5 ? 'var(--amber)' : 'var(--red)';
-      const fitLabel = s === 1 ? 'Strong (10)' : s === 0.5 ? 'Partial (5)' : 'Low (0)';
+      const fitLabel = s === 1 ? 'Strong' : s === 0.5 ? 'Partial' : 'Low';
       if (s === 1) strong++; else if (s === 0.5) partial++; else low++;
       const prefMap = { A: q.a.split(' ').slice(0, 3).join(' '), B: q.b.split(' ').slice(0, 3).join(' '), C: q.c.split(' ').slice(0, 3).join(' ') };
       const meta = indMeta[q.key] || {};
