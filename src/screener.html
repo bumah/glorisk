@@ -84,8 +84,10 @@ html,body{overflow-y:auto !important;}
 .pf-section-label{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.32);margin:24px 0 10px;display:flex;align-items:center;gap:10px;}
 .pf-section-label::after{content:'';flex:1;height:0.5px;background:var(--border-dark);}
 .pf-section-label:first-child{margin-top:0;}
+.pf-section-hint{font-size:9px;font-weight:500;letter-spacing:0.04em;text-transform:none;color:rgba(255,255,255,0.25);margin-left:4px;}
 .pf-q{background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:10px;padding:20px;margin-bottom:10px;transition:border-color 0.2s;}
-.pf-num{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--indigo-mid);margin-bottom:8px;}
+.pf-num{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--indigo-mid);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.pf-ind-tag{display:inline-flex;padding:2px 8px;border-radius:20px;background:rgba(79,70,229,0.12);border:0.5px solid rgba(79,70,229,0.25);color:#A5B4FC;font-size:8px;font-weight:700;letter-spacing:0.05em;}
 .pf-text{font-size:14px;font-weight:600;color:var(--warm-white);margin-bottom:12px;}
 .pf-opts{display:flex;flex-direction:column;gap:6px;}
 .pf-opts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
@@ -136,13 +138,13 @@ html,body{overflow-y:auto !important;}
 <div id="profileForm" class="dash">
   <div class="pf-wrap">
     <div class="pf-title">Set Up Your Risk Profile</div>
-    <div class="pf-sub">12 quick questions. Takes about 2 minutes.</div>
+    <div class="pf-sub">14 quick questions. Takes about 2 minutes.</div>
 
-    <div class="pf-section-label">Your scope</div>
+    <div class="pf-section-label">Your scope <span class="pf-section-hint">2 questions</span></div>
 
     <!-- Q1: Asset types (multi-select) -->
     <div class="pf-q pf-q-context" data-key="assetTypes" data-kind="multi">
-      <div class="pf-num">1 / 12 &middot; multiple allowed</div>
+      <div class="pf-num">1 / 14 &middot; multiple allowed</div>
       <div class="pf-text">What types of assets are you interested in?</div>
       <div class="pf-opts-grid">
         <label class="pf-opt"><input type="checkbox" name="assetTypes" value="stocks"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Individual stocks</div></div></label>
@@ -154,7 +156,7 @@ html,body{overflow-y:auto !important;}
 
     <!-- Q2: Markets & exchanges (multi-select) -->
     <div class="pf-q pf-q-context" data-key="markets" data-kind="multi">
-      <div class="pf-num">2 / 12 &middot; multiple allowed</div>
+      <div class="pf-num">2 / 14 &middot; multiple allowed</div>
       <div class="pf-text">Which stock markets do you want to track?</div>
       <div class="pf-opts-grid">
         <label class="pf-opt"><input type="checkbox" name="markets" value="sp500"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">S&amp;P 500</div><div class="pf-opt-desc">US large-cap</div></div></label>
@@ -165,11 +167,11 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
-    <div class="pf-section-label">Your style</div>
+    <div class="pf-section-label">Your style <span class="pf-section-hint">2 questions</span></div>
 
     <!-- Q3: Horizon -->
     <div class="pf-q pf-q-context" data-key="horizon" data-kind="single">
-      <div class="pf-num">3 / 12</div>
+      <div class="pf-num">3 / 14</div>
       <div class="pf-text">What&rsquo;s your typical holding period?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="horizon" value="A"><span class="pf-dot" style="background:#EF9F27"></span><div class="pf-opt-body"><div class="pf-opt-label">Short-term</div><div class="pf-opt-desc">days to a few weeks &mdash; I&rsquo;m in and out quickly</div></div></label>
@@ -181,7 +183,7 @@ html,body{overflow-y:auto !important;}
 
     <!-- Q4: Philosophy -->
     <div class="pf-q pf-q-context" data-key="philosophy" data-kind="single">
-      <div class="pf-num">4 / 12</div>
+      <div class="pf-num">4 / 14</div>
       <div class="pf-text">Which of these best describes how you invest?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="philosophy" value="A"><span class="pf-dot" style="background:#EF9F27"></span><div class="pf-opt-body"><div class="pf-opt-label">Buy the dips</div><div class="pf-opt-desc">I prefer assets that have pulled back &mdash; cheaper entry, contrarian bets</div></div></label>
@@ -191,10 +193,11 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
-    <div class="pf-section-label">Your risk tolerance</div>
+    <div class="pf-section-label">Your risk appetite <span class="pf-section-hint">10 questions &middot; one per indicator</span></div>
 
+    <!-- Q5: volatility → Daily Volatility -->
     <div class="pf-q" data-key="volatility" data-kind="single">
-      <div class="pf-num">5 / 12</div>
+      <div class="pf-num">5 / 14 <span class="pf-ind-tag">Daily Volatility</span></div>
       <div class="pf-text">How much price movement are you comfortable with?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="volatility" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>I prefer steady, stable stocks</span></label>
@@ -203,8 +206,9 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
+    <!-- Q6: volSpike → Volatility Spike -->
     <div class="pf-q" data-key="volSpike" data-kind="single">
-      <div class="pf-num">6 / 12</div>
+      <div class="pf-num">6 / 14 <span class="pf-ind-tag">Volatility Spike</span></div>
       <div class="pf-text">If a stock suddenly becomes more unstable, what would you do?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="volSpike" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>I'd avoid it or sell</span></label>
@@ -213,8 +217,20 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
+    <!-- Q7: vsPeak → Distance from Peak -->
+    <div class="pf-q" data-key="vsPeak" data-kind="single">
+      <div class="pf-num">7 / 14 <span class="pf-ind-tag">Distance from Peak</span></div>
+      <div class="pf-text">If a stock drops from its peak, how much is acceptable to you?</div>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="vsPeak" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Only small drops</span></label>
+        <label class="pf-opt"><input type="radio" name="vsPeak" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Some decline is fine</span></label>
+        <label class="pf-opt"><input type="radio" name="vsPeak" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Big drops don't bother me</span></label>
+      </div>
+    </div>
+
+    <!-- Q8: shortTrend → 50-Day Trend -->
     <div class="pf-q" data-key="shortTrend" data-kind="single">
-      <div class="pf-num">7 / 12</div>
+      <div class="pf-num">8 / 14 <span class="pf-ind-tag">50-Day Trend</span></div>
       <div class="pf-text">What do you want to see in the short term?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="shortTrend" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>The price going up</span></label>
@@ -223,8 +239,9 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
+    <!-- Q9: longTrend → 200-Day Trend -->
     <div class="pf-q" data-key="longTrend" data-kind="single">
-      <div class="pf-num">8 / 12</div>
+      <div class="pf-num">9 / 14 <span class="pf-ind-tag">200-Day Trend</span></div>
       <div class="pf-text">Over time, what kind of trend do you prefer?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="longTrend" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Clear upward growth</span></label>
@@ -233,8 +250,9 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
+    <!-- Q10: maCross → Trend Direction -->
     <div class="pf-q" data-key="maCross" data-kind="single">
-      <div class="pf-num">9 / 12</div>
+      <div class="pf-num">10 / 14 <span class="pf-ind-tag">Trend Direction</span></div>
       <div class="pf-text">How important is it that the stock is clearly trending upward?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="maCross" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Very important</span></label>
@@ -243,8 +261,9 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
+    <!-- Q11: return1M → 30-Day Return -->
     <div class="pf-q" data-key="return1M" data-kind="single">
-      <div class="pf-num">10 / 12</div>
+      <div class="pf-num">11 / 14 <span class="pf-ind-tag">30-Day Return</span></div>
       <div class="pf-text">Over the past month, what would you prefer?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="return1M" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Gains</span></label>
@@ -253,8 +272,9 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
+    <!-- Q12: return1Y → 12-Month Return -->
     <div class="pf-q" data-key="return1Y" data-kind="single">
-      <div class="pf-num">11 / 12</div>
+      <div class="pf-num">12 / 14 <span class="pf-ind-tag">12-Month Return</span></div>
       <div class="pf-text">Over the past year, what are you aiming for?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="return1Y" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Steady, reliable growth</span></label>
@@ -263,8 +283,20 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
+    <!-- Q13: range52W → Position in Range -->
+    <div class="pf-q" data-key="range52W" data-kind="single">
+      <div class="pf-num">13 / 14 <span class="pf-ind-tag">Position in Range</span></div>
+      <div class="pf-text">When do you prefer to buy a stock?</div>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="range52W" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>When it's already doing well</span></label>
+        <label class="pf-opt"><input type="radio" name="range52W" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Anytime</span></label>
+        <label class="pf-opt"><input type="radio" name="range52W" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>When it's dropped (cheap but risky)</span></label>
+      </div>
+    </div>
+
+    <!-- Q14: cagr3Y → 3-Year Growth -->
     <div class="pf-q" data-key="cagr3Y" data-kind="single">
-      <div class="pf-num">12 / 12</div>
+      <div class="pf-num">14 / 14 <span class="pf-ind-tag">3-Year Growth</span></div>
       <div class="pf-text">What matters more to you?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="cagr3Y" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Protecting my money</span></label>
