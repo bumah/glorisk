@@ -2663,8 +2663,9 @@ input:focus, select:focus {
 }
 .ad-bt-head {
   display: grid;
-  grid-template-columns: 1.4fr 1.2fr 80px 1.4fr 80px;
-  padding: 8px 14px;
+  grid-template-columns: 1.5fr 1.3fr 110px 1.5fr 80px;
+  column-gap: 18px;
+  padding: 8px 16px;
   border-bottom: 0.5px solid var(--ad-border-dark);
 }
 .ad-bt-th {
@@ -2677,8 +2678,9 @@ input:focus, select:focus {
 .ad-bt-th:nth-child(5) { text-align: right; }
 .ad-bt-row {
   display: grid;
-  grid-template-columns: 1.4fr 1.2fr 80px 1.4fr 80px;
-  padding: 11px 14px;
+  grid-template-columns: 1.5fr 1.3fr 110px 1.5fr 80px;
+  column-gap: 18px;
+  padding: 11px 16px;
   border-bottom: 0.5px solid var(--ad-border-dark);
   align-items: center;
 }

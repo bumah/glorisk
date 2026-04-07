@@ -1015,7 +1015,7 @@ function buildAdTopbar() {
   return `
     <div class="ad-topbar">
       <a href="/" class="ad-logo">Glo<span>Risk</span></a>
-      <a href="/browse.html" class="ad-back-btn">\u2190 Back to rankings</a>
+      <a href="/screener.html" class="ad-back-btn">\u2190 Back to rankings</a>
     </div>
   `;
 }

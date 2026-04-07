@@ -51,13 +51,14 @@ html,body{overflow-y:auto !important;}
 .tab-d{padding:6px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);cursor:pointer;border-radius:6px 6px 0 0;border:0.5px solid transparent;background:none;font-family:inherit;}
 .tab-d.active{background:var(--navy-light);color:var(--warm-white);border-color:var(--border-dark);border-bottom-color:var(--navy-light);}
 .table-wrap-d{margin:0 32px 28px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:0 10px 10px 10px;overflow-x:auto;}
-.t-head{display:grid;grid-template-columns:2.5fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 0.6fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1.1fr;padding:10px 16px;border-bottom:0.5px solid var(--border-dark);}
+.t-head{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 0.6fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.7fr;padding:10px 16px;border-bottom:0.5px solid var(--border-dark);}
 .th{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.22);text-align:right;}
 .th:first-child{text-align:left;}
-.t-row{display:grid;grid-template-columns:2.5fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 0.6fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1.1fr;padding:13px 16px;border-bottom:0.5px solid var(--border-dark);align-items:center;cursor:pointer;}
+.t-row{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 0.6fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.7fr;padding:13px 16px;border-bottom:0.5px solid var(--border-dark);align-items:center;cursor:pointer;}
 .t-row:last-child{border-bottom:none;}
 .t-row:hover{background:rgba(79,70,229,0.05);}
-.aname{font-size:13px;font-weight:700;color:var(--warm-white);}
+.aname{font-size:13px;font-weight:700;color:var(--warm-white);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.exch-tag{font-size:8px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 7px;border-radius:10px;background:rgba(79,70,229,0.12);color:var(--indigo-mid);border:0.5px solid rgba(79,70,229,0.25);}
 .asub{font-size:10px;color:rgba(255,255,255,0.28);margin-top:2px;}
 .cell{font-size:12px;color:rgba(255,255,255,0.45);text-align:right;font-family:monospace;}
 .cell-pos{color:var(--teal);font-size:12px;text-align:right;font-family:monospace;}
@@ -112,7 +113,6 @@ html,body{overflow-y:auto !important;}
   <div class="gn-links">
     <a href="/" class="gn-link">Home</a>
     <a href="/screener.html" class="gn-link active">Screener</a>
-    <a href="/browse.html" class="gn-link">Market</a>
     <a href="/tools.html" class="gn-link">Tools</a>
     <a href="/methodology.html" class="gn-link">About</a>
   </div>
@@ -368,6 +368,21 @@ function formatPrice(p, group) {
 }
 
 const STOCK_GROUPS = ['SP500', 'NASDAQ100', 'FTSE100', 'Nikkei225', 'HSI'];
+
+// Short exchange/group label for the screener table
+function exchangeShort(group) {
+  const map = {
+    SP500: 'S&P 500',
+    NASDAQ100: 'NASDAQ',
+    FTSE100: 'FTSE',
+    Nikkei225: 'Nikkei',
+    HSI: 'Hang Seng',
+    Crypto: 'Crypto',
+    SectorETFs: 'ETF',
+    Index: 'Index',
+  };
+  return map[group] || '';
+}
 
 async function init() {
   const data = await loadData();
@@ -710,8 +725,9 @@ function showResults(allCoins, profile) {
       const range = ind.range52W?.label || '\u2014';
       const growth3y = ind.cagr3Y?.label || '\u2014';
 
+      const exchLabel = exchangeShort(c.group);
       return `<div class="t-row" data-ticker="${c.ticker}">
-        <div><div class="aname">${c.ticker}</div><div class="asub">${c.company}</div></div>
+        <div><div class="aname">${c.ticker}${exchLabel ? `<span class="exch-tag">${exchLabel}</span>` : ''}</div><div class="asub">${c.company}</div></div>
         <div class="score-cell"><span class="score-val" style="color:${fitColor}">${c.fitScore}</span><div class="bar-mini"><div class="bar-fill-d" style="width:${c.fitScore}%;background:${fitColor}"></div></div></div>
         <div style="text-align:center"><span class="badge-d badge-${fitClass}">${fitLabel}</span></div>
         <div class="cell">${formatPrice(c.price, c.group)}</div>
@@ -724,19 +740,9 @@ function showResults(allCoins, profile) {
         <div class="cell hide-m">${trendDir}</div>
         <div class="cell hide-m">${range}</div>
         <div class="cell hide-m">${growth3y}</div>
-        <div class="actions-d"><button class="act-d act-s st-scores-btn" data-ticker="${c.ticker}">Scores</button><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="act-d act-v">View</a></div>
+        <div class="actions-d"><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="act-d act-v">View</a></div>
       </div>`;
     }).join('');
-
-    // Wire Scores buttons to open modal
-    body.querySelectorAll('.st-scores-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const ticker = btn.dataset.ticker;
-        const coin = scored.find(c => c.ticker === ticker);
-        if (coin) openScoresModal(coin, profile);
-      });
-    });
   }
 
   renderTable();
@@ -748,7 +754,7 @@ init().catch(console.error);
 <!-- Global mobile bottom nav -->
 <div class="global-mobile-nav">
   <a href="/" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a>
-  <a href="/browse.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span>Market</span></a>
+  <a href="/screener.html" class="gmn-item active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Screener</span></a>
   <a href="/tools.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Tools</span></a>
   <a href="/watchlist.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span>Watchlist</span></a>
 </div>
