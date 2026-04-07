@@ -424,42 +424,209 @@ const SCORE_MATRIX_Q9 = {
   C: { green: 0, amber: 0.5, red: 1 },
 };
 
-// Profile questions mapped to indicator keys
+// Profile questions mapped to indicator keys.
+// Note: vsPeak and range52W are derived from the PHILOSOPHY context question (see below)
+// and are no longer asked directly — they're still scored via computeFitScore.
 export const FIT_QUESTIONS = [
   { key: 'volatility', q: 'How much price movement are you comfortable with?', a: 'I prefer steady, stable stocks', b: "I'm okay with some ups and downs", c: "I'm comfortable with big swings" },
   { key: 'volSpike',   q: 'If a stock suddenly becomes more unstable, what would you do?', a: "I'd avoid it or sell", b: "I'd keep an eye on it", c: "I'd stay invested" },
-  { key: 'vsPeak',     q: 'If a stock drops from its peak, how much is acceptable to you?', a: 'Only small drops', b: 'Some decline is fine', c: "Big drops don't bother me" },
   { key: 'shortTrend', q: 'What do you want to see in the short term?', a: 'The price going up', b: 'Moving sideways is fine', c: "I'm okay if it drops short term" },
   { key: 'longTrend',  q: 'Over time, what kind of trend do you prefer?', a: 'Clear upward growth', b: 'Mixed or uncertain trend', c: "I'm okay taking risks for potential upside" },
   { key: 'maCross',    q: 'How important is it that the stock is clearly trending upward?', a: 'Very important', b: 'Somewhat important', c: 'Not important' },
   { key: 'return1M',   q: 'Over the past month, what would you prefer?', a: 'Gains', b: 'Flat performance', c: "I'm okay with losses" },
   { key: 'return1Y',   q: 'Over the past year, what are you aiming for?', a: 'Steady, reliable growth', b: 'Moderate growth', c: 'High returns even if risky' },
-  { key: 'range52W',   q: 'When do you prefer to buy a stock?', a: "When it's already doing well", b: 'Anytime', c: "When it's dropped (cheap but risky)", inverted: true },
   { key: 'cagr3Y',     q: 'What matters more to you?', a: 'Protecting my money', b: 'A balance of safety and growth', c: 'Maximising growth' },
 ];
 
+/* ── Context questions — asset types, markets, horizon, philosophy ──────── */
+
+// Context questions steer WHICH assets we rank (scope) and HOW we weight indicators.
+// These live at the top of the questionnaire, before the risk indicator questions.
+export const CONTEXT_QUESTIONS = {
+  assetTypes: {
+    key: 'assetTypes',
+    q: 'What types of assets are you interested in?',
+    multi: true,
+    options: [
+      { value: 'stocks',  label: 'Individual stocks' },
+      { value: 'etfs',    label: 'ETFs (sector, index, thematic)' },
+      { value: 'crypto',  label: 'Crypto' },
+      { value: 'indices', label: 'Market indices' },
+    ],
+  },
+  markets: {
+    key: 'markets',
+    q: 'Which markets do you want to track?',
+    multi: true,
+    options: [
+      { value: 'sp500',   label: 'US \u2014 S&P 500' },
+      { value: 'nasdaq',  label: 'US \u2014 NASDAQ 100' },
+      { value: 'ftse',    label: 'UK \u2014 FTSE 100' },
+      { value: 'nikkei',  label: 'Japan \u2014 Nikkei 225' },
+      { value: 'hsi',     label: 'Hong Kong \u2014 Hang Seng' },
+    ],
+  },
+  horizon: {
+    key: 'horizon',
+    q: "What's your typical holding period?",
+    options: [
+      { value: 'A', label: 'Short-term',     desc: 'days to a few weeks \u2014 I\u2019m in and out quickly' },
+      { value: 'B', label: 'Medium-term',    desc: 'a few months to a year \u2014 I ride moves but don\u2019t marry positions' },
+      { value: 'C', label: 'Long-term',      desc: '1 to 5 years \u2014 I\u2019m building positions, not trading them' },
+      { value: 'D', label: 'Very long-term', desc: '5+ years \u2014 I\u2019m buying for the decade' },
+    ],
+  },
+  philosophy: {
+    key: 'philosophy',
+    q: 'Which of these best describes how you invest?',
+    options: [
+      { value: 'A', label: 'Buy the dips',        desc: 'I prefer assets that have pulled back \u2014 cheaper entry, contrarian bets' },
+      { value: 'B', label: 'Back the winners',    desc: 'I follow momentum \u2014 strength attracts more strength' },
+      { value: 'C', label: 'Dollar-cost average', desc: 'I buy a fixed amount regularly \u2014 I don\u2019t try to time anything' },
+      { value: 'D', label: 'Growth at any price', desc: 'I back the highest-potential assets even if they\u2019re expensive or volatile' },
+    ],
+  },
+};
+
+// Horizon weights — multiplier applied per indicator based on holding period.
+// Short-term traders care most about volatility + short-term return.
+// Long-term holders care most about long-term trend + 3-year growth.
+export const HORIZON_WEIGHTS = {
+  A: { // Short-term (days to weeks)
+    volatility: 2.0, volSpike: 2.0, vsPeak: 0.5,
+    shortTrend: 1.0, longTrend: 0.5, maCross: 0.5,
+    return1M: 2.0, return1Y: 0.5, range52W: 1.0, cagr3Y: 0.25,
+  },
+  B: { // Medium-term (months to 1yr)
+    volatility: 1.0, volSpike: 1.0, vsPeak: 1.0,
+    shortTrend: 1.5, longTrend: 1.0, maCross: 1.0,
+    return1M: 1.5, return1Y: 1.5, range52W: 1.5, cagr3Y: 0.75,
+  },
+  C: { // Long-term (1-5 yrs)
+    volatility: 0.5, volSpike: 0.5, vsPeak: 1.0,
+    shortTrend: 1.0, longTrend: 2.0, maCross: 1.5,
+    return1M: 0.5, return1Y: 1.5, range52W: 0.75, cagr3Y: 1.5,
+  },
+  D: { // Very long-term (5+ yrs)
+    volatility: 0.5, volSpike: 0.25, vsPeak: 1.5,
+    shortTrend: 0.5, longTrend: 1.5, maCross: 1.0,
+    return1M: 0.25, return1Y: 1.0, range52W: 0.5, cagr3Y: 2.0,
+  },
+};
+
+// Philosophy overrides — derived answers for vsPeak and range52W based on the user's
+// investment philosophy. These drive the scoring for those two indicators since we
+// no longer ask for them directly in the questionnaire.
+//   - Buy dips:         far from peak = good, near 52W low = good
+//   - Back winners:     near peak = good, near 52W high = good
+//   - Dollar-cost avg:  neutral (any position is fine)
+//   - Growth at any price: ignore drawdown, neutral on range
+export const PHILOSOPHY_DERIVED = {
+  A: { vsPeak: 'C', range52W: 'C' }, // Buy the dips
+  B: { vsPeak: 'A', range52W: 'A' }, // Back the winners
+  C: { vsPeak: 'B', range52W: 'B' }, // Dollar-cost average
+  D: { vsPeak: 'C', range52W: 'B' }, // Growth at any price
+};
+
+// Human-readable labels for context answers (used in summaries)
+export const HORIZON_LABELS = { A: 'Short-term', B: 'Medium-term', C: 'Long-term', D: 'Very long-term' };
+export const PHILOSOPHY_LABELS = {
+  A: 'Buy the dips',
+  B: 'Back winners',
+  C: 'Dollar-cost average',
+  D: 'Growth at any price',
+};
+
+// Map profile.markets values → coin.group values
+export const MARKET_GROUP_MAP = {
+  sp500: 'SP500',
+  nasdaq: 'NASDAQ100',
+  ftse: 'FTSE100',
+  nikkei: 'Nikkei225',
+  hsi: 'HSI',
+};
+
+/**
+ * Determine whether a coin is within the user's stated scope (asset types + markets).
+ * Returns true if the coin matches the user's interests, false otherwise.
+ * Backward compat: if profile has no context answers, everything is in scope.
+ */
+export function isAssetInScope(coin, profile) {
+  if (!profile || !coin) return true;
+  const types = profile.assetTypes || [];
+  const markets = profile.markets || [];
+  const hasTypes = types.length > 0;
+  const hasMarkets = markets.length > 0;
+  if (!hasTypes && !hasMarkets) return true; // no scope set
+  const g = coin.group;
+
+  if (g === 'Crypto')     return hasTypes ? types.includes('crypto')  : true;
+  if (g === 'SectorETFs') return hasTypes ? types.includes('etfs')    : true;
+  if (g === 'Index')      return hasTypes ? types.includes('indices') : true;
+
+  // Stock: check both asset type and specific market
+  if (hasTypes && !types.includes('stocks')) return false;
+  if (hasMarkets) {
+    const allowedGroups = markets.map(m => MARKET_GROUP_MAP[m]).filter(Boolean);
+    return allowedGroups.includes(g);
+  }
+  return true;
+}
+
 /**
  * Compute the GloRisk Fit Score for a coin against a user profile.
+ *
+ * Scoring covers all 10 indicators:
+ *   - 8 come from explicit user answers in FIT_QUESTIONS
+ *   - vsPeak + range52W are derived from the user's philosophy answer (Q4 context)
+ * Each indicator is weighted by the user's holding horizon (HORIZON_WEIGHTS).
+ *
  * @param {object} indicators — coin.indicators (keyed by IND_ORDER)
- * @param {object} profile — { volatility: 'A'|'B'|'C', volSpike: 'A'|'B'|'C', ... }
+ * @param {object} profile — { volatility: 'A'|'B'|'C', ..., horizon, philosophy, ... }
  * @returns {number} 0–100 fit score
  */
 export function computeFitScore(indicators, profile) {
   if (!indicators || !profile) return null;
+
+  // Horizon weights (default to B = medium-term if unset, for backward compat)
+  const horizonWeights = HORIZON_WEIGHTS[profile.horizon] || HORIZON_WEIGHTS.B;
+  // Philosophy-derived answers (default to C = DCA / neutral if unset)
+  const derived = PHILOSOPHY_DERIVED[profile.philosophy] || PHILOSOPHY_DERIVED.C;
+
+  // Build a quick lookup of question-key → question object
+  const qByKey = {};
+  for (const q of FIT_QUESTIONS) qByKey[q.key] = q;
+
+  // Scored indicators: the 8 explicit questions + the 2 philosophy-derived
+  const SCORED_KEYS = ['volatility', 'volSpike', 'vsPeak', 'shortTrend', 'longTrend', 'maCross', 'return1M', 'return1Y', 'range52W', 'cagr3Y'];
+
   let sum = 0;
-  let count = 0;
-  for (const q of FIT_QUESTIONS) {
-    const ind = indicators[q.key];
-    const answer = profile[q.key];
-    if (!ind || !answer) continue;
-    const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
-    const scores = matrix[answer];
-    if (!scores) continue;
-    sum += scores[ind.color] ?? 0;
-    count++;
+  let totalWeight = 0;
+  for (const key of SCORED_KEYS) {
+    const ind = indicators[key];
+    if (!ind) continue;
+
+    let answer, matrix;
+    if (key === 'vsPeak' || key === 'range52W') {
+      // Derived from philosophy
+      answer = derived[key];
+      matrix = key === 'range52W' ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
+    } else {
+      const q = qByKey[key];
+      if (!q) continue;
+      answer = profile[key];
+      matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
+    }
+    if (!answer || !matrix[answer]) continue;
+
+    const s = matrix[answer][ind.color] ?? 0;
+    const w = horizonWeights[key] ?? 1;
+    sum += s * w;
+    totalWeight += w;
   }
-  if (!count) return null;
-  return Math.round((sum / count) * 100);
+
+  if (totalWeight === 0) return null;
+  return Math.round((sum / totalWeight) * 100);
 }
 
 /**
@@ -497,15 +664,19 @@ export function getFitClass(score) {
 
 /**
  * Derive profile summary from answers.
+ * Returns { riskLevel, horizon, philosophy, assetTypes, markets } where each is a display label.
  */
 export function getProfileSummary(profile) {
   if (!profile) return null;
-  // Risk level: count how many C (aggressive) answers
-  const answers = Object.values(profile);
-  const cCount = answers.filter(a => a === 'C').length;
-  const aCount = answers.filter(a => a === 'A').length;
-  const riskLevel = cCount >= 6 ? 'Aggressive' : cCount >= 3 ? 'Moderate' : 'Conservative';
-  return { riskLevel };
+  // Risk level: count how many C (aggressive) answers among the 8 risk questions only
+  const riskAnswers = FIT_QUESTIONS.map(q => profile[q.key]).filter(Boolean);
+  const cCount = riskAnswers.filter(a => a === 'C').length;
+  const riskLevel = cCount >= 5 ? 'Aggressive' : cCount >= 3 ? 'Moderate' : 'Conservative';
+
+  const horizon = profile.horizon ? HORIZON_LABELS[profile.horizon] : null;
+  const philosophy = profile.philosophy ? PHILOSOPHY_LABELS[profile.philosophy] : null;
+
+  return { riskLevel, horizon, philosophy, assetTypes: profile.assetTypes || [], markets: profile.markets || [] };
 }
 
 /**

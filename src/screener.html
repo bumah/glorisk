@@ -81,15 +81,26 @@ html,body{overflow-y:auto !important;}
 .pf-wrap{max-width:600px;margin:0 auto;padding:3rem 1.5rem;}
 .pf-title{font-size:26px;font-weight:700;color:var(--warm-white);font-family:Georgia,serif;text-align:center;margin-bottom:6px;}
 .pf-sub{text-align:center;color:var(--indigo-mid);font-size:13px;margin-bottom:2rem;}
+.pf-section-label{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.32);margin:24px 0 10px;display:flex;align-items:center;gap:10px;}
+.pf-section-label::after{content:'';flex:1;height:0.5px;background:var(--border-dark);}
+.pf-section-label:first-child{margin-top:0;}
 .pf-q{background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:10px;padding:20px;margin-bottom:10px;transition:border-color 0.2s;}
 .pf-num{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--indigo-mid);margin-bottom:8px;}
 .pf-text{font-size:14px;font-weight:600;color:var(--warm-white);margin-bottom:12px;}
 .pf-opts{display:flex;flex-direction:column;gap:6px;}
-.pf-opt{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.5);cursor:pointer;padding:10px 14px;border:0.5px solid var(--border-dark);border-radius:8px;transition:all 0.15s;}
+.pf-opts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
+.pf-opt{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:rgba(255,255,255,0.5);cursor:pointer;padding:10px 14px;border:0.5px solid var(--border-dark);border-radius:8px;transition:all 0.15s;}
 .pf-opt:hover{border-color:rgba(79,70,229,0.3);color:var(--warm-white);}
 .pf-opt:has(input:checked){border-color:var(--indigo);color:var(--warm-white);background:rgba(79,70,229,0.08);}
 .pf-opt input{display:none;}
-.pf-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.pf-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.pf-opt-body{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
+.pf-opt-label{font-weight:600;color:inherit;}
+.pf-opt-desc{font-size:11px;line-height:1.5;color:rgba(255,255,255,0.38);}
+.pf-opt:has(input:checked) .pf-opt-desc{color:rgba(255,255,255,0.55);}
+.pf-check{width:14px;height:14px;border-radius:3px;border:1.5px solid rgba(255,255,255,0.25);flex-shrink:0;margin-top:2px;position:relative;transition:all 0.15s;}
+.pf-opt:has(input:checked) .pf-check{border-color:var(--indigo);background:var(--indigo);}
+.pf-opt:has(input:checked) .pf-check::after{content:'';position:absolute;left:3px;top:0;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);}
 .pf-submit{display:block;width:100%;padding:14px;margin-top:1.5rem;background:var(--indigo);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.2s;}
 .pf-submit:hover{background:#4338CA;}
 /* Footer */
@@ -125,10 +136,65 @@ html,body{overflow-y:auto !important;}
 <div id="profileForm" class="dash">
   <div class="pf-wrap">
     <div class="pf-title">Set Up Your Risk Profile</div>
-    <div class="pf-sub">Answer 10 questions to get personalised risk scores for every asset.</div>
+    <div class="pf-sub">12 quick questions. Takes about 2 minutes.</div>
 
-    <div class="pf-q" data-key="volatility">
-      <div class="pf-num">1 / 10</div>
+    <div class="pf-section-label">Your scope</div>
+
+    <!-- Q1: Asset types (multi-select) -->
+    <div class="pf-q pf-q-context" data-key="assetTypes" data-kind="multi">
+      <div class="pf-num">1 / 12 &middot; multiple allowed</div>
+      <div class="pf-text">What types of assets are you interested in?</div>
+      <div class="pf-opts-grid">
+        <label class="pf-opt"><input type="checkbox" name="assetTypes" value="stocks"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Individual stocks</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="assetTypes" value="etfs"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">ETFs</div><div class="pf-opt-desc">Sector, index, thematic</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="assetTypes" value="crypto"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Crypto</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="assetTypes" value="indices"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Market indices</div></div></label>
+      </div>
+    </div>
+
+    <!-- Q2: Markets & exchanges (multi-select) -->
+    <div class="pf-q pf-q-context" data-key="markets" data-kind="multi">
+      <div class="pf-num">2 / 12 &middot; multiple allowed</div>
+      <div class="pf-text">Which stock markets do you want to track?</div>
+      <div class="pf-opts-grid">
+        <label class="pf-opt"><input type="checkbox" name="markets" value="sp500"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">S&amp;P 500</div><div class="pf-opt-desc">US large-cap</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="markets" value="nasdaq"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">NASDAQ 100</div><div class="pf-opt-desc">US tech-heavy</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="markets" value="ftse"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">FTSE 100</div><div class="pf-opt-desc">UK</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="markets" value="nikkei"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Nikkei 225</div><div class="pf-opt-desc">Japan</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="markets" value="hsi"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Hang Seng</div><div class="pf-opt-desc">Hong Kong</div></div></label>
+      </div>
+    </div>
+
+    <div class="pf-section-label">Your style</div>
+
+    <!-- Q3: Horizon -->
+    <div class="pf-q pf-q-context" data-key="horizon" data-kind="single">
+      <div class="pf-num">3 / 12</div>
+      <div class="pf-text">What&rsquo;s your typical holding period?</div>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="horizon" value="A"><span class="pf-dot" style="background:#EF9F27"></span><div class="pf-opt-body"><div class="pf-opt-label">Short-term</div><div class="pf-opt-desc">days to a few weeks &mdash; I&rsquo;m in and out quickly</div></div></label>
+        <label class="pf-opt"><input type="radio" name="horizon" value="B"><span class="pf-dot" style="background:#5DCAA5"></span><div class="pf-opt-body"><div class="pf-opt-label">Medium-term</div><div class="pf-opt-desc">a few months to a year &mdash; I ride moves but don&rsquo;t marry positions</div></div></label>
+        <label class="pf-opt"><input type="radio" name="horizon" value="C"><span class="pf-dot" style="background:#1D9E75"></span><div class="pf-opt-body"><div class="pf-opt-label">Long-term</div><div class="pf-opt-desc">1 to 5 years &mdash; I&rsquo;m building positions, not trading them</div></div></label>
+        <label class="pf-opt"><input type="radio" name="horizon" value="D"><span class="pf-dot" style="background:#4F46E5"></span><div class="pf-opt-body"><div class="pf-opt-label">Very long-term</div><div class="pf-opt-desc">5+ years &mdash; I&rsquo;m buying for the decade</div></div></label>
+      </div>
+    </div>
+
+    <!-- Q4: Philosophy -->
+    <div class="pf-q pf-q-context" data-key="philosophy" data-kind="single">
+      <div class="pf-num">4 / 12</div>
+      <div class="pf-text">Which of these best describes how you invest?</div>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="philosophy" value="A"><span class="pf-dot" style="background:#EF9F27"></span><div class="pf-opt-body"><div class="pf-opt-label">Buy the dips</div><div class="pf-opt-desc">I prefer assets that have pulled back &mdash; cheaper entry, contrarian bets</div></div></label>
+        <label class="pf-opt"><input type="radio" name="philosophy" value="B"><span class="pf-dot" style="background:#1D9E75"></span><div class="pf-opt-body"><div class="pf-opt-label">Back the winners</div><div class="pf-opt-desc">I follow momentum &mdash; strength attracts more strength</div></div></label>
+        <label class="pf-opt"><input type="radio" name="philosophy" value="C"><span class="pf-dot" style="background:#5DCAA5"></span><div class="pf-opt-body"><div class="pf-opt-label">Dollar-cost average</div><div class="pf-opt-desc">I buy a fixed amount regularly &mdash; I don&rsquo;t try to time anything</div></div></label>
+        <label class="pf-opt"><input type="radio" name="philosophy" value="D"><span class="pf-dot" style="background:#4F46E5"></span><div class="pf-opt-body"><div class="pf-opt-label">Growth at any price</div><div class="pf-opt-desc">I back the highest-potential assets even if expensive or volatile</div></div></label>
+      </div>
+    </div>
+
+    <div class="pf-section-label">Your risk tolerance</div>
+
+    <div class="pf-q" data-key="volatility" data-kind="single">
+      <div class="pf-num">5 / 12</div>
       <div class="pf-text">How much price movement are you comfortable with?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="volatility" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>I prefer steady, stable stocks</span></label>
@@ -137,8 +203,8 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
-    <div class="pf-q" data-key="volSpike">
-      <div class="pf-num">2 / 10</div>
+    <div class="pf-q" data-key="volSpike" data-kind="single">
+      <div class="pf-num">6 / 12</div>
       <div class="pf-text">If a stock suddenly becomes more unstable, what would you do?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="volSpike" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>I'd avoid it or sell</span></label>
@@ -147,18 +213,8 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
-    <div class="pf-q" data-key="vsPeak">
-      <div class="pf-num">3 / 10</div>
-      <div class="pf-text">If a stock drops from its peak, how much is acceptable to you?</div>
-      <div class="pf-opts">
-        <label class="pf-opt"><input type="radio" name="vsPeak" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Only small drops</span></label>
-        <label class="pf-opt"><input type="radio" name="vsPeak" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Some decline is fine</span></label>
-        <label class="pf-opt"><input type="radio" name="vsPeak" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Big drops don't bother me</span></label>
-      </div>
-    </div>
-
-    <div class="pf-q" data-key="shortTrend">
-      <div class="pf-num">4 / 10</div>
+    <div class="pf-q" data-key="shortTrend" data-kind="single">
+      <div class="pf-num">7 / 12</div>
       <div class="pf-text">What do you want to see in the short term?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="shortTrend" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>The price going up</span></label>
@@ -167,8 +223,8 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
-    <div class="pf-q" data-key="longTrend">
-      <div class="pf-num">5 / 10</div>
+    <div class="pf-q" data-key="longTrend" data-kind="single">
+      <div class="pf-num">8 / 12</div>
       <div class="pf-text">Over time, what kind of trend do you prefer?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="longTrend" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Clear upward growth</span></label>
@@ -177,8 +233,8 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
-    <div class="pf-q" data-key="maCross">
-      <div class="pf-num">6 / 10</div>
+    <div class="pf-q" data-key="maCross" data-kind="single">
+      <div class="pf-num">9 / 12</div>
       <div class="pf-text">How important is it that the stock is clearly trending upward?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="maCross" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Very important</span></label>
@@ -187,8 +243,8 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
-    <div class="pf-q" data-key="return1M">
-      <div class="pf-num">7 / 10</div>
+    <div class="pf-q" data-key="return1M" data-kind="single">
+      <div class="pf-num">10 / 12</div>
       <div class="pf-text">Over the past month, what would you prefer?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="return1M" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Gains</span></label>
@@ -197,8 +253,8 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
-    <div class="pf-q" data-key="return1Y">
-      <div class="pf-num">8 / 10</div>
+    <div class="pf-q" data-key="return1Y" data-kind="single">
+      <div class="pf-num">11 / 12</div>
       <div class="pf-text">Over the past year, what are you aiming for?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="return1Y" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Steady, reliable growth</span></label>
@@ -207,18 +263,8 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
-    <div class="pf-q" data-key="range52W">
-      <div class="pf-num">9 / 10</div>
-      <div class="pf-text">When do you prefer to buy a stock?</div>
-      <div class="pf-opts">
-        <label class="pf-opt"><input type="radio" name="range52W" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>When it's already doing well</span></label>
-        <label class="pf-opt"><input type="radio" name="range52W" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Anytime</span></label>
-        <label class="pf-opt"><input type="radio" name="range52W" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>When it's dropped (cheap but risky)</span></label>
-      </div>
-    </div>
-
-    <div class="pf-q" data-key="cagr3Y">
-      <div class="pf-num">10 / 10</div>
+    <div class="pf-q" data-key="cagr3Y" data-kind="single">
+      <div class="pf-num">12 / 12</div>
       <div class="pf-text">What matters more to you?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="cagr3Y" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Protecting my money</span></label>
@@ -319,6 +365,7 @@ html,body{overflow-y:auto !important;}
     <button class="tab-d" data-tab="SectorETFs">ETFs</button>
     <button class="tab-d" data-tab="stocks">Stocks</button>
     <button class="tab-d" data-tab="Crypto">Crypto</button>
+    <button class="tab-d tab-outside" data-tab="outside" id="outsideTab" style="display:none;margin-left:auto;color:rgba(255,255,255,0.4);">Outside scope</button>
   </div>
 
   <div class="table-wrap-d">
@@ -349,7 +396,7 @@ html,body{overflow-y:auto !important;}
 
 <script type="module">
 import { loadData } from '/js/data.js';
-import { getMoodBand, IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, saveProfile, FIT_QUESTIONS, getProfileSummary } from '/js/riskEngine.js';
+import { getMoodBand, IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, saveProfile, FIT_QUESTIONS, getProfileSummary, isAssetInScope } from '/js/riskEngine.js';
 import { getUser, signOut } from '/js/supabase.js';
 
 // gloriskScore helper (same as main.js)
@@ -395,32 +442,62 @@ async function init() {
     showForm();
   }
 
-  // Submit handler
+  // Submit handler — handles both single-select radio and multi-select checkbox questions
   document.getElementById('profileSubmit')?.addEventListener('click', () => {
     const profile = {};
     const questions = document.querySelectorAll('.pf-q');
     let allAnswered = true;
+    let firstMissing = null;
     questions.forEach(q => {
       const key = q.dataset.key;
-      const checked = q.querySelector('input:checked');
-      if (!checked) { allAnswered = false; q.style.borderColor = 'var(--red-d)'; }
-      else { profile[key] = checked.value; q.style.borderColor = ''; }
+      const kind = q.dataset.kind || 'single';
+      if (kind === 'multi') {
+        const checked = [...q.querySelectorAll('input:checked')].map(el => el.value);
+        if (!checked.length) {
+          allAnswered = false;
+          q.style.borderColor = 'var(--red-d)';
+          if (!firstMissing) firstMissing = q;
+        } else {
+          profile[key] = checked;
+          q.style.borderColor = '';
+        }
+      } else {
+        const checked = q.querySelector('input:checked');
+        if (!checked) {
+          allAnswered = false;
+          q.style.borderColor = 'var(--red-d)';
+          if (!firstMissing) firstMissing = q;
+        } else {
+          profile[key] = checked.value;
+          q.style.borderColor = '';
+        }
+      }
     });
-    if (!allAnswered) return;
+    if (!allAnswered) {
+      firstMissing?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     saveProfile(profile);
     showResults(allCoins, profile);
   });
 
-  // Edit profile handler
+  // Edit profile handler — pre-fills both radio and checkbox answers
   document.getElementById('editProfile')?.addEventListener('click', () => {
     document.getElementById('profileForm').style.display = '';
     document.getElementById('screenerResults').style.display = 'none';
-    // Pre-fill existing answers
     const profile = getProfile();
     if (profile) {
       Object.entries(profile).forEach(([key, val]) => {
-        const radio = document.querySelector(`input[name="${key}"][value="${val}"]`);
-        if (radio) radio.checked = true;
+        if (Array.isArray(val)) {
+          // Multi-select: check all matching checkboxes
+          val.forEach(v => {
+            const cb = document.querySelector(`input[name="${key}"][value="${v}"]`);
+            if (cb) cb.checked = true;
+          });
+        } else {
+          const radio = document.querySelector(`input[name="${key}"][value="${val}"]`);
+          if (radio) radio.checked = true;
+        }
       });
     }
   });
@@ -444,20 +521,42 @@ function showResults(allCoins, profile) {
   document.getElementById('profileForm').style.display = 'none';
   document.getElementById('screenerResults').style.display = '';
 
-  const scored = allCoins
-    .filter(c => c.group !== 'Index') // exclude indices
+  // Score every asset (including out-of-scope ones so the Outside Scope tab has data).
+  // Indices are always excluded — they don't belong in personal rankings.
+  const allScored = allCoins
+    .filter(c => c.group !== 'Index')
     .map(c => ({
       ...c,
       fitScore: computeFitScore(c.indicators, profile),
       perfScore: gloriskScore(c.mood),
-    })).filter(c => c.fitScore !== null).sort((a, b) => b.fitScore - a.fitScore);
+      inScope: isAssetInScope(c, profile),
+    }))
+    .filter(c => c.fitScore !== null)
+    .sort((a, b) => b.fitScore - a.fitScore);
+
+  // Split by scope
+  const scored = allScored.filter(c => c.inScope);
+  const outOfScope = allScored.filter(c => !c.inScope);
 
   // Populate profile bar
   const summary = getProfileSummary(profile);
-  document.getElementById('profRisk').textContent = summary?.riskLevel || '\u2014';
+  const profRiskEl = document.getElementById('profRisk');
+  if (profRiskEl) {
+    const parts = [summary?.riskLevel];
+    if (summary?.horizon)    parts.push(summary.horizon);
+    if (summary?.philosophy) parts.push(summary.philosophy);
+    profRiskEl.textContent = parts.filter(Boolean).join(' \u00b7 ') || '\u2014';
+  }
   document.getElementById('profAssets').textContent = scored.length;
 
-  // Populate summary cards
+  // Show Outside Scope tab only if there are any out-of-scope assets
+  const outsideTab = document.getElementById('outsideTab');
+  if (outsideTab) {
+    outsideTab.style.display = outOfScope.length > 0 ? '' : 'none';
+    outsideTab.textContent = `Outside scope (${outOfScope.length})`;
+  }
+
+  // Populate summary cards — based on in-scope only
   const vs = scored.filter(c => c.fitScore >= 85).length;
   const s = scored.filter(c => c.fitScore >= 65 && c.fitScore < 85).length;
   const b = scored.filter(c => c.fitScore >= 40 && c.fitScore < 65).length;
@@ -638,12 +737,13 @@ function showResults(allCoins, profile) {
   }
 
   function renderTable() {
-    let filtered = scored;
+    // Choose source array based on tab: in-scope for normal tabs, out-of-scope for the Outside tab
+    let filtered = filters.tab === 'outside' ? outOfScope : scored;
 
     // Tab filtering
     if (filters.tab === 'stocks') {
       filtered = filtered.filter(c => STOCK_GROUPS.includes(c.group));
-    } else if (filters.tab !== 'all') {
+    } else if (filters.tab !== 'all' && filters.tab !== 'outside') {
       filtered = filtered.filter(c => c.group === filters.tab);
     }
 

@@ -6,7 +6,7 @@
 
 'use strict';
 
-import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary, FIT_QUESTIONS } from './riskEngine.js';
+import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary, FIT_QUESTIONS, PHILOSOPHY_DERIVED, PHILOSOPHY_LABELS, HORIZON_LABELS, isAssetInScope } from './riskEngine.js';
 import { loadData, searchCoins, fetchAssetData } from './data.js';
 import html2canvas from 'html2canvas';
 import { getUser, signOut } from './supabase.js';
@@ -1177,7 +1177,10 @@ function buildAdFitSection(coin) {
 
   const fitBadge = adFitBadge(fitScore);
   const summary = getProfileSummary(profile);
-  const riskLevelText = summary ? `Based on your ${summary.riskLevel} profile` : 'Based on your risk profile';
+  const riskLevelParts = [summary?.riskLevel, summary?.horizon, summary?.philosophy].filter(Boolean);
+  const riskLevelText = riskLevelParts.length
+    ? `Based on your ${riskLevelParts.join(' \u00b7 ')} profile`
+    : 'Based on your risk profile';
 
   const SCORE_MATRIX    = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 0 }, C: { green: 1, amber: 1, red: 1 } };
   const SCORE_MATRIX_Q9 = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 1 }, C: { green: 0, amber: 0.5, red: 1 } };
@@ -1185,26 +1188,49 @@ function buildAdFitSection(coin) {
   let strong = 0, partial = 0, low = 0;
   const sensitiveChanges = [];
 
-  const rowsHTML = FIT_QUESTIONS.map(q => {
-    const ind = coin.indicators[q.key];
-    const answer = profile[q.key];
-    if (!ind || !answer) return '';
-    const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
-    const s = matrix[answer]?.[ind.color] ?? 0;
+  // Preference text helper — returns the user's answer text for an indicator,
+  // OR a "derived from philosophy" hint for vsPeak/range52W
+  const derived = PHILOSOPHY_DERIVED[profile.philosophy] || PHILOSOPHY_DERIVED.C;
+  const philosophyLabel = profile.philosophy ? PHILOSOPHY_LABELS[profile.philosophy] : 'Dollar-cost average';
+  const qByKey = {};
+  for (const q of FIT_QUESTIONS) qByKey[q.key] = q;
+
+  // All 10 scored indicators, in display order (mirrors IND_ORDER without momentum)
+  const DISPLAY_KEYS = ['volatility', 'volSpike', 'vsPeak', 'shortTrend', 'longTrend', 'maCross', 'return1M', 'return1Y', 'range52W', 'cagr3Y'];
+
+  const rowsHTML = DISPLAY_KEYS.map(key => {
+    const ind = coin.indicators[key];
+    if (!ind) return '';
+    const meta = IND_META[key] || {};
+    const desc = (meta.desc ? meta.desc.split('.')[0] : '').trim();
+
+    let answer, matrix, prefText, isDerived = false;
+    if (key === 'vsPeak' || key === 'range52W') {
+      // Derived from philosophy
+      isDerived = true;
+      answer = derived[key];
+      matrix = key === 'range52W' ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
+      prefText = `Derived from your <em style="color:var(--ad-indigo-mid);font-style:normal">${philosophyLabel}</em> philosophy`;
+    } else {
+      const q = qByKey[key];
+      if (!q) return '';
+      answer = profile[key];
+      if (!answer) return '';
+      matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
+      prefText = q[answer.toLowerCase()] || '';
+    }
+    if (!matrix[answer]) return '';
+    const s = matrix[answer][ind.color] ?? 0;
     const fitLabel = s === 1 ? 'Strong' : s === 0.5 ? 'Partial' : 'Low';
     const fitColor = s === 1 ? 'var(--ad-teal)' : s === 0.5 ? 'var(--ad-amber)' : 'var(--ad-red-muted)';
     if (s === 1) strong++;
     else if (s === 0.5) partial++;
     else low++;
 
-    const prefText = q[answer.toLowerCase()] || '';
-    const meta = IND_META[q.key] || {};
-    const desc = (meta.desc ? meta.desc.split('.')[0] : '').trim();
-
     // Flag currently Strong green indicators that would drop if the color slipped to amber
     if (s === 1 && ind.color === 'green' && matrix[answer]?.amber != null && matrix[answer].amber < 1) {
       sensitiveChanges.push({
-        label: meta.label || q.key,
+        label: meta.label || key,
         current: ind.label,
         wouldBecome: matrix[answer].amber === 0.5 ? 'Partial' : 'Low',
       });
@@ -1212,7 +1238,7 @@ function buildAdFitSection(coin) {
 
     return `
       <div class="ad-bt-row">
-        <div class="ad-bt-indicator"><div class="ad-bt-dot" style="background:${fitColor}"></div>${meta.label || q.key}</div>
+        <div class="ad-bt-indicator"><div class="ad-bt-dot" style="background:${fitColor}"></div>${meta.label || key}</div>
         <div class="ad-bt-desc">${desc}</div>
         <div class="ad-bt-value" style="color:${fitColor}">${ind.label}</div>
         <div class="ad-bt-pref">${prefText}</div>
