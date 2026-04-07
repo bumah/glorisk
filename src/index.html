@@ -36,9 +36,11 @@
 .lp-ticker-row { display: flex; gap: 8px; margin-top: 24px; flex-wrap: wrap; justify-content: center; }
 .lp-pill { background: rgba(255,255,255,0.07); border: 0.5px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 5px 13px; font-size: 11px; color: #F8F7F4; display: flex; align-items: center; gap: 6px; font-weight: 500; }
 .lp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.lp-dot-g { background: #1D9E75; }
-.lp-dot-r { background: #E24B4A; }
-.lp-dot-a { background: #EF9F27; }
+.lp-dot-g { background: #1D9E75; }      /* Very Strong */
+.lp-dot-gm { background: #5DCAA5; }     /* Strong */
+.lp-dot-a { background: #EF9F27; }      /* Borderline */
+.lp-dot-rm { background: #F09595; }     /* Poor */
+.lp-dot-r { background: #E24B4A; }      /* Very Poor */
 .lp-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 900px; margin-top: 28px; }
 .lp-step-card { background: #FFFFFF; border: 0.5px solid #E2E8F0; border-radius: 12px; padding: 22px; }
 .lp-step-num { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid #4F46E5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #4F46E5; margin-bottom: 12px; }
@@ -99,48 +101,49 @@
 <div id="landing" class="lp">
 
   <div class="lp-sec lp-navy lp-centered">
-    <div class="lp-eyebrow-light">Know your risk</div>
-    <h1>A personal way to invest in <span class="rotate" id="rotator">stocks</span></h1>
-    <p class="lp-sub-dark">Most rankings are based on public or expert judgment. GloRisk changes that by ranking every stock, crypto, and ETF based on your risk appetite — not theirs.</p>
-    <p class="lp-tagline">Choose your risk. Track your fits. Invest your way.</p>
+    <div class="lp-eyebrow-light">Risk Screener for Every Investor</div>
+    <h1>Know which <span class="rotate" id="rotator">stocks</span> fit your risk.</h1>
+    <p class="lp-sub-dark">Investing is about risk and return. But most tools only focus on returns. GloRisk ranks every stock, crypto, and ETF by your personal risk appetite — so you always see the full picture.</p>
+    <p class="lp-tagline">Define your risk. Get your scores. Track your fits.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
-      <a href="/screener.html" class="lp-btn">Get my risk score →</a>
-      <a href="/screener.html" class="lp-btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.3)">Browse rankings</a>
+      <a href="/screener.html" class="lp-btn">Get your risk scores →</a>
     </div>
     <div class="lp-ticker-row">
-      <div class="lp-pill"><div class="lp-dot lp-dot-g"></div>AAPL · Fits you</div>
-      <div class="lp-pill"><div class="lp-dot lp-dot-r"></div>BTC · Outside range</div>
-      <div class="lp-pill"><div class="lp-dot lp-dot-g"></div>VOO · Fits you</div>
+      <div class="lp-pill"><div class="lp-dot lp-dot-gm"></div>AAPL · Strong</div>
+      <div class="lp-pill"><div class="lp-dot lp-dot-g"></div>VOO · Very Strong</div>
+      <div class="lp-pill"><div class="lp-dot lp-dot-r"></div>BTC · Very Poor</div>
       <div class="lp-pill"><div class="lp-dot lp-dot-a"></div>ETH · Borderline</div>
-      <div class="lp-pill"><div class="lp-dot lp-dot-r"></div>TSLA · Outside range</div>
+      <div class="lp-pill"><div class="lp-dot lp-dot-rm"></div>TSLA · Poor</div>
     </div>
   </div>
 
   <div class="lp-sec lp-white lp-centered">
-    <p style="font-size:22px;font-weight:600;color:#1A1A2E;font-family:Georgia,serif;max-width:540px;margin-bottom:12px">Every top pick list is built on someone else's judgment.</p>
-    <p class="lp-sub-light">Analysts. Influencers. Generic screeners. None of them know your risk appetite. GloRisk does.</p>
+    <div class="lp-eyebrow">The problem</div>
+    <p style="font-size:24px;font-weight:600;color:#1A1A2E;font-family:Georgia,serif;max-width:600px;line-height:1.3;margin-bottom:6px">Most investment tools show you returns.</p>
+    <p style="font-size:24px;font-weight:600;color:#4F46E5;font-family:Georgia,serif;max-width:600px;line-height:1.3;margin-bottom:18px">GloRisk shows you what they're missing.</p>
+    <p class="lp-sub-light">Returns tell you how much an asset gained. They don't tell you whether it matches your risk appetite. Risk does. And without it, you're looking at half the information you need.</p>
   </div>
 
   <div class="lp-divider"></div>
 
   <div class="lp-sec lp-warm lp-centered">
     <div class="lp-eyebrow">How it works</div>
-    <h2>Three steps to your personal market</h2>
+    <h2>Three steps to your personal risk scores</h2>
     <div class="lp-steps">
       <div class="lp-step-card">
         <div class="lp-step-num">1</div>
         <h3>Set your risk profile</h3>
-        <p style="font-size:13px">Define your risk appetite. Your thresholds, your limits — not a default template.</p>
+        <p style="font-size:13px">Define your risk appetite — your thresholds, your limits, your rules. Not a default template.</p>
       </div>
       <div class="lp-step-card">
         <div class="lp-step-num">2</div>
         <h3>Score the market</h3>
-        <p style="font-size:13px">Every asset gets a personalised risk score based on your profile, not the crowd's.</p>
+        <p style="font-size:13px">Every asset gets a personalised risk score based on your profile. Not the crowd's. Not the analyst's. Yours.</p>
       </div>
       <div class="lp-step-card">
         <div class="lp-step-num">3</div>
-        <h3>Invest your way</h3>
-        <p style="font-size:13px">See exactly what fits. Cut everything that doesn't. Your market, your rules.</p>
+        <h3>See your full picture</h3>
+        <p style="font-size:13px">See exactly what fits your risk profile. Your risk appetite and potential returns, together.</p>
       </div>
     </div>
   </div>
@@ -152,22 +155,22 @@
       <div class="lp-feat-card">
         <div class="lp-feat-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="10" width="3" height="5" rx="1" fill="#4F46E5"/><rect x="6" y="6" width="3" height="9" rx="1" fill="#4F46E5" opacity="0.6"/><rect x="11" y="2" width="3" height="13" rx="1" fill="#4F46E5" opacity="0.3"/></svg></div>
         <h3>Personal ranking</h3>
-        <p style="font-size:13px">The full global market ranked by your risk appetite. Not theirs.</p>
+        <p style="font-size:13px">The full global market ranked by your risk appetite. See what fits and what doesn't.</p>
       </div>
       <div class="lp-feat-card">
         <div class="lp-feat-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="6" height="12" rx="1.5" fill="#4F46E5" opacity="0.4"/><rect x="9" y="2" width="6" height="12" rx="1.5" fill="#4F46E5"/></svg></div>
         <h3>Side-by-side compare</h3>
-        <p style="font-size:13px">Stack any two assets. See which fits your profile better before you decide.</p>
+        <p style="font-size:13px">See how any two assets compare against your risk profile.</p>
       </div>
       <div class="lp-feat-card">
         <div class="lp-feat-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#4F46E5" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="#4F46E5" stroke-width="1.5" stroke-linecap="round"/></svg></div>
         <h3>Your watchlist</h3>
-        <p style="font-size:13px">Track only assets within your risk range. Miss nothing that matters to you.</p>
+        <p style="font-size:13px">Track assets against your risk range. Always know where they stand.</p>
       </div>
       <div class="lp-feat-card">
         <div class="lp-feat-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2a4 4 0 0 1 4 4c0 3 2 4 2 4H2s2-1 2-4a4 4 0 0 1 4-4z" stroke="#4F46E5" stroke-width="1.5"/><path d="M6.5 13a1.5 1.5 0 0 0 3 0" stroke="#4F46E5" stroke-width="1.5"/></svg></div>
         <h3>Fit alerts</h3>
-        <p style="font-size:13px">Know the moment an asset enters or exits your personal risk range.</p>
+        <p style="font-size:13px">Get notified when an asset moves in or out of your risk range.</p>
       </div>
     </div>
   </div>
@@ -179,25 +182,25 @@
     <h2>See how it works for you</h2>
     <p class="lp-sub-light">A preview of your personalised ranking — unlocked when you set your profile.</p>
     <div class="lp-asset-list lp-lock-wrap">
-      <div class="lp-asset-row"><div class="lp-avatar">VOO</div><div style="flex:1"><div class="lp-asset-name">Vanguard S&P 500 ETF</div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:88%;background:#1D9E75"></div></div></div><div class="lp-badge" style="background:#E1F5EE;color:#085041">88 · Fits</div></div>
-      <div class="lp-asset-row"><div class="lp-avatar">AAPL</div><div style="flex:1"><div class="lp-asset-name">Apple Inc.</div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:74%;background:#1D9E75"></div></div></div><div class="lp-badge" style="background:#E1F5EE;color:#085041">74 · Fits</div></div>
+      <div class="lp-asset-row"><div class="lp-avatar">VOO</div><div style="flex:1"><div class="lp-asset-name">Vanguard S&P 500 ETF</div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:88%;background:#1D9E75"></div></div></div><div class="lp-badge" style="background:#E1F5EE;color:#085041">88 · Very Strong</div></div>
+      <div class="lp-asset-row"><div class="lp-avatar">AAPL</div><div style="flex:1"><div class="lp-asset-name">Apple Inc.</div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:74%;background:#5DCAA5"></div></div></div><div class="lp-badge" style="background:#E4F6EE;color:#0E5C3F">74 · Strong</div></div>
       <div class="lp-asset-row"><div class="lp-avatar">ETH</div><div style="flex:1"><div class="lp-asset-name">Ethereum</div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:51%;background:#EF9F27"></div></div></div><div class="lp-badge" style="background:#FAEEDA;color:#633806">51 · Borderline</div></div>
       <div style="position:relative">
-        <div class="lp-asset-row lp-locked"><div class="lp-avatar">BTC</div><div style="flex:1"><div class="lp-asset-name">Bitcoin</div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:28%;background:#E24B4A"></div></div></div><div class="lp-badge" style="background:#FCEBEB;color:#791F1F">28 · Outside</div></div>
-        <div class="lp-lock-overlay"><a href="/screener.html" class="lp-lock-badge" style="text-decoration:none">Set your profile to unlock your full ranking →</a></div>
+        <div class="lp-asset-row lp-locked"><div class="lp-avatar">BTC</div><div style="flex:1"><div class="lp-asset-name">Bitcoin</div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:28%;background:#F09595"></div></div></div><div class="lp-badge" style="background:#FDEDED;color:#8A2E2E">28 · Poor</div></div>
+        <div class="lp-lock-overlay"><a href="/screener.html" class="lp-lock-badge" style="text-decoration:none">Set your profile to see your full ranking</a></div>
       </div>
     </div>
   </div>
 
   <div class="lp-pos-sec lp-centered">
-    <p class="lp-pos-main">Investment Rankings<span class="lp-pos-period">.</span> For You<span class="lp-pos-period">.</span> Not the Crowd<span class="lp-pos-period">.</span></p>
+    <p class="lp-pos-main">Know your risks before and after you invest<span class="lp-pos-period">.</span></p>
   </div>
 
   <div class="lp-cta-sec">
     <div class="lp-eyebrow">Get started</div>
-    <h2 style="font-size:26px;max-width:380px;line-height:1.3;font-family:Georgia,serif">Your risk appetite.<br>Your rankings.</h2>
-    <p class="lp-sub-light" style="margin-top:10px;margin-bottom:24px;font-size:14px">Takes two minutes to set up. Free to start. No account needed.</p>
-    <a href="/screener.html" class="lp-btn" style="font-size:14px;padding:14px 28px">Start free — no account needed →</a>
+    <h2 style="font-size:26px;max-width:460px;line-height:1.3;font-family:Georgia,serif">See the full picture.<br>Risk and return, together.</h2>
+    <p class="lp-sub-light" style="margin-top:10px;margin-bottom:24px;font-size:14px">Takes two minutes to set up. Free to start.</p>
+    <a href="/screener.html" class="lp-btn" style="font-size:14px;padding:14px 28px">Get your risk rankings free →</a>
     <p style="font-size:12px;color:#A0AEC0;margin-top:12px">Not financial advice. Always do your own research.</p>
   </div>
 
@@ -229,7 +232,7 @@ if (assetParam) {
 let selectedCoin = null;
 
 // Rotating words
-const words = ['stocks', 'crypto', 'ETFs', 'global markets'];
+const words = ['stocks', 'crypto', 'ETFs', 'index funds', 'investments'];
 let wordIdx = 0;
 const rotator = document.getElementById('rotator');
 if (rotator) {
