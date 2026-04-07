@@ -531,30 +531,18 @@
 </div>
 
 <!-- ── REPORT PAGE ─────────────────────────────────────────────────── -->
-<div id="report">
-  <nav class="report-nav">
-    <div class="nav-logo" id="navLogo">
-      <div class="logo-text">Glo<span>Risk</span></div>
-    </div>
-    <div class="nav-search-wrap">
-      <div class="nav-search-bar">
-        <input type="text" class="nav-search-input" id="navInput"
-          placeholder="Search another asset&hellip;" autocomplete="off" />
-        <button class="nav-search-btn" id="navBtn" disabled>Go</button>
-      </div>
-      <div class="search-dropdown" id="navDropdown"></div>
-    </div>
-    <span class="back-link" id="backLink">&larr; Back</span>
-  </nav>
-  <div class="report-tools-bar">
-    <a href="/compare.html" class="rtb-link" id="rtbCompare">Compare</a>
-    <a href="/stress-test.html" class="rtb-link" id="rtbStress">Stress</a>
-    <a href="/market.html" class="rtb-link">Summary</a>
-    <span class="rtb-link rtb-soon">Portfolio Monitor</span>
-  </div>
-
+<div id="report" class="ad">
   <div class="report-body page-fade" id="reportBody">
     <!-- populated by JS -->
+  </div>
+  <!-- Hidden search used by back navigation / search helpers -->
+  <div style="display:none">
+    <input type="text" id="navInput" />
+    <button id="navBtn"></button>
+    <div id="navDropdown"></div>
+    <span id="backLink"></span>
+    <a id="rtbCompare" href="#"></a>
+    <a id="rtbStress" href="#"></a>
   </div>
 </div>
 

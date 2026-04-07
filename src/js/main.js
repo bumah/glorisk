@@ -6,7 +6,7 @@
 
 'use strict';
 
-import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE, computeFitScore, getFitLabel, getFitColor, getProfile, FIT_QUESTIONS } from './riskEngine.js';
+import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary, FIT_QUESTIONS } from './riskEngine.js';
 import { loadData, searchCoins, fetchAssetData } from './data.js';
 import html2canvas from 'html2canvas';
 import { getUser, signOut } from './supabase.js';
@@ -208,8 +208,8 @@ async function init() {
     });
   }
 
-  document.getElementById('backLink').addEventListener('click', showLanding);
-  document.getElementById('navLogo').addEventListener('click', showLanding);
+  document.getElementById('backLink')?.addEventListener('click', showLanding);
+  document.getElementById('navLogo')?.addEventListener('click', showLanding);
 
   // Read wizard params from URL (set by home page wizard redirect)
   const wizToggle = document.getElementById('wizardToggle');
@@ -965,6 +965,570 @@ function buildPerfCard(coin) {
   `;
 }
 
+/* ── Asset detail (navy redesign) helpers ───────────────────────────── */
+
+function adAssetType(coin) {
+  const g = coin.group;
+  if (g === 'Crypto') return 'Crypto';
+  if (g === 'SectorETFs') return 'ETF';
+  if (g === 'Index') return 'Index';
+  if (g === 'SP500') return 'Stock \u00b7 S&P 500';
+  if (g === 'NASDAQ100') return 'Stock \u00b7 NASDAQ 100';
+  if (g === 'FTSE100') return 'Stock \u00b7 FTSE 100';
+  if (g === 'Nikkei225') return 'Stock \u00b7 Nikkei 225';
+  if (g === 'HSI') return 'Stock \u00b7 Hang Seng';
+  return 'Stock';
+}
+
+function adIsStock(coin) {
+  return ['SP500','NASDAQ100','FTSE100','Nikkei225','HSI'].includes(coin.group);
+}
+
+// Fit score → badge info
+function adFitBadge(score) {
+  if (score == null) return { cls: 'dim',        color: 'var(--ad-text-dim)',    label: '—' };
+  if (score >= 85)   return { cls: 'teal',       color: 'var(--ad-teal)',        label: 'Very Strong' };
+  if (score >= 65)   return { cls: 'teal-muted', color: 'var(--ad-teal-muted)',  label: 'Strong' };
+  if (score >= 40)   return { cls: 'amber',      color: 'var(--ad-amber)',       label: 'Borderline' };
+  if (score >= 20)   return { cls: 'red-muted',  color: 'var(--ad-red-muted)',   label: 'Poor' };
+  return                    { cls: 'red',        color: 'var(--ad-red)',         label: 'Very Poor' };
+}
+
+// Performance (mood) score → badge info
+function adPerfBadge(score) {
+  if (score >= 90) return { cls: 'teal',       color: 'var(--ad-teal)',       label: 'Very Stable' };
+  if (score >= 80) return { cls: 'teal-muted', color: 'var(--ad-teal-muted)', label: 'Stable' };
+  if (score >= 60) return { cls: 'amber',      color: 'var(--ad-amber)',      label: 'Unstable' };
+  if (score >= 40) return { cls: 'red-muted',  color: 'var(--ad-red-muted)',  label: 'Stressed' };
+  return                  { cls: 'red',        color: 'var(--ad-red)',        label: 'Critical' };
+}
+
+function adIndColor(c) {
+  if (c === 'green') return 'var(--ad-teal)';
+  if (c === 'amber') return 'var(--ad-amber)';
+  if (c === 'red')   return 'var(--ad-red-muted)';
+  return 'var(--ad-text-dim)';
+}
+
+// Topbar with logo + back button
+function buildAdTopbar() {
+  return `
+    <div class="ad-topbar">
+      <a href="/" class="ad-logo">Glo<span>Risk</span></a>
+      <a href="/browse.html" class="ad-back-btn">\u2190 Back to rankings</a>
+    </div>
+  `;
+}
+
+// Asset header (ticker, name, type, price, change, date)
+function buildAdHeader(coin) {
+  const change = coin.priceChange || 0;
+  const changeCls = change >= 0 ? 'pos' : 'neg';
+  const asOf = coin.lastDate
+    ? new Date(coin.lastDate).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+    : '';
+  return `
+    <div class="ad-header">
+      <div class="ad-top">
+        <div>
+          <div class="ad-ticker">${coin.ticker}</div>
+          <div class="ad-name">${coin.company}</div>
+          <div class="ad-type">${adAssetType(coin)}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="ad-price">${formatPrice(coin.price, coin.group)}</div>
+          <div class="ad-change ${changeCls}">${change >= 0 ? '+' : ''}${change.toFixed(2)}% \u00b7 30D</div>
+          <div class="ad-date">As of ${asOf}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// One-line description for an indicator when scored against a user preference
+function adIndicatorExplain(key, v, ticker) {
+  const defs = {
+    volatility: () => v.raw < 30
+      ? `Low annualised volatility (${v.label}) \u2014 calm, predictable day-to-day price movement.`
+      : v.raw < 60
+      ? `Moderate annualised volatility (${v.label}) \u2014 the price can move meaningfully from day to day.`
+      : `High annualised volatility (${v.label}) \u2014 the price swings significantly from day to day.`,
+    volSpike: () => v.raw < 1.0
+      ? `Recent volatility lower than historical average (${v.label}) \u2014 price behaviour calmer than usual.`
+      : v.raw < 2.0
+      ? `Recent volatility slightly above average (${v.label}) \u2014 something may be shifting.`
+      : `Recent volatility well above average (${v.label}) \u2014 heightened uncertainty.`,
+    vsPeak: () => v.raw < 20
+      ? `Only ${v.label} below the 3-year high \u2014 holding up close to peak value.`
+      : v.raw < 30
+      ? `A noticeable ${v.label} pullback from the 3-year high.`
+      : `A deep ${v.label} drawdown from the 3-year high \u2014 significant peak loss.`,
+    shortTrend: () => v.raw > 0
+      ? `Trading ${v.label} above the 50-day average \u2014 short-term trend upward.`
+      : v.raw > -6
+      ? `Trading ${v.label} below the 50-day average \u2014 early signs of weakness.`
+      : `Trading ${v.label} below the 50-day average \u2014 clear short-term downtrend.`,
+    longTrend: () => v.raw > 0
+      ? `Price ${v.label} above the 200-day average \u2014 the long-term uptrend is intact.`
+      : v.raw > -10
+      ? `Price ${v.label} below the 200-day average \u2014 long-term trend weakening.`
+      : `Price ${v.label} below the 200-day average \u2014 extended long-term downtrend.`,
+    maCross: () => v.color === 'green'
+      ? `Golden Cross \u2014 50-day average above 200-day. Bullish trend direction.`
+      : `Death Cross \u2014 50-day average below 200-day. Bearish trend direction.`,
+    return1M: () => v.raw >= 0
+      ? `Up ${v.label} over the past 30 days \u2014 short-term direction positive.`
+      : v.raw > -10
+      ? `Down ${v.label} over the past 30 days \u2014 modest short-term decline.`
+      : `Down ${v.label} over the past 30 days \u2014 sharp selling pressure.`,
+    return1Y: () => v.raw > 0
+      ? `Up ${v.label} over the past 12 months \u2014 gained value over the longer term.`
+      : v.raw > -20
+      ? `Down ${v.label} over the past 12 months \u2014 moderate annual decline.`
+      : `Down ${v.label} over the past 12 months \u2014 sustained period of weakness.`,
+    range52W: () => v.raw > 45
+      ? `In the upper half of its 52-week range (${v.label}) \u2014 closer to yearly high.`
+      : v.raw > 25
+      ? `Mid-range within its 52-week band (${v.label}) \u2014 neither near top nor bottom.`
+      : `Near the bottom of its 52-week range (${v.label}) \u2014 most yearly gains given back.`,
+    cagr3Y: () => v.raw > 0
+      ? `${v.label} annualised compound growth over 3 years \u2014 building long-term value.`
+      : `${v.label} annualised over 3 years \u2014 destroyed long-term value.`,
+  };
+  return defs[key] ? defs[key]() : '';
+}
+
+// Build the 3 indicator groups (Going well / Concerning / Critical) for Performance body
+function buildAdIndGroups(coin) {
+  const ind = coin.indicators;
+  const ticker = coin.ticker;
+  const allCards = [];
+  for (const key of IND_ORDER) {
+    if (key === 'momentum') continue; // skip legacy indicator
+    const v = ind[key];
+    if (!v) continue;
+    const meta = IND_META[key] || {};
+    allCards.push({
+      color: v.color, key,
+      title: meta.label || key,
+      label: v.label,
+      text: adIndicatorExplain(key, v, ticker),
+    });
+  }
+  const groups = [
+    { label: 'Going well', color: 'green', dot: 'var(--ad-teal)',       cards: allCards.filter(c => c.color === 'green') },
+    { label: 'Concerning', color: 'amber', dot: 'var(--ad-amber)',      cards: allCards.filter(c => c.color === 'amber') },
+    { label: 'Critical',   color: 'red',   dot: 'var(--ad-red-muted)',  cards: allCards.filter(c => c.color === 'red') },
+  ];
+  let html = '';
+  for (const g of groups) {
+    html += `<div class="ad-ind-group">
+      <div class="ad-ind-group-label" style="color:${g.dot}"><div class="ad-ind-dot-lg" style="background:${g.dot}"></div>${g.label} (${g.cards.length})</div>
+      <div class="ad-ind-table">`;
+    if (g.cards.length === 0) {
+      html += `<div class="ad-ind-row"><div class="ad-ind-empty">No ${g.label.toLowerCase()} indicators.</div></div>`;
+    } else {
+      html += `<div class="ad-ind-head"><div class="ad-ind-th">Indicator</div><div class="ad-ind-th">Data</div><div class="ad-ind-th">Explanation</div></div>`;
+      for (const c of g.cards) {
+        html += `<div class="ad-ind-row">
+          <div class="ad-ind-name"><div class="ad-ind-dot" style="background:${g.dot}"></div>${c.title}</div>
+          <div class="ad-ind-data" style="color:${g.dot}">${c.label}</div>
+          <div class="ad-ind-exp">${c.text}</div>
+        </div>`;
+      }
+    }
+    html += `</div></div>`;
+  }
+  return html;
+}
+
+// Personal Fit Score section
+function buildAdFitSection(coin) {
+  const profile = getProfile();
+  if (!profile) {
+    return `
+      <div class="ad-sec-label">Your personal fit</div>
+      <div class="ad-rows-wrap">
+        <div class="ad-row">
+          <div class="ad-row-head" data-row="fit" style="cursor:default">
+            <div class="ad-chev" style="opacity:0.3">\u25B6</div>
+            <div>
+              <div class="ad-rh-name">Personal Fit Score</div>
+              <div class="ad-rh-sub">Set your profile to unlock personalised fit</div>
+            </div>
+            <div>
+              <div class="ad-rh-num" style="color:var(--ad-text-dim)">\u2014</div>
+              <div class="ad-rh-numsub">/ 100</div>
+            </div>
+            <div><span class="ad-badge dim">Not set</span></div>
+            <div class="ad-rh-desc"><a href="/screener.html" style="color:var(--ad-indigo-mid);text-decoration:underline">Take the 2-minute questionnaire</a> to see how this asset fits your risk profile.</div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  const fitScore = computeFitScore(coin.indicators, profile);
+  if (fitScore == null) {
+    return `<div class="ad-sec-label">Your personal fit</div>
+      <div class="ad-rows-wrap"><div class="ad-row"><div class="ad-row-head"><div></div><div><div class="ad-rh-name">Personal Fit Score</div><div class="ad-rh-sub">Insufficient data</div></div><div></div><div></div><div></div><div></div></div></div></div>`;
+  }
+
+  const fitBadge = adFitBadge(fitScore);
+  const summary = getProfileSummary(profile);
+  const riskLevelText = summary ? `Based on your ${summary.riskLevel} profile` : 'Based on your risk profile';
+
+  const SCORE_MATRIX    = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 0 }, C: { green: 1, amber: 1, red: 1 } };
+  const SCORE_MATRIX_Q9 = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 1 }, C: { green: 0, amber: 0.5, red: 1 } };
+
+  let strong = 0, partial = 0, low = 0;
+  const sensitiveChanges = [];
+
+  const rowsHTML = FIT_QUESTIONS.map(q => {
+    const ind = coin.indicators[q.key];
+    const answer = profile[q.key];
+    if (!ind || !answer) return '';
+    const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
+    const s = matrix[answer]?.[ind.color] ?? 0;
+    const fitLabel = s === 1 ? 'Strong' : s === 0.5 ? 'Partial' : 'Low';
+    const fitColor = s === 1 ? 'var(--ad-teal)' : s === 0.5 ? 'var(--ad-amber)' : 'var(--ad-red-muted)';
+    if (s === 1) strong++;
+    else if (s === 0.5) partial++;
+    else low++;
+
+    const prefText = q[answer.toLowerCase()] || '';
+    const meta = IND_META[q.key] || {};
+    const desc = (meta.desc ? meta.desc.split('.')[0] : '').trim();
+
+    // Flag currently Strong green indicators that would drop if the color slipped to amber
+    if (s === 1 && ind.color === 'green' && matrix[answer]?.amber != null && matrix[answer].amber < 1) {
+      sensitiveChanges.push({
+        label: meta.label || q.key,
+        current: ind.label,
+        wouldBecome: matrix[answer].amber === 0.5 ? 'Partial' : 'Low',
+      });
+    }
+
+    return `
+      <div class="ad-bt-row">
+        <div class="ad-bt-indicator"><div class="ad-bt-dot" style="background:${fitColor}"></div>${meta.label || q.key}</div>
+        <div class="ad-bt-desc">${desc}</div>
+        <div class="ad-bt-value" style="color:${fitColor}">${ind.label}</div>
+        <div class="ad-bt-pref">${prefText}</div>
+        <div class="ad-bt-fit" style="color:${fitColor}">${fitLabel}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Fit dots row — highlight current band
+  const fitClass = getFitClass(fitScore);
+  const dots = [
+    { c: 'var(--ad-red)',        label: 'Very Poor',  key: 'vp' },
+    { c: 'var(--ad-red-muted)',  label: 'Poor',       key: 'p'  },
+    { c: 'var(--ad-amber)',      label: 'Borderline', key: 'b'  },
+    { c: 'var(--ad-teal-muted)', label: 'Strong',     key: 's'  },
+    { c: 'var(--ad-teal)',       label: 'Very Strong',key: 'vs' },
+  ];
+  const dotsHTML = dots.map(d =>
+    `<div class="ad-fit-dot-lg" style="background:${d.c};${d.key === fitClass ? 'border:2px solid rgba(255,255,255,0.3)' : 'opacity:0.4'}"></div>`
+  ).join('');
+  const labelsHTML = dots.map(d => {
+    const isCurrent = d.key === fitClass;
+    return `<span class="ad-fit-dot-label${isCurrent ? ' current' : ''}" style="${isCurrent ? `color:${d.c};font-weight:700` : ''}">${d.label}${isCurrent ? ' \u2190' : ''}</span>`;
+  }).join('');
+
+  // What could change this fit
+  let changesHTML;
+  if (sensitiveChanges.length === 0) {
+    changesHTML = `<div class="ad-no-changes">This asset scores <strong style="color:var(--ad-warm-white)">${fitBadge.label}</strong> against your preferences. No near-term deterioration would reduce its fit \u2014 unless your own risk preferences change. You can update your profile at any time.</div>`;
+  } else {
+    changesHTML = `<div class="ad-changes-list">` + sensitiveChanges.slice(0, 3).map(c =>
+      `<div class="ad-change-card">
+        <div class="ad-change-icon" style="background:var(--ad-amber-bg);color:var(--ad-amber)">!</div>
+        <div>
+          <div class="ad-change-title">If ${c.label} weakens</div>
+          <div class="ad-change-desc">Currently <strong style="color:var(--ad-warm-white)">${c.current}</strong> and scoring a Strong match. If it deteriorates, the fit on this indicator would drop to <strong style="color:var(--ad-amber)">${c.wouldBecome}</strong>.</div>
+        </div>
+      </div>`
+    ).join('') + `</div>`;
+  }
+
+  const matchCount = strong + partial + low;
+  const align = fitBadge.label === 'Very Strong' ? 'This asset aligns closely with your profile.'
+             : fitBadge.label === 'Strong'       ? 'This asset aligns well with your profile.'
+             : fitBadge.label === 'Borderline'   ? 'This asset partially matches your profile.'
+             : fitBadge.label === 'Poor'         ? 'This asset mostly sits outside your preferred range.'
+             : 'This asset is outside your preferred risk range.';
+
+  return `
+    <div class="ad-sec-label">Your personal fit</div>
+    <div class="ad-rows-wrap">
+      <div class="ad-row">
+        <div class="ad-row-head" data-row="fit">
+          <div class="ad-chev">\u25B6</div>
+          <div>
+            <div class="ad-rh-name">Personal Fit Score</div>
+            <div class="ad-rh-sub">${riskLevelText}</div>
+          </div>
+          <div>
+            <div class="ad-rh-num" style="color:${fitBadge.color}">${fitScore}</div>
+            <div class="ad-rh-numsub">/ 100</div>
+          </div>
+          <div><span class="ad-badge ${fitBadge.cls}">${fitBadge.label}</span></div>
+          <div class="ad-rh-desc">${strong} of ${matchCount} indicators match your risk preferences. ${align}</div>
+          <div></div>
+        </div>
+        <div class="ad-row-body" data-row-body="fit">
+          <div class="ad-body-label">Fit level</div>
+          <div class="ad-fit-dots-row">${dotsHTML}</div>
+          <div class="ad-fit-dot-labels">${labelsHTML}</div>
+          <div class="ad-fit-sum-grid">
+            <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-teal)">${strong}</div><div class="ad-fit-sum-label">Strong matches</div></div>
+            <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-amber)">${partial}</div><div class="ad-fit-sum-label">Partial matches</div></div>
+            <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-red-muted)">${low}</div><div class="ad-fit-sum-label">Low matches</div></div>
+          </div>
+          <div class="ad-body-label">Breakdown \u2014 how it scored against your preferences</div>
+          <div class="ad-bt-table">
+            <div class="ad-bt-head">
+              <div class="ad-bt-th">Indicator</div>
+              <div class="ad-bt-th">Description</div>
+              <div class="ad-bt-th">Value</div>
+              <div class="ad-bt-th">Your preference</div>
+              <div class="ad-bt-th">Fit</div>
+            </div>
+            ${rowsHTML}
+            <div class="ad-bt-total">
+              Total: <span style="color:var(--ad-teal)">Strong (${strong})</span> \u00b7 <span style="color:var(--ad-amber)">Partial (${partial})</span> \u00b7 <span style="color:var(--ad-red-muted)">Low (${low})</span>
+            </div>
+          </div>
+          <div class="ad-body-label">What could change this fit</div>
+          ${changesHTML}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Performance score row
+function buildAdPerformanceRow(coin) {
+  const ps = gloriskScore(coin.mood);
+  const badge = adPerfBadge(ps);
+  const g = IND_ORDER.filter(k => coin.indicators[k]?.color === 'green').length;
+  const a = IND_ORDER.filter(k => coin.indicators[k]?.color === 'amber').length;
+  const r = IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length;
+  const summary = r === 0 && a === 0
+    ? 'All 10 indicators green \u2014 clean, consistent price action.'
+    : r >= 2
+    ? `${r} critical indicator${r > 1 ? 's' : ''} flagging material weakness.`
+    : a >= 3
+    ? `${a} indicators concerning \u2014 mixed signals worth monitoring.`
+    : 'Generally stable with only minor concerns.';
+  return `
+    <div class="ad-row">
+      <div class="ad-row-head" data-row="perf">
+        <div class="ad-chev">\u25B6</div>
+        <div>
+          <div class="ad-rh-name">Performance Score</div>
+          <div class="ad-rh-sub">Price action, volatility, trend</div>
+        </div>
+        <div>
+          <div class="ad-rh-num" style="color:${badge.color}">${ps}</div>
+          <div class="ad-rh-numsub">/ 100</div>
+        </div>
+        <div><span class="ad-badge ${badge.cls}">${badge.label}</span></div>
+        <div class="ad-rh-desc">${summary}</div>
+        <div></div>
+      </div>
+      <div class="ad-row-body" data-row-body="perf">
+        <div class="ad-body-label">Indicators</div>
+        ${buildAdIndGroups(coin)}
+        <div class="ad-body-label">Risk & Opportunity</div>
+        <div class="ad-ro-grid" id="adRoGrid"><div class="ad-loading" style="grid-column:1/-1">Loading analysis\u2026</div></div>
+        <div class="ad-body-label">Verdict</div>
+        <div class="ad-verdict-box"><div class="ad-verdict-text" id="adVerdict"><span class="ad-loading">Loading analysis\u2026</span></div></div>
+      </div>
+    </div>
+  `;
+}
+
+// Locked row for ETFs/Crypto/Indices (Position Score + Market Position)
+function buildAdLockedRow(id, name, sub, description, badge, lockTitle, lockDesc) {
+  return `
+    <div class="ad-row">
+      <div class="ad-row-head locked" data-row-locked="${id}">
+        <div class="ad-chev">\u25B6</div>
+        <div>
+          <div class="ad-rh-name" style="color:var(--ad-text-muted)">${name}</div>
+          <div class="ad-rh-sub">${sub}</div>
+        </div>
+        <div>
+          <div class="ad-rh-num" style="color:var(--ad-text-dim)">\u2014</div>
+          <div class="ad-rh-numsub">Not available</div>
+        </div>
+        <div><span class="ad-badge dim">${badge}</span></div>
+        <div class="ad-rh-desc" style="color:var(--ad-text-dim)">${description}</div>
+        <div></div>
+      </div>
+      <div class="ad-locked-body" data-row-body="${id}">
+        <div class="ad-lock-i">i</div>
+        <div>
+          <div class="ad-lock-title">${lockTitle}</div>
+          <div class="ad-lock-desc">${lockDesc}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function buildAdPositionRow(coin, isStock) {
+  if (!isStock) {
+    return buildAdLockedRow(
+      'pos',
+      'Position Score',
+      'Fundamentals, governance, market position',
+      'Requires individual company fundamentals.',
+      'Stocks only',
+      'Position Score not available for ETFs / Crypto',
+      'Requires company-level data \u2014 <span>financials, earnings quality, governance, moat, and competitive positioning.</span> Available for <span>individual stocks only.</span>'
+    );
+  }
+  // Placeholder — populated by loadDeepAnalysis
+  return `
+    <div class="ad-row">
+      <div class="ad-row-head" data-row="pos" id="adPosHead">
+        <div class="ad-chev">\u25B6</div>
+        <div>
+          <div class="ad-rh-name">Position Score</div>
+          <div class="ad-rh-sub">Fundamentals, governance, market position</div>
+        </div>
+        <div>
+          <div class="ad-rh-num" id="adPosNum" style="color:var(--ad-text-dim)">\u2014</div>
+          <div class="ad-rh-numsub">/ 100</div>
+        </div>
+        <div id="adPosBadge"><span class="ad-badge dim">Loading</span></div>
+        <div class="ad-rh-desc" id="adPosDesc">Loading analysis\u2026</div>
+        <div></div>
+      </div>
+      <div class="ad-row-body" data-row-body="pos" id="adPosBody">
+        <div class="ad-loading">Loading position analysis\u2026</div>
+      </div>
+    </div>
+  `;
+}
+
+function buildAdMarketPosRow(coin, isStock) {
+  if (!isStock) {
+    return buildAdLockedRow(
+      'mkt',
+      'Market Position',
+      'Momentum / Fragile / Resilient / Trouble',
+      'Quadrant analysis requires internal and external company ratings.',
+      'Stocks only',
+      'Market Position not available for ETFs / Crypto',
+      'The <span>Momentum / Fragile / Resilient / Trouble</span> quadrant plots internal business quality against external market conditions. Available for <span>individual stocks only.</span>'
+    );
+  }
+  return `
+    <div class="ad-row">
+      <div class="ad-row-head" data-row="mkt" id="adMktHead">
+        <div class="ad-chev">\u25B6</div>
+        <div>
+          <div class="ad-rh-name">Market Position</div>
+          <div class="ad-rh-sub">Momentum / Fragile / Resilient / Trouble</div>
+        </div>
+        <div>
+          <div class="ad-rh-num" id="adMktNum" style="color:var(--ad-text-dim)">\u2014</div>
+          <div class="ad-rh-numsub">Quadrant</div>
+        </div>
+        <div id="adMktBadge"><span class="ad-badge dim">Loading</span></div>
+        <div class="ad-rh-desc" id="adMktDesc">Loading quadrant\u2026</div>
+        <div></div>
+      </div>
+      <div class="ad-row-body" data-row-body="mkt" id="adMktBody">
+        <div class="ad-loading">Loading market position\u2026</div>
+      </div>
+    </div>
+  `;
+}
+
+function buildAdOverallRow(coin, isStock) {
+  const ps = gloriskScore(coin.mood);
+  const badge = adPerfBadge(ps);
+  // For non-stocks, Overall = Performance (since Position isn't available)
+  // For stocks, Overall gets updated by loadDeepAnalysis once position score is known
+  const desc = isStock
+    ? 'Weighted: 60% Performance + 40% Position.'
+    : 'Based on Performance Score \u2014 Position Score not applicable for this asset class.';
+  return `
+    <div class="ad-row">
+      <div class="ad-row-head" data-row="overall">
+        <div class="ad-chev">\u25B6</div>
+        <div>
+          <div class="ad-rh-name">Overall Score</div>
+          <div class="ad-rh-sub">Combined risk-adjusted rating</div>
+        </div>
+        <div>
+          <div class="ad-rh-num" id="adOverallNum" style="color:${badge.color}">${ps}</div>
+          <div class="ad-rh-numsub">/ 100</div>
+        </div>
+        <div id="adOverallBadge"><span class="ad-badge ${badge.cls}">${badge.label}</span></div>
+        <div class="ad-rh-desc" id="adOverallDesc">${desc}</div>
+        <div></div>
+      </div>
+      <div class="ad-row-body" data-row-body="overall">
+        <div class="ad-body-label">How this score is calculated</div>
+        <div class="ad-calc-box">
+          <div class="ad-calc-text">
+            For <strong>ETFs, Crypto and Indices</strong>, the Overall Score equals the <strong>Performance Score</strong> since Position Score is not applicable.
+            For <strong>individual stocks</strong>, the Overall Score is weighted: <strong>60% Performance + 40% Position.</strong>
+            This reflects that price behaviour is the primary driver of personal fit, with fundamentals providing a secondary quality layer.
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function buildAdScoresSection(coin) {
+  const isStock = adIsStock(coin);
+  return `
+    <div class="ad-sec-label">Scores</div>
+    <div class="ad-rows-wrap">
+      ${buildAdPerformanceRow(coin)}
+      ${buildAdPositionRow(coin, isStock)}
+      ${buildAdMarketPosRow(coin, isStock)}
+      ${buildAdOverallRow(coin, isStock)}
+    </div>
+  `;
+}
+
+// Wire up click-to-toggle for every row
+function wireAdToggles(root) {
+  root.querySelectorAll('.ad-row-head').forEach(head => {
+    const key = head.dataset.row || head.dataset.rowLocked;
+    if (!key) return;
+    const isLocked = head.classList.contains('locked');
+    head.addEventListener('click', () => {
+      if (isLocked) {
+        const body = root.querySelector(`[data-row-body="${key}"]`);
+        const chev = head.querySelector('.ad-chev');
+        if (!body) return;
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open', !isOpen);
+        chev?.classList.toggle('open', !isOpen);
+        return;
+      }
+      const body = root.querySelector(`[data-row-body="${key}"]`);
+      const chev = head.querySelector('.ad-chev');
+      if (!body) return;
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      chev?.classList.toggle('open', !isOpen);
+    });
+  });
+}
+
 /* ── Report rendering ──────────────────────────────────────────────── */
 
 function renderReport(coin) {
@@ -978,11 +1542,52 @@ function renderReport(coin) {
 
   const mood       = coin.mood;
   const band       = getMoodBand(mood.label);
-  const rsbCls     = moodRsbClass(mood.label);
   const change     = coin.priceChange || 0;
+  const ps = gloriskScore(mood);
+  const displayLabel = band.displayLabel ?? mood.label;
+  const shareText = `${coin.ticker} (${coin.company}) is rated ${displayLabel} with a GloRisk Score of ${ps} on GloRisk.`;
+  const shareUrl = window.location.origin + '/browse.html?asset=' + encodeURIComponent(coin.ticker);
+
+  body.innerHTML = `
+    ${buildAdTopbar()}
+    ${buildAdHeader(coin)}
+    ${buildAdFitSection(coin)}
+    ${buildAdScoresSection(coin)}
+  `;
+
+  wireAdToggles(body);
+
+  // Auto-open the Personal Fit row so users see the breakdown immediately
+  const fitBody = body.querySelector('[data-row-body="fit"]');
+  const fitChev = body.querySelector('[data-row="fit"] .ad-chev');
+  if (fitBody && getProfile()) {
+    fitBody.classList.add('open');
+    fitChev?.classList.add('open');
+  }
+
+  // Load AI report → populates Performance (Tailwinds/Risks/Verdict) and, for stocks, Position + Market Position
+  loadDeepAnalysis(coin);
+
+  // Update tool bar links with current ticker (hidden elements kept for backwards compat)
+  const rtbCompare = document.getElementById('rtbCompare');
+  if (rtbCompare) rtbCompare.href = `/compare.html?a=${encodeURIComponent(coin.ticker)}`;
+  const rtbStress = document.getElementById('rtbStress');
+  if (rtbStress) rtbStress.href = '/stress-test.html';
+
+  // Unused legacy variable reference to keep shareText/shareUrl live
+  void shareText; void shareUrl;
+}
+
+// Legacy renderReport body continued as dead code below (never executed):
+function __legacyRenderReport_unused() {
+  const coin = null;
+  const body = document.getElementById('reportBody');
+  const mood       = { label: '', score: 0 };
+  const band       = getMoodBand(mood.label);
+  const rsbCls     = moodRsbClass(mood.label);
+  const change     = 0;
   const changeCls  = change >= 0 ? 'pos' : 'neg';
 
-  // Indicator definition rows (glossary — no values, just name + definition)
   const indDefsHTML = IND_ORDER.map(key => {
     const meta = IND_META[key];
     return `
@@ -993,14 +1598,12 @@ function renderReport(coin) {
     `;
   }).join('');
 
-  const asOfDateStr = coin.lastDate
-    ? new Date(coin.lastDate).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
-    : '';
+  const asOfDateStr = '';
 
   const displayLabel = band.displayLabel ?? mood.label;
   const ps = gloriskScore(mood);
-  const shareText = `${coin.ticker} (${coin.company}) is rated ${displayLabel} with a GloRisk Score of ${ps} on DailyFinn.`;
-  const shareUrl = window.location.origin + '/browse.html?asset=' + encodeURIComponent(coin.ticker);
+  const shareText = `shareText`;
+  const shareUrl = '';
 
   body.innerHTML = `
     <div class="report-hero">
@@ -1847,9 +2450,277 @@ function buildRiskOpportunityHTML(tailwinds, risks) {
   </div>`;
 }
 
-/* ── Deep Analysis — main loader ──────────────────────────────────── */
+/* ── Deep Analysis — navy loader ──────────────────────────────────── */
 
-async function loadDeepAnalysis(ticker) {
+// Extract Tailwinds/Risks from a parsed report's riskSection
+function adParseRiskItems(report) {
+  const riskSection = report.split(/###\s*Risk\s*&?\s*Opportunity\s*Analysis/i)[1]?.split(/###/)[0] || '';
+  const tailwinds = [];
+  const risks = [];
+  for (const line of riskSection.split('\n').filter(l => l.trim())) {
+    const m = line.match(/(?:^-\s*)?\*\*(.+?)\*\*[:\s]*(.+)/);
+    if (!m) continue;
+    const fullTitle = m[1].trim();
+    const desc = m[2].trim().replace(/\[\d+\]/g, '').replace(/\s{2,}/g, ' ');
+    const lower = fullTitle.toLowerCase();
+    if (lower.includes('catalyst')) continue;
+    if (lower.includes('risk') || lower.includes('headwind') || lower.includes('threat')) {
+      risks.push({ title: fullTitle.replace(/^key\s+(risks?)[:\s]*/i, ''), desc });
+    } else {
+      tailwinds.push({ title: fullTitle.replace(/^key\s+(tailwinds?)[:\s]*/i, ''), desc });
+    }
+  }
+  return { tailwinds, risks };
+}
+
+// Extract Overall Verdict paragraph from a parsed report
+function adParseVerdict(report) {
+  const match = report.split(/###\s*(?:Overall\s+Verdict|Investment\s+Verdict)/i)[1]?.split(/###/)[0] || '';
+  return match.trim()
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\[\d+\]/g, '')
+    .replace(/\n+/g, ' ')
+    .trim();
+}
+
+// Map position tier label → badge info
+function adTierBadge(tierNumber) {
+  const map = {
+    1: { cls: 'teal',       color: 'var(--ad-teal)',       label: 'Momentum' },
+    2: { cls: 'teal-muted', color: 'var(--ad-teal-muted)', label: 'Resilient' },
+    3: { cls: 'amber',      color: 'var(--ad-amber)',      label: 'Fragile' },
+    4: { cls: 'red-muted',  color: 'var(--ad-red-muted)',  label: 'Trouble' },
+  };
+  return map[tierNumber] || { cls: 'dim', color: 'var(--ad-text-dim)', label: '—' };
+}
+
+// Build indicator groups from the 10 position factor scores (stocks only)
+function buildAdPositionIndGroups(rd, report) {
+  const FACTOR_LABELS = [
+    'Moat & Competitive Advantage',
+    'Financial Performance',
+    'Balance Sheet Strength',
+    'Earnings Quality & Trajectory',
+    'Leadership & Governance',
+    'Market Position & Competition',
+    'Regulatory & Political Exposure',
+    'Supply Chain & Geographic Resilience',
+    'Macroeconomic Sensitivity',
+    'Industry Growth Outlook',
+  ];
+  // Extract factor reasoning text from the Detailed Scoring Table rows
+  const reasoning = {};
+  const lines = report.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/\|\s*\*?\*?\d+\.\s*([^*|]+?)\*?\*?\s*\|\s*\d+(?:\/10)?\s*\|\s*([^|]+?)\s*\|/);
+    if (m) {
+      const key = m[1].trim().toLowerCase();
+      reasoning[key] = m[2].trim().replace(/\[\d+\]/g, '').replace(/\*\*/g, '');
+    }
+  }
+  const scores = rd.scores || [];
+  const cards = FACTOR_LABELS.map((label, i) => {
+    const score = scores[i];
+    if (score == null) return null;
+    const color = score >= 8 ? 'green' : score >= 6 ? 'amber' : 'red';
+    const key = label.toLowerCase();
+    // Try exact match then partial
+    let text = reasoning[key] || '';
+    if (!text) {
+      for (const [rKey, rVal] of Object.entries(reasoning)) {
+        if (rKey.includes(key.split(' ')[0]) || key.includes(rKey.split(' ')[0])) {
+          text = rVal;
+          break;
+        }
+      }
+    }
+    return { color, title: label, label: `${score}/10`, text };
+  }).filter(Boolean);
+
+  const groups = [
+    { label: 'Going well', dot: 'var(--ad-teal)',      cards: cards.filter(c => c.color === 'green') },
+    { label: 'Concerning', dot: 'var(--ad-amber)',     cards: cards.filter(c => c.color === 'amber') },
+    { label: 'Critical',   dot: 'var(--ad-red-muted)', cards: cards.filter(c => c.color === 'red') },
+  ];
+  let html = '';
+  for (const g of groups) {
+    html += `<div class="ad-ind-group">
+      <div class="ad-ind-group-label" style="color:${g.dot}"><div class="ad-ind-dot-lg" style="background:${g.dot}"></div>${g.label} (${g.cards.length})</div>
+      <div class="ad-ind-table">`;
+    if (g.cards.length === 0) {
+      html += `<div class="ad-ind-row"><div class="ad-ind-empty">No ${g.label.toLowerCase()} factors.</div></div>`;
+    } else {
+      html += `<div class="ad-ind-head"><div class="ad-ind-th">Factor</div><div class="ad-ind-th">Score</div><div class="ad-ind-th">Reasoning</div></div>`;
+      for (const c of g.cards) {
+        html += `<div class="ad-ind-row">
+          <div class="ad-ind-name"><div class="ad-ind-dot" style="background:${g.dot}"></div>${c.title}</div>
+          <div class="ad-ind-data" style="color:${g.dot}">${c.label}</div>
+          <div class="ad-ind-exp">${c.text || '\u2014'}</div>
+        </div>`;
+      }
+    }
+    html += `</div></div>`;
+  }
+  return html;
+}
+
+// Build the 2x2 quadrant visual for Market Position
+function buildAdQuadrant(rd, ticker) {
+  if (!rd.tier) return '<div class="ad-loading">Quadrant unavailable.</div>';
+  const cells = [
+    { num: 3, label: 'Fragile',   sub: 'Weak internals, strong external' },
+    { num: 1, label: 'Momentum',  sub: 'Strong internals + external' },
+    { num: 4, label: 'Trouble',   sub: 'Weak internals and external' },
+    { num: 2, label: 'Resilient', sub: 'Strong internals, weak external' },
+  ];
+  let grid = '';
+  for (const c of cells) {
+    const active = c.num === rd.tier.number;
+    grid += `<div class="ad-matrix-cell${active ? ' active' : ''}">
+      <div class="ad-matrix-tier">${c.label}</div>
+      <div class="ad-matrix-sub">${c.sub}</div>
+      ${active ? `<div class="ad-matrix-point" style="left:50%;top:60%">\u25C6 ${ticker}</div>` : ''}
+    </div>`;
+  }
+  return `<div class="ad-matrix-wrap">
+    <div class="ad-matrix-axis">External rating \u2192</div>
+    <div class="ad-matrix-grid">${grid}</div>
+    <div class="ad-matrix-axis">Internal rating \u2192</div>
+  </div>`;
+}
+
+async function loadDeepAnalysis(coin) {
+  const ticker = coin.ticker;
+  const body = document.getElementById('reportBody');
+  const isStock = adIsStock(coin);
+
+  // Placeholders
+  const roGrid   = body.querySelector('#adRoGrid');
+  const verdictEl = body.querySelector('#adVerdict');
+
+  let data;
+  try {
+    const res = await fetch(`/data/reports/${encodeURIComponent(ticker)}.json`);
+    if (!res.ok) throw new Error('not found');
+    data = await res.json();
+  } catch {
+    if (roGrid) roGrid.innerHTML = '<div class="ad-ro-card" style="grid-column:1/-1"><div class="ad-ro-empty">In-depth analysis is not yet available for this asset.</div></div>';
+    if (verdictEl) verdictEl.innerHTML = '<span class="ad-ro-empty">No verdict available yet. The Performance Score above reflects the latest price-based indicators.</span>';
+    // Locked/placeholder stock rows
+    if (isStock) {
+      const posNum = body.querySelector('#adPosNum');
+      const posBadge = body.querySelector('#adPosBadge');
+      const posDesc = body.querySelector('#adPosDesc');
+      const posBody = body.querySelector('#adPosBody');
+      if (posNum) posNum.textContent = '—';
+      if (posBadge) posBadge.innerHTML = '<span class="ad-badge dim">No report</span>';
+      if (posDesc) posDesc.textContent = 'Position Score report not yet generated for this stock.';
+      if (posBody) posBody.innerHTML = '<div class="ad-loading">No fundamentals analysis available yet for this ticker.</div>';
+      const mktNum = body.querySelector('#adMktNum');
+      const mktBadge = body.querySelector('#adMktBadge');
+      const mktDesc = body.querySelector('#adMktDesc');
+      const mktBody = body.querySelector('#adMktBody');
+      if (mktNum) mktNum.textContent = '—';
+      if (mktBadge) mktBadge.innerHTML = '<span class="ad-badge dim">No report</span>';
+      if (mktDesc) mktDesc.textContent = 'Quadrant placement not yet available.';
+      if (mktBody) mktBody.innerHTML = '<div class="ad-loading">No market position report available yet for this ticker.</div>';
+    }
+    return;
+  }
+
+  const report = data.report;
+  const rd = extractReportData(report);
+  const { tailwinds, risks } = adParseRiskItems(report);
+  const verdict = adParseVerdict(report);
+
+  // 1. Populate Risk & Opportunity grid
+  if (roGrid) {
+    if (tailwinds.length === 0 && risks.length === 0) {
+      roGrid.innerHTML = '<div class="ad-ro-card" style="grid-column:1/-1"><div class="ad-ro-empty">No risk & opportunity items identified in the latest analysis.</div></div>';
+    } else {
+      const twHTML = tailwinds.length
+        ? tailwinds.slice(0, 3).map(t => `<div style="margin-bottom:8px">${t.title ? `<strong>${t.title}:</strong> ` : ''}${t.desc}</div>`).join('')
+        : '<div class="ad-ro-empty">No tailwinds identified.</div>';
+      const rkHTML = risks.length
+        ? risks.slice(0, 3).map(r => `<div style="margin-bottom:8px">${r.title ? `<strong>${r.title}:</strong> ` : ''}${r.desc}</div>`).join('')
+        : '<div class="ad-ro-empty">No material risks identified.</div>';
+      roGrid.innerHTML = `
+        <div class="ad-ro-card">
+          <div class="ad-ro-label" style="color:var(--ad-teal)">\u25B2 Tailwinds</div>
+          <div class="ad-ro-text">${twHTML}</div>
+        </div>
+        <div class="ad-ro-card">
+          <div class="ad-ro-label" style="color:var(--ad-red-muted)">\u25BC Key Risks</div>
+          <div class="ad-ro-text">${rkHTML}</div>
+        </div>
+      `;
+    }
+  }
+
+  // 2. Populate Verdict
+  if (verdictEl) {
+    verdictEl.innerHTML = verdict
+      ? verdict
+      : `<span class="ad-ro-empty">No overall verdict available in the latest analysis.</span>`;
+  }
+
+  // 3. For stocks, populate Position + Market Position rows + update Overall
+  if (isStock && rd.overall != null) {
+    const swot100 = Math.round(rd.overall * 10);
+    const perfScore = gloriskScore(coin.mood);
+    const overall = Math.round(perfScore * 0.6 + swot100 * 0.4);
+
+    // Position row
+    const posNum   = body.querySelector('#adPosNum');
+    const posBadge = body.querySelector('#adPosBadge');
+    const posDesc  = body.querySelector('#adPosDesc');
+    const posBody  = body.querySelector('#adPosBody');
+    const posBandBadge = adPerfBadge(swot100);
+    if (posNum)   { posNum.textContent = swot100; posNum.style.color = posBandBadge.color; }
+    if (posBadge) posBadge.innerHTML = `<span class="ad-badge ${posBandBadge.cls}">${posBandBadge.label}</span>`;
+    if (posDesc)  posDesc.textContent = `Internal quality ${rd.intAvg != null ? rd.intAvg.toFixed(1) : '—'}/10 \u00b7 External positioning ${rd.extAvg != null ? rd.extAvg.toFixed(1) : '—'}/10.`;
+    if (posBody) {
+      posBody.innerHTML = `
+        <div class="ad-body-label">Factor breakdown</div>
+        ${buildAdPositionIndGroups(rd, report)}
+      `;
+    }
+
+    // Market Position row
+    const tierBadge = adTierBadge(rd.tier?.number);
+    const mktNum   = body.querySelector('#adMktNum');
+    const mktBadgeEl = body.querySelector('#adMktBadge');
+    const mktDesc  = body.querySelector('#adMktDesc');
+    const mktBody  = body.querySelector('#adMktBody');
+    if (mktNum)   { mktNum.textContent = tierBadge.label.charAt(0); mktNum.style.color = tierBadge.color; mktNum.style.fontSize = '14px'; }
+    if (mktBadgeEl) mktBadgeEl.innerHTML = `<span class="ad-badge ${tierBadge.cls}">${tierBadge.label}</span>`;
+    if (mktDesc) {
+      const tierDescs = {
+        1: 'Strong internal quality and favourable external conditions.',
+        2: 'Strong business facing macro or cyclical headwinds.',
+        3: 'Stable externally but weaker internal fundamentals.',
+        4: 'Weak internal quality in a challenging market environment.',
+      };
+      mktDesc.textContent = tierDescs[rd.tier?.number] || 'Quadrant placement based on internal and external ratings.';
+    }
+    if (mktBody) {
+      mktBody.innerHTML = `
+        <div class="ad-body-label">Quadrant placement</div>
+        ${buildAdQuadrant(rd, ticker)}
+      `;
+    }
+
+    // Overall row recalculated for stocks (60% Perf + 40% Pos)
+    const overallBadge = adPerfBadge(overall);
+    const overallNum   = body.querySelector('#adOverallNum');
+    const overallBadgeEl = body.querySelector('#adOverallBadge');
+    if (overallNum)   { overallNum.textContent = overall; overallNum.style.color = overallBadge.color; }
+    if (overallBadgeEl) overallBadgeEl.innerHTML = `<span class="ad-badge ${overallBadge.cls}">${overallBadge.label}</span>`;
+  }
+}
+
+// Legacy implementation kept below for reference (never executed):
+async function __legacyLoadDeepAnalysis(ticker) {
   const box      = document.getElementById('deepAnalysis');
   const textEl   = document.getElementById('deepAnalysisText');
   const metaEl   = document.getElementById('deepAnalysisMeta');
