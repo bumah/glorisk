@@ -1176,21 +1176,21 @@ function buildAdFitSection(coin) {
   const profile = getProfile();
   if (!profile) {
     return `
-      <div class="ad-sec-label">Your personal fit</div>
+      <div class="ad-sec-label">Your scorecard match</div>
       <div class="ad-rows-wrap">
         <div class="ad-row">
           <div class="ad-row-head" data-row="fit" style="cursor:default">
             <div class="ad-chev" style="opacity:0.3">\u25B6</div>
             <div>
-              <div class="ad-rh-name">Personal Fit Score</div>
-              <div class="ad-rh-sub">Set your profile to unlock personalised fit</div>
+              <div class="ad-rh-name">Scorecard Match</div>
+              <div class="ad-rh-sub">Build your scorecard to unlock personalised matching</div>
             </div>
             <div>
               <div class="ad-rh-num" style="color:var(--ad-text-dim)">\u2014</div>
               <div class="ad-rh-numsub">/ 100</div>
             </div>
             <div><span class="ad-badge dim">Not set</span></div>
-            <div class="ad-rh-desc"><a href="/screener.html" style="color:var(--ad-indigo-mid);text-decoration:underline">Take the 2-minute questionnaire</a> to see how this asset fits your risk profile.</div>
+            <div class="ad-rh-desc"><a href="/screener.html" style="color:var(--ad-indigo-mid);text-decoration:underline">Take the 2-minute questionnaire</a> to see how this asset matches your scorecard.</div>
             <div></div>
           </div>
         </div>
@@ -1200,8 +1200,8 @@ function buildAdFitSection(coin) {
 
   const fitScore = computeFitScore(coin.indicators, profile);
   if (fitScore == null) {
-    return `<div class="ad-sec-label">Your personal fit</div>
-      <div class="ad-rows-wrap"><div class="ad-row"><div class="ad-row-head"><div></div><div><div class="ad-rh-name">Personal Fit Score</div><div class="ad-rh-sub">Insufficient data</div></div><div></div><div></div><div></div><div></div></div></div></div>`;
+    return `<div class="ad-sec-label">Your scorecard match</div>
+      <div class="ad-rows-wrap"><div class="ad-row"><div class="ad-row-head"><div></div><div><div class="ad-rh-name">Scorecard Match</div><div class="ad-rh-sub">Insufficient data</div></div><div></div><div></div><div></div><div></div></div></div></div>`;
   }
 
   const fitBadge = adFitBadge(fitScore);
@@ -1271,37 +1271,37 @@ function buildAdFitSection(coin) {
     return `<span class="ad-fit-dot-label${isCurrent ? ' current' : ''}" style="${isCurrent ? `color:${d.c};font-weight:700` : ''}">${d.label}${isCurrent ? ' \u2190' : ''}</span>`;
   }).join('');
 
-  // What could change this fit
+  // What could change this match
   let changesHTML;
   if (sensitiveChanges.length === 0) {
-    changesHTML = `<div class="ad-no-changes">This asset scores <strong style="color:var(--ad-warm-white)">${fitBadge.label}</strong> against your preferences. No near-term deterioration would reduce its fit \u2014 unless your own risk preferences change. You can update your profile at any time.</div>`;
+    changesHTML = `<div class="ad-no-changes">This asset scores <strong style="color:var(--ad-warm-white)">${fitBadge.label}</strong> against your scorecard. No near-term deterioration would reduce the match \u2014 unless your own scorecard changes. You can update it at any time.</div>`;
   } else {
     changesHTML = `<div class="ad-changes-list">` + sensitiveChanges.slice(0, 3).map(c =>
       `<div class="ad-change-card">
         <div class="ad-change-icon" style="background:var(--ad-amber-bg);color:var(--ad-amber)">!</div>
         <div>
           <div class="ad-change-title">If ${c.label} weakens</div>
-          <div class="ad-change-desc">Currently <strong style="color:var(--ad-warm-white)">${c.current}</strong> and scoring a Strong match. If it deteriorates, the fit on this indicator would drop to <strong style="color:var(--ad-amber)">${c.wouldBecome}</strong>.</div>
+          <div class="ad-change-desc">Currently <strong style="color:var(--ad-warm-white)">${c.current}</strong> and scoring a Strong match. If it deteriorates, the match on this indicator would drop to <strong style="color:var(--ad-amber)">${c.wouldBecome}</strong>.</div>
         </div>
       </div>`
     ).join('') + `</div>`;
   }
 
   const matchCount = strong + partial + low;
-  const align = fitBadge.label === 'Very Strong' ? 'This asset aligns closely with your profile.'
-             : fitBadge.label === 'Strong'       ? 'This asset aligns well with your profile.'
-             : fitBadge.label === 'Borderline'   ? 'This asset partially matches your profile.'
-             : fitBadge.label === 'Poor'         ? 'This asset mostly sits outside your preferred range.'
-             : 'This asset is outside your preferred risk range.';
+  const align = fitBadge.label === 'Very Strong' ? 'This asset aligns closely with your scorecard.'
+             : fitBadge.label === 'Strong'       ? 'This asset aligns well with your scorecard.'
+             : fitBadge.label === 'Borderline'   ? 'This asset partially matches your scorecard.'
+             : fitBadge.label === 'Poor'         ? 'This asset mostly sits outside your scorecard.'
+             : 'This asset is outside your scorecard.';
 
   return `
-    <div class="ad-sec-label">Your personal fit</div>
+    <div class="ad-sec-label">Your scorecard match</div>
     <div class="ad-rows-wrap">
       <div class="ad-row">
         <div class="ad-row-head" data-row="fit">
           <div class="ad-chev">\u25B6</div>
           <div>
-            <div class="ad-rh-name">Personal Fit Score</div>
+            <div class="ad-rh-name">Scorecard Match</div>
             <div class="ad-rh-sub">${riskLevelText}</div>
           </div>
           <div>
@@ -1313,7 +1313,7 @@ function buildAdFitSection(coin) {
           <div></div>
         </div>
         <div class="ad-row-body" data-row-body="fit">
-          <div class="ad-body-label">Fit level</div>
+          <div class="ad-body-label">Match level</div>
           <div class="ad-fit-dots-row">${dotsHTML}</div>
           <div class="ad-fit-dot-labels">${labelsHTML}</div>
           <div class="ad-fit-sum-grid">
@@ -1321,21 +1321,21 @@ function buildAdFitSection(coin) {
             <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-amber)">${partial}</div><div class="ad-fit-sum-label">Partial matches</div></div>
             <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-red-muted)">${low}</div><div class="ad-fit-sum-label">Low matches</div></div>
           </div>
-          <div class="ad-body-label">Breakdown \u2014 how it scored against your preferences</div>
+          <div class="ad-body-label">Breakdown \u2014 how it scored against your scorecard</div>
           <div class="ad-bt-table">
             <div class="ad-bt-head">
               <div class="ad-bt-th">Indicator</div>
               <div class="ad-bt-th">Description</div>
               <div class="ad-bt-th">Value</div>
               <div class="ad-bt-th">Your preference</div>
-              <div class="ad-bt-th">Fit</div>
+              <div class="ad-bt-th">Match</div>
             </div>
             ${rowsHTML}
             <div class="ad-bt-total">
               Total: <span style="color:var(--ad-teal)">Strong (${strong})</span> \u00b7 <span style="color:var(--ad-amber)">Partial (${partial})</span> \u00b7 <span style="color:var(--ad-red-muted)">Low (${low})</span>
             </div>
           </div>
-          <div class="ad-body-label">What could change this fit</div>
+          <div class="ad-body-label">What could change this match</div>
           ${changesHTML}
         </div>
       </div>
@@ -1523,15 +1523,65 @@ function buildAdOverallRow(coin, isStock) {
   `;
 }
 
-function buildAdScoresSection(coin) {
-  const isStock = adIsStock(coin);
+// Indicator Health row — shows raw RAG counts and the grouped indicator breakdown.
+// GloRisk is independent: we don't score the asset, we just flag how many of the 10
+// risk indicators are green / amber / red against our published thresholds.
+function buildAdIndicatorHealthRow(coin) {
+  const g = IND_ORDER.filter(k => k !== 'momentum' && coin.indicators[k]?.color === 'green').length;
+  const a = IND_ORDER.filter(k => k !== 'momentum' && coin.indicators[k]?.color === 'amber').length;
+  const r = IND_ORDER.filter(k => k !== 'momentum' && coin.indicators[k]?.color === 'red').length;
+  const total = g + a + r;
+
+  // Pick the dominant colour for the headline number
+  const headColor = r >= 3 ? 'var(--ad-red-muted)'
+                  : r >= 1 || a >= 4 ? 'var(--ad-amber)'
+                  : a >= 2 ? 'var(--ad-teal-muted)'
+                  : 'var(--ad-teal)';
+
+  // Badge mirrors the dominant tone
+  const badge = r >= 3 ? { cls: 'vp', label: 'Stressed' }
+              : r >= 1 ? { cls: 'b',  label: 'Watch' }
+              : a >= 4 ? { cls: 'b',  label: 'Mixed' }
+              : a >= 2 ? { cls: 's',  label: 'Mostly healthy' }
+              : { cls: 'vs', label: 'Healthy' };
+
+  const summary = r === 0 && a === 0
+    ? `All ${total} indicators green against our thresholds.`
+    : r >= 2
+    ? `${r} critical indicator${r > 1 ? 's' : ''} flagging stress.`
+    : a >= 3
+    ? `${a} indicators in the caution zone \u2014 worth monitoring.`
+    : `${g} healthy, ${a} caution, ${r} stressed.`;
+
   return `
-    <div class="ad-sec-label">Scores</div>
+    <div class="ad-row">
+      <div class="ad-row-head" data-row="health">
+        <div class="ad-chev">\u25B6</div>
+        <div>
+          <div class="ad-rh-name">Indicator Health</div>
+          <div class="ad-rh-sub">RAG count across our 10 risk indicators</div>
+        </div>
+        <div>
+          <div class="ad-rh-num" style="color:${headColor}">${g}<span style="font-size:0.45em;color:var(--ad-text-dim)">/${total}</span></div>
+          <div class="ad-rh-numsub">Green</div>
+        </div>
+        <div><span class="ad-badge ${badge.cls}">${badge.label}</span></div>
+        <div class="ad-rh-desc">${summary}</div>
+        <div></div>
+      </div>
+      <div class="ad-row-body" data-row-body="health">
+        <div class="ad-body-label">Indicators</div>
+        ${buildAdIndGroups(coin)}
+      </div>
+    </div>
+  `;
+}
+
+function buildAdScoresSection(coin) {
+  return `
+    <div class="ad-sec-label">Indicator Health</div>
     <div class="ad-rows-wrap">
-      ${buildAdPerformanceRow(coin)}
-      ${buildAdPositionRow(coin, isStock)}
-      ${buildAdMarketPosRow(coin, isStock)}
-      ${buildAdOverallRow(coin, isStock)}
+      ${buildAdIndicatorHealthRow(coin)}
     </div>
   `;
 }
@@ -1608,16 +1658,13 @@ function renderReport(coin) {
     });
   }
 
-  // Auto-open the Personal Fit row so users see the breakdown immediately
+  // Auto-open the Scorecard Match row so users see the breakdown immediately
   const fitBody = body.querySelector('[data-row-body="fit"]');
   const fitChev = body.querySelector('[data-row="fit"] .ad-chev');
   if (fitBody && getProfile()) {
     fitBody.classList.add('open');
     fitChev?.classList.add('open');
   }
-
-  // Load AI report → populates Performance (Tailwinds/Risks/Verdict) and, for stocks, Position + Market Position
-  loadDeepAnalysis(coin);
 
   // Update tool bar links with current ticker (hidden elements kept for backwards compat)
   const rtbCompare = document.getElementById('rtbCompare');
@@ -2715,11 +2762,9 @@ async function loadDeepAnalysis(coin) {
       : `<span class="ad-ro-empty">No overall verdict available in the latest analysis.</span>`;
   }
 
-  // 3. For stocks, populate Position + Market Position rows + update Overall
+  // 3. For stocks, populate Position + Market Position rows
   if (isStock && rd.overall != null) {
     const swot100 = Math.round(rd.overall * 10);
-    const perfScore = gloriskScore(coin.mood);
-    const overall = Math.round(perfScore * 0.6 + swot100 * 0.4);
 
     // Position row
     const posNum   = body.querySelector('#adPosNum');
@@ -2760,13 +2805,8 @@ async function loadDeepAnalysis(coin) {
         ${buildAdQuadrant(rd, ticker)}
       `;
     }
-
-    // Overall row recalculated for stocks (60% Perf + 40% Pos)
-    const overallBadge = adPerfBadge(overall);
-    const overallNum   = body.querySelector('#adOverallNum');
-    const overallBadgeEl = body.querySelector('#adOverallBadge');
-    if (overallNum)   { overallNum.textContent = overall; overallNum.style.color = overallBadge.color; }
-    if (overallBadgeEl) overallBadgeEl.innerHTML = `<span class="ad-badge ${overallBadge.cls}">${overallBadge.label}</span>`;
+    // Overall score row removed — users compare Perf, Position, and Market
+    // Position directly to form their own view.
   }
 }
 

@@ -91,10 +91,10 @@ body{background:#0D1B3E;}
 
 /* Table */
 .wl-table-wrap{margin:0 32px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:12px;overflow:hidden;}
-.wl-t-head{display:grid;grid-template-columns:1.6fr 90px 70px 60px 80px 100px 110px 36px;padding:10px 16px;border-bottom:0.5px solid var(--border-dark);gap:8px;}
+.wl-t-head{display:grid;grid-template-columns:1.6fr 90px 70px 80px 100px 110px 36px;padding:10px 16px;border-bottom:0.5px solid var(--border-dark);gap:8px;}
 .wl-th{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.22);text-align:right;}
 .wl-th:first-child{text-align:left;}
-.wl-t-row{display:grid;grid-template-columns:1.6fr 90px 70px 60px 80px 100px 110px 36px;padding:13px 16px;border-bottom:0.5px solid var(--border-dark);align-items:center;gap:8px;}
+.wl-t-row{display:grid;grid-template-columns:1.6fr 90px 70px 80px 100px 110px 36px;padding:13px 16px;border-bottom:0.5px solid var(--border-dark);align-items:center;gap:8px;}
 .wl-t-row:last-child{border-bottom:none;}
 .wl-t-row:hover{background:rgba(79,70,229,0.04);}
 .wl-aname{font-size:13px;font-weight:700;color:var(--warm-white);}
@@ -147,7 +147,6 @@ body{background:#0D1B3E;}
   .wl-t-row{grid-template-columns:1fr 70px 90px 30px;gap:8px;padding:14px 14px;}
   .wl-t-row > .wl-cell-price,
   .wl-t-row > .wl-cell-30d,
-  .wl-t-row > .wl-cell-perf,
   .wl-t-row > .wl-rag-wrap{display:none;}
   .wl-add-btn{padding:0 14px;font-size:11px;}
   .wl-add-btn .wl-add-label-full{display:none;}
@@ -183,21 +182,21 @@ body{background:#0D1B3E;}
 
   <div class="wl-profile-strip" id="wlProfileStrip">
     <span class="wl-profile-label">Your scorecard profile</span>
-    <span class="wl-profile-note" id="wlProfileNote">Set your profile to see fit scores</span>
+    <span class="wl-profile-note" id="wlProfileNote">Set your scorecard to see match scores</span>
   </div>
 
   <div class="wl-tab-row">
     <button class="wl-tab active" data-tab="watchlist">Watchlist</button>
-    <button class="wl-tab" data-tab="portfolio">Portfolio Fit</button>
+    <button class="wl-tab" data-tab="portfolio">Portfolio Match</button>
   </div>
 
   <!-- Hero card (only shown on Portfolio tab) -->
   <div id="wlHeroSection" style="display:none">
-    <div class="wl-sec-label wl-sec-gap">Portfolio fit score</div>
+    <div class="wl-sec-label wl-sec-gap">Portfolio match score</div>
     <div class="wl-hero-card">
       <div class="wl-hero-top">
         <div>
-          <div class="wl-score-label">Overall fit</div>
+          <div class="wl-score-label">Overall match</div>
           <div class="wl-score-giant" id="wlHeroScore">—</div>
           <div class="wl-score-sub" id="wlHeroCount">0 holdings</div>
           <div><span class="wl-score-badge" id="wlHeroBadge" style="background:rgba(255,255,255,0.04);color:var(--text-dim);">—</span></div>
@@ -278,7 +277,7 @@ body{background:#0D1B3E;}
 </div>
 
 <script type="module">
-import { getMoodBand, IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary } from '/js/riskEngine.js';
+import { IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary } from '/js/riskEngine.js';
 import { getUser, signInWithGoogle, signOut, onAuthChange, getWatchlist as getCloudWatchlist, saveWatchlistCloud } from '/js/supabase.js';
 import {
   getWatchlist, addToWatchlist, removeFromWatchlist,
@@ -291,8 +290,6 @@ let currentUser = null;
 let currentTab = 'watchlist';
 let currentFilter = 'all';
 let pendingAddCoin = null;
-
-function gloriskScore(mood) { return Math.min(95, Math.max(10, 100 - mood.score * 5)); }
 
 const CURRENCY_MAP = { FTSE100: 'p', Nikkei225: '\u00a5', HSI: 'HK$' };
 function formatPrice(p, group) {
@@ -314,14 +311,6 @@ function fitBadgeStyle(score) {
   return                    { bg: 'var(--red-bg)',           color: 'var(--red)',        label: 'Very Poor' };
 }
 
-function perfColor(score) {
-  // 5-tier stability colours (matches asset detail + screener)
-  if (score >= 90) return 'var(--teal)';
-  if (score >= 80) return 'var(--teal-muted)';
-  if (score >= 60) return 'var(--amber)';
-  if (score >= 40) return 'var(--red-muted)';
-  return 'var(--red)';
-}
 
 function indColorVar(c) {
   if (c === 'green') return 'var(--teal)';
@@ -337,7 +326,7 @@ function renderProfileStrip() {
   if (!profile) {
     strip.innerHTML = `
       <span class="wl-profile-label">Your scorecard profile</span>
-      <a href="/screener.html" class="wl-profile-cta">Set your profile to unlock fit scores →</a>
+      <a href="/screener.html" class="wl-profile-cta">Set your scorecard to unlock match scores →</a>
     `;
     return;
   }
@@ -351,7 +340,7 @@ function renderProfileStrip() {
     ${summary?.horizon ? `<div class="wl-ppill"><span class="wl-ppill-l">Horizon</span><span class="wl-ppill-v">${summary.horizon}</span></div>` : ''}
     ${summary?.philosophy ? `<div class="wl-ppill"><span class="wl-ppill-l">Style</span><span class="wl-ppill-v">${summary.philosophy}</span></div>` : ''}
     <div class="wl-ppill"><span class="wl-ppill-l">Focus</span><span class="wl-ppill-v">${focusText}</span></div>
-    <div class="wl-profile-note">All fit scores calculated against this profile</div>
+    <div class="wl-profile-note">All match scores calculated against this scorecard</div>
   `;
 }
 
@@ -477,9 +466,8 @@ function renderTable() {
       const coin = getCoin(ticker);
       if (!coin) return null;
       const change = coin.priceChange || 0;
-      const perf = gloriskScore(coin.mood);
       const fitScore = profile ? computeFitScore(coin.indicators, profile) : null;
-      return { ticker, coin, change, perf, fitScore };
+      return { ticker, coin, change, fitScore };
     })
     .filter(Boolean)
     .filter(row => {
@@ -491,14 +479,13 @@ function renderTable() {
   if (!rows.length) {
     area.innerHTML = `<div class="wl-empty">
       <div class="wl-empty-title">No assets match this filter</div>
-      <div class="wl-empty-sub">Try a different fit tier or click <strong>All</strong> to see everything.</div>
+      <div class="wl-empty-sub">Try a different match tier or click <strong>All</strong> to see everything.</div>
     </div>`;
     return;
   }
 
-  const rowsHTML = rows.map(({ ticker, coin, change, perf, fitScore }) => {
+  const rowsHTML = rows.map(({ ticker, coin, change, fitScore }) => {
     const changeColor = change >= 0 ? 'var(--teal-muted)' : 'var(--red-muted)';
-    const perfColorVal = perfColor(perf);
     const fitBadge = fitBadgeStyle(fitScore);
     const fitNum = fitScore != null ? fitScore : '—';
     const fitNumColor = fitScore != null ? fitBadge.color : 'var(--text-dim)';
@@ -521,7 +508,6 @@ function renderTable() {
       </div>
       <div class="wl-cell wl-cell-price" style="color:var(--warm-white)">${formatPrice(coin.price, coin.group)}</div>
       <div class="wl-cell wl-cell-30d" style="color:${changeColor}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</div>
-      <div class="wl-cell wl-cell-perf" style="color:${perfColorVal}">${perf}</div>
       <div>
         <div class="wl-cell" style="color:${fitNumColor}">${fitNum}</div>
         ${fitScore != null ? `<div class="wl-bar-mini"><div class="wl-bar-fill" style="width:${barWidth}%;background:${fitBadge.color}"></div></div>` : ''}
@@ -544,10 +530,9 @@ function renderTable() {
         <div class="wl-th th-tip" data-tip="Ticker and company name. Click any row to open the asset scorecard.">Asset</div>
         <div class="wl-th th-tip" data-tip="Current price. Refreshed weekly.">Price</div>
         <div class="wl-th th-tip" data-tip="Price change over the past 30 days.">30D</div>
-        <div class="wl-th th-tip" data-tip="Performance score (0–100). Derived from price action, volatility, and trend.">Perf</div>
-        <div class="wl-th th-tip" data-tip="Personal fit score (0–100). How well this asset matches your risk profile.">Overall</div>
-        <div class="wl-th th-tip" data-tip="Count of indicators in each tier: green (healthy) / amber (warning) / red (critical).">Indicators</div>
-        <div class="wl-th th-tip" data-tip="Fit rating tier: Very Strong, Strong, Borderline, Poor, or Very Poor." style="text-align:center">Fit rating</div>
+        <div class="wl-th th-tip" data-tip="How closely this asset matches your personal scorecard — based on your answers to the 10 risk questions.">Match</div>
+        <div class="wl-th th-tip" data-tip="Indicator Health — count of green (healthy), amber (caution) and red (stressed) indicators out of 10.">Health</div>
+        <div class="wl-th th-tip" data-tip="Match strength: Very Strong, Strong, Borderline, Poor, or Very Poor." style="text-align:center">Rating</div>
         <div class="wl-th"></div>
       </div>
       ${rowsHTML}
@@ -599,7 +584,7 @@ function setTab(tab) {
   document.querySelectorAll('.wl-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
   // Update copy
   const isPortfolio = tab === 'portfolio';
-  document.getElementById('wlPageTitle').textContent = isPortfolio ? 'Your portfolio fit' : 'Your risk watchlist';
+  document.getElementById('wlPageTitle').textContent = isPortfolio ? 'Your portfolio match' : 'Your risk watchlist';
   document.getElementById('wlPageSub').textContent = isPortfolio
     ? 'How aligned are your holdings with your risk scorecard.'
     : 'Track assets against your personal risk scorecard.';

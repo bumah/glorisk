@@ -233,30 +233,30 @@ body{background:#0D1B3E;}
     <div class="cmp-empty-sub">Use the selectors above to choose any two stocks, ETFs, crypto or index funds.</div>
   </div>
 
-  <!-- Personal fit (only shown if user has profile + both assets selected) -->
+  <!-- Scorecard match (only shown if user has scorecard + both assets selected) -->
   <div id="cmpFitSection" style="display:none">
-    <div class="cmp-sec-label">Personal fit comparison</div>
+    <div class="cmp-sec-label">Scorecard match comparison</div>
     <div class="cmp-profile-strip" id="cmpProfileStrip"></div>
     <div class="cmp-fit-compare" id="cmpFitCompare"></div>
   </div>
 
-  <!-- No-profile CTA -->
+  <!-- No-scorecard CTA -->
   <div id="cmpProfileCta" style="display:none">
-    <div class="cmp-sec-label">Personal fit comparison</div>
+    <div class="cmp-sec-label">Scorecard match comparison</div>
     <div class="cmp-profile-cta">
-      <a href="/screener.html">Take the 2-minute questionnaire</a> to see how each asset fits your personal risk profile.
+      <a href="/screener.html">Take the 2-minute questionnaire</a> to see how each asset matches your scorecard.
     </div>
   </div>
 
-  <!-- Score comparison -->
+  <!-- Comparison table -->
   <div id="cmpScoresSection" style="display:none">
-    <div class="cmp-sec-label">Score comparison</div>
+    <div class="cmp-sec-label">Side-by-side</div>
     <div class="cmp-scores-compare" id="cmpScoresCompare"></div>
   </div>
 
   <!-- Chart -->
   <div id="cmpChartSection" style="display:none">
-    <div class="cmp-sec-label">Score history</div>
+    <div class="cmp-sec-label">Match history</div>
     <div class="cmp-chart-wrap">
       <div class="cmp-chart-legend" id="cmpChartLegend"></div>
       <div class="cmp-chart-canvas-wrap"><canvas id="cmpChart"></canvas></div>
@@ -276,14 +276,12 @@ body{background:#0D1B3E;}
 </footer>
 
 <script type="module">
-import { getMoodBand, IND_META, IND_ORDER, FIT_QUESTIONS, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary } from '/js/riskEngine.js';
+import { IND_META, IND_ORDER, FIT_QUESTIONS, computeFitScore, getFitLabel, getFitClass, getProfile, getProfileSummary } from '/js/riskEngine.js';
 import { getUser, signOut } from '/js/supabase.js';
 
 let allCoins = [];
 let coinA = null, coinB = null;
 let chartInstance = null;
-
-function gloriskScore(mood) { return Math.min(95, Math.max(10, 100 - mood.score * 5)); }
 
 const CURRENCY_MAP = { FTSE100: 'p', Nikkei225: '¥', HSI: 'HK$' };
 function formatPrice(p, group) {
@@ -292,14 +290,6 @@ function formatPrice(p, group) {
   if (group === 'FTSE100') return p.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + 'p';
   if (p < 1) return sym + p.toFixed(4);
   return sym + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function perfBadge(score) {
-  if (score >= 90) return { cls: 'teal',       color: 'var(--teal)',       label: 'Very Stable' };
-  if (score >= 80) return { cls: 'teal-muted', color: 'var(--teal-muted)', label: 'Stable' };
-  if (score >= 60) return { cls: 'amber',      color: 'var(--amber)',      label: 'Unstable' };
-  if (score >= 40) return { cls: 'red-muted',  color: 'var(--red-muted)',  label: 'Stressed' };
-  return                  { cls: 'red',        color: 'var(--red)',        label: 'Critical' };
 }
 
 // Indicator color → mockup CSS variable
@@ -482,7 +472,7 @@ function buildFitCard(coin, profile) {
         </div>
         <div class="cmp-fit-score-wrap">
           <div class="cmp-fit-score" style="color:${badge.color}">${fitScore}</div>
-          <div class="cmp-fit-score-label">/ 100 fit score</div>
+          <div class="cmp-fit-score-label">/ 100 match score</div>
           <div><span class="cmp-fit-badge" style="background:${badge.bg};color:${badge.color}">${getFitLabel(fitScore)}</span></div>
         </div>
       </div>
@@ -509,12 +499,13 @@ function buildProfileStrip(profile) {
     ${summary.horizon ? `<div class="cmp-ppill"><span class="cmp-ppill-l">Horizon</span><span class="cmp-ppill-v">${summary.horizon}</span></div>` : ''}
     ${summary.philosophy ? `<div class="cmp-ppill"><span class="cmp-ppill-l">Style</span><span class="cmp-ppill-v">${summary.philosophy}</span></div>` : ''}
     <div class="cmp-ppill"><span class="cmp-ppill-l">Focus</span><span class="cmp-ppill-v">${focusText}</span></div>
-    <div class="cmp-profile-note">Fit scores are calculated against this profile</div>
+    <div class="cmp-profile-note">Match scores are calculated against this scorecard</div>
   `;
 }
 
-// ── Position score from /data/reports JSON ─────────────────────────────
-async function fetchPositionScore(ticker) {
+// ── Position score from /data/reports JSON (dead code, kept for reference) ─
+// eslint-disable-next-line no-unused-vars
+async function __fetchPositionScore_unused(ticker) {
   try {
     const res = await fetch(`/data/reports/${encodeURIComponent(ticker)}.json`);
     if (!res.ok) return null;
@@ -572,32 +563,42 @@ async function renderComparison() {
 
   // Score comparison table
   scoresSec.style.display = '';
-  const perfA = gloriskScore(a.mood);
-  const perfB = gloriskScore(b.mood);
-  const [posA, posB] = await Promise.all([fetchPositionScore(a.ticker), fetchPositionScore(b.ticker)]);
   const fitScoreA = profile ? computeFitScore(a.indicators, profile) : null;
   const fitScoreB = profile ? computeFitScore(b.indicators, profile) : null;
 
-  const perfBadgeA = perfBadge(perfA);
-  const perfBadgeB = perfBadge(perfB);
   const fitBadgeA = fitBadgeColor(fitScoreA);
   const fitBadgeB = fitBadgeColor(fitScoreB);
 
-  const tickerColorA = profile && fitScoreA != null ? fitBadgeA.color : perfBadgeA.color;
-  const tickerColorB = profile && fitScoreB != null ? fitBadgeB.color : perfBadgeB.color;
+  // Indicator Health counts (green / amber / red) across the 10 indicators
+  const healthCounts = (coin) => {
+    let g = 0, am = 0, r = 0;
+    for (const k of IND_ORDER) {
+      if (k === 'momentum') continue;
+      const c = coin.indicators?.[k]?.color;
+      if (c === 'green') g++;
+      else if (c === 'amber') am++;
+      else if (c === 'red') r++;
+    }
+    return { g, am, r };
+  };
+  const hA = healthCounts(a);
+  const hB = healthCounts(b);
+
+  const tickerColorA = profile && fitScoreA != null ? fitBadgeA.color : 'var(--warm-white)';
+  const tickerColorB = profile && fitScoreB != null ? fitBadgeB.color : 'var(--warm-white)';
 
   const changeA = a.priceChange || 0;
   const changeB = b.priceChange || 0;
 
   const rowsHTML = [];
 
-  // Risk Score row (only if profile)
+  // Scorecard Match row (only if profile)
   if (profile && fitScoreA != null && fitScoreB != null) {
     rowsHTML.push(`
       <div class="cmp-sc-row">
         <div>
-          <div class="cmp-sc-metric">Risk Score</div>
-          <div class="cmp-sc-metric-sub">Overall fit against your profile</div>
+          <div class="cmp-sc-metric">Scorecard Match</div>
+          <div class="cmp-sc-metric-sub">How closely each asset matches your scorecard</div>
         </div>
         <div class="cmp-sc-val">
           <div class="cmp-sc-num" style="color:${fitBadgeA.color}">${fitScoreA}</div>
@@ -611,39 +612,20 @@ async function renderComparison() {
     `);
   }
 
-  // Performance Score row
+  // Indicator Health row — counts of green / amber / red across the 10 risk indicators
   rowsHTML.push(`
     <div class="cmp-sc-row">
       <div>
-        <div class="cmp-sc-metric">Performance Score</div>
-        <div class="cmp-sc-metric-sub">Price action, volatility, trend</div>
+        <div class="cmp-sc-metric">Indicator Health</div>
+        <div class="cmp-sc-metric-sub">RAG count across our 10 risk indicators</div>
       </div>
       <div class="cmp-sc-val">
-        <div class="cmp-sc-num" style="color:${perfBadgeA.color}">${perfA}</div>
-        <div class="cmp-sc-sub">/ 100</div>
+        <div class="cmp-sc-num" style="font-size:14px"><span style="color:var(--teal)">${hA.g}</span> <span style="color:rgba(255,255,255,0.25)">/</span> <span style="color:var(--amber)">${hA.am}</span> <span style="color:rgba(255,255,255,0.25)">/</span> <span style="color:var(--red-muted)">${hA.r}</span></div>
+        <div class="cmp-sc-sub">G / A / R</div>
       </div>
       <div class="cmp-sc-val">
-        <div class="cmp-sc-num" style="color:${perfBadgeB.color}">${perfB}</div>
-        <div class="cmp-sc-sub">/ 100</div>
-      </div>
-    </div>
-  `);
-
-  // Position Score row
-  const posRowClass = (posA == null || posB == null) ? 'cmp-sc-row cmp-unavail-row' : 'cmp-sc-row';
-  rowsHTML.push(`
-    <div class="${posRowClass}">
-      <div>
-        <div class="cmp-sc-metric"${posA == null || posB == null ? ' style="color:var(--text-muted)"' : ''}>Position Score</div>
-        <div class="cmp-sc-metric-sub">Fundamentals, governance, market position</div>
-      </div>
-      <div class="cmp-sc-val">
-        <div class="cmp-sc-num" style="color:${posA != null ? perfBadge(posA).color : 'var(--text-dim)'}">${posA != null ? posA : '—'}</div>
-        <div class="cmp-sc-sub">${posA != null ? '/ 100' : 'Stocks only'}</div>
-      </div>
-      <div class="cmp-sc-val">
-        <div class="cmp-sc-num" style="color:${posB != null ? perfBadge(posB).color : 'var(--text-dim)'}">${posB != null ? posB : '—'}</div>
-        <div class="cmp-sc-sub">${posB != null ? '/ 100' : 'Stocks only'}</div>
+        <div class="cmp-sc-num" style="font-size:14px"><span style="color:var(--teal)">${hB.g}</span> <span style="color:rgba(255,255,255,0.25)">/</span> <span style="color:var(--amber)">${hB.am}</span> <span style="color:rgba(255,255,255,0.25)">/</span> <span style="color:var(--red-muted)">${hB.r}</span></div>
+        <div class="cmp-sc-sub">G / A / R</div>
       </div>
     </div>
   `);
@@ -667,17 +649,6 @@ async function renderComparison() {
       <div class="cmp-sc-val"><div class="cmp-sc-num" style="color:${chColorB};font-size:13px">${changeB >= 0 ? '+' : ''}${changeB.toFixed(2)}%</div></div>
     </div>
   `);
-
-  // 12M Average Score row
-  if (a.avgScore || b.avgScore) {
-    rowsHTML.push(`
-      <div class="cmp-sc-row">
-        <div><div class="cmp-sc-metric">12M Average Score</div></div>
-        <div class="cmp-sc-val"><div class="cmp-sc-num" style="color:var(--warm-white);font-size:13px">${a.avgScore || '—'}</div></div>
-        <div class="cmp-sc-val"><div class="cmp-sc-num" style="color:var(--warm-white);font-size:13px">${b.avgScore || '—'}</div></div>
-      </div>
-    `);
-  }
 
   document.getElementById('cmpScoresCompare').innerHTML = `
     <div class="cmp-sc-head">
@@ -711,13 +682,8 @@ async function renderComparison() {
     ${indRows}
   `;
 
-  // Score history chart
-  chartSec.style.display = '';
-  document.getElementById('cmpChartLegend').innerHTML = `
-    <div class="cmp-chart-leg-item"><div class="cmp-chart-leg-dot" style="background:#4F46E5"></div>${a.ticker}</div>
-    <div class="cmp-chart-leg-item"><div class="cmp-chart-leg-dot" style="background:#EF9F27"></div>${b.ticker}</div>
-  `;
-  await buildCompareChart(a, b);
+  // Chart section hidden — historical score chart retired alongside performance scoring
+  chartSec.style.display = 'none';
 }
 
 async function buildCompareChart(a, b) {

@@ -51,10 +51,10 @@ html,body{overflow-y:auto !important;}
 .tab-d{padding:6px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);cursor:pointer;border-radius:6px 6px 0 0;border:0.5px solid transparent;background:none;font-family:inherit;}
 .tab-d.active{background:var(--navy-light);color:var(--warm-white);border-color:var(--border-dark);border-bottom-color:var(--navy-light);}
 .table-wrap-d{margin:0 32px 28px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:0 10px 10px 10px;overflow-x:auto;}
-.t-head{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 0.6fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1.4fr;padding:10px 16px;border-bottom:0.5px solid var(--border-dark);}
+.t-head{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 1.3fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1.4fr;padding:10px 16px;border-bottom:0.5px solid var(--border-dark);}
 .th{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.22);text-align:right;}
 .th:first-child{text-align:left;}
-.t-row{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 0.6fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1.4fr;padding:13px 16px;border-bottom:0.5px solid var(--border-dark);align-items:center;cursor:pointer;}
+.t-row{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 1.3fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1.4fr;padding:13px 16px;border-bottom:0.5px solid var(--border-dark);align-items:center;cursor:pointer;}
 .t-row:last-child{border-bottom:none;}
 .t-row:hover{background:rgba(79,70,229,0.05);}
 .aname{font-size:13px;font-weight:700;color:var(--warm-white);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
@@ -63,6 +63,11 @@ html,body{overflow-y:auto !important;}
 .cell{font-size:12px;color:rgba(255,255,255,0.45);text-align:right;font-family:monospace;}
 .cell-pos{color:var(--teal);font-size:12px;text-align:right;font-family:monospace;}
 .cell-neg{color:#F09595;font-size:12px;text-align:right;font-family:monospace;}
+.health-cell{font-size:12px;font-family:monospace;text-align:right;font-weight:700;white-space:nowrap;}
+.health-cell .hl-g{color:var(--teal);}
+.health-cell .hl-a{color:var(--amber-d);}
+.health-cell .hl-r{color:var(--red-d);}
+.health-cell .hl-sep{color:rgba(255,255,255,0.25);margin:0 2px;}
 .score-cell{text-align:right;}
 .score-val{font-size:13px;font-weight:700;font-family:monospace;}
 .bar-mini{width:56px;height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;margin-left:auto;margin-top:4px;}
@@ -365,16 +370,6 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
     <div>
-      <span class="bub-label">Market Performance</span>
-      <div class="bub-grp">
-        <button class="bub" data-perf="Very Stable">Very Stable</button>
-        <button class="bub" data-perf="Stable">Stable</button>
-        <button class="bub" data-perf="Unstable">Unstable</button>
-        <button class="bub" data-perf="Stressed">Stressed</button>
-        <button class="bub" data-perf="Critical">Critical</button>
-      </div>
-    </div>
-    <div>
       <span class="bub-label">Category</span>
       <div class="bub-grp">
         <button class="bub" data-cat="Mag7">Magnificent 7</button>
@@ -384,7 +379,7 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
     <div>
-      <span class="bub-label">Fit Range</span>
+      <span class="bub-label">Match Range</span>
       <div class="bub-grp" style="align-items:center;">
         <span style="font-size:11px;color:rgba(255,255,255,0.5)">Min</span>
         <input type="number" class="range-input" id="fitMin" min="0" max="100" placeholder="0">
@@ -409,13 +404,12 @@ html,body{overflow-y:auto !important;}
   <div class="table-wrap-d">
     <div class="t-head">
       <div class="th th-tip" data-tip="Ticker and company name. Click any row to open the asset scorecard.">Asset</div>
-      <div class="th th-tip" data-tip="Personal fit score (0–100). How well this asset matches your risk profile.">Fit</div>
-      <div class="th th-tip" data-tip="Fit rating tier: Very Strong, Strong, Borderline, Poor, or Very Poor." style="text-align:center">Rating</div>
+      <div class="th th-tip" data-tip="How closely this asset matches your personal scorecard — based on your answers to the 10 risk questions.">Match</div>
+      <div class="th th-tip" data-tip="Match strength: Very Strong, Strong, Borderline, Poor, or Very Poor." style="text-align:center">Rating</div>
       <div class="th th-tip" data-tip="Current price. Refreshed weekly.">Price</div>
       <div class="th th-tip" data-tip="Price change over the past 30 days.">30D</div>
       <div class="th th-tip" data-tip="Price change over the past 12 months.">1Y</div>
-      <div class="th th-tip" data-tip="Performance score (0–100). Derived from price action, volatility, and trend indicators.">Perf</div>
-      <div class="th th-tip hide-m" data-tip="Stability rating tier based on the performance score.">Perf Rating</div>
+      <div class="th th-tip hide-m" data-tip="Indicator Health — count of green (healthy), amber (caution) and red (stressed) indicators out of 10.">Health</div>
       <div class="th th-tip hide-m" data-tip="Price relative to the 50-day moving average. Positive means trading above trend.">50D</div>
       <div class="th th-tip hide-m" data-tip="Price relative to the 200-day moving average. Positive means the long-term uptrend is intact.">200D</div>
       <div class="th th-tip hide-m" data-tip="Golden Cross (50D above 200D, bullish) or Death Cross (50D below 200D, bearish).">Trend</div>
@@ -434,15 +428,9 @@ html,body{overflow-y:auto !important;}
 
 <script type="module">
 import { loadData } from '/js/data.js';
-import { getMoodBand, IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, saveProfile, FIT_QUESTIONS, getProfileSummary, isAssetInScope } from '/js/riskEngine.js';
+import { IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, saveProfile, FIT_QUESTIONS, getProfileSummary, isAssetInScope } from '/js/riskEngine.js';
 import { getUser, signOut } from '/js/supabase.js';
 import { isWatched, addToWatchlistWithPrompt, removeFromWatchlist, showToast } from '/js/lists.js';
-
-// gloriskScore helper (same as main.js)
-function gloriskScore(mood) {
-  const raw = mood.score * 5;
-  return Math.min(95, Math.max(10, 100 - raw));
-}
 
 const CURRENCY_MAP = { FTSE100: 'p', Nikkei225: '\u00a5', HSI: 'HK$' };
 function formatPrice(p, group) {
@@ -580,7 +568,6 @@ function showResults(allCoins, profile) {
     .map(c => ({
       ...c,
       fitScore: computeFitScore(c.indicators, profile),
-      perfScore: gloriskScore(c.mood),
       inScope: isAssetInScope(c, profile),
     }))
     .filter(c => c.fitScore !== null)
@@ -629,7 +616,7 @@ function showResults(allCoins, profile) {
   const wizPanel = document.getElementById('screenerWizPanel');
 
   // Filter state
-  let filters = { query: '', tab: 'all', tiers: [], exchanges: [], regions: [], perf: [], cats: [], fitMin: null, fitMax: null };
+  let filters = { query: '', tab: 'all', tiers: [], exchanges: [], regions: [], cats: [], fitMin: null, fitMax: null };
   const REGION_MAP = { US: ['SP500','NASDAQ100'], UK: ['FTSE100'], Asia: ['Nikkei225','HSI'], Global: [] };
   const MAG7 = ['MSFT','META','TSLA','GOOGL','GOOG','NVDA','AMZN','AAPL'];
   const CRYPTO_MAJORS = ['BTC','ETH','BNB','XRP','SOL'];
@@ -675,7 +662,6 @@ function showResults(allCoins, profile) {
   }
   setupBubMulti('[data-exch]', 'exch');
   setupBubMulti('[data-region]', 'region');
-  setupBubMulti('[data-perf]', 'perf');
   setupBubMulti('[data-cat]', 'cat');
 
   // Fit range inputs
@@ -690,7 +676,7 @@ function showResults(allCoins, profile) {
 
   // Reset
   document.getElementById('screenerWizReset')?.addEventListener('click', () => {
-    filters = { query: filters.query, tab: filters.tab, tiers: [], exchanges: [], regions: [], perf: [], cats: [], fitMin: null, fitMax: null };
+    filters = { query: filters.query, tab: filters.tab, tiers: [], exchanges: [], regions: [], cats: [], fitMin: null, fitMax: null };
     wizPanel?.querySelectorAll('.bub.active').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.sum-card.active').forEach(c => c.classList.remove('active'));
     const fmin = document.getElementById('fitMin'); if (fmin) fmin.value = '';
@@ -770,12 +756,12 @@ function showResults(allCoins, profile) {
     modal.innerHTML = `
       <div class="fit-modal">
         <div class="fit-bd-header">
-          <div class="fit-bd-title">${coin.ticker} \u2014 Fit Scoring (${fitScore} ${fitLabelText})</div>
+          <div class="fit-bd-title">${coin.ticker} \u2014 Scorecard Match (${fitScore} ${fitLabelText})</div>
           <button class="fit-bd-close">\u00d7</button>
         </div>
         <div class="fit-modal-body">
           <table class="fit-bd-table">
-            <thead><tr><th>Indicator</th><th>Description</th><th>Value</th><th>Preference</th><th class="fit-bd-th-fit">Fit</th></tr></thead>
+            <thead><tr><th>Indicator</th><th>Description</th><th>Value</th><th>Preference</th><th class="fit-bd-th-fit">Match</th></tr></thead>
             <tbody>${rows}</tbody>
             <tfoot><tr>
               <td colspan="4" style="text-align:right;font-family:var(--font-mono);font-size:0.68rem;color:var(--muted)">Total:</td>
@@ -828,15 +814,6 @@ function showResults(allCoins, profile) {
       if (!global) filtered = filtered.filter(c => allowedExchanges.has(c.group));
     }
 
-    // Market performance band filter
-    if (filters.perf.length) {
-      filtered = filtered.filter(c => {
-        const ps = c.perfScore;
-        const band = ps >= 90 ? 'Very Stable' : ps >= 80 ? 'Stable' : ps >= 60 ? 'Unstable' : ps >= 40 ? 'Stressed' : 'Critical';
-        return filters.perf.includes(band);
-      });
-    }
-
     // Category filter (OR within categories)
     if (filters.cats.length) {
       filtered = filtered.filter(c => {
@@ -868,14 +845,21 @@ function showResults(allCoins, profile) {
       const fitClass = getFitClass(c.fitScore);
       const change = c.priceChange || 0;
 
-      // Performance rating band
-      const perfBand = c.perfScore >= 90 ? 'Very Stable' : c.perfScore >= 80 ? 'Stable' : c.perfScore >= 60 ? 'Unstable' : c.perfScore >= 40 ? 'Stressed' : 'Critical';
       const ind = c.indicators || {};
       const trend50 = ind.shortTrend?.label || '\u2014';
       const trend200 = ind.longTrend?.label || '\u2014';
       const trendDir = ind.maCross?.color === 'green' ? 'Golden' : ind.maCross?.color === 'red' ? 'Death' : '\u2014';
       const range = ind.range52W?.label || '\u2014';
       const growth3y = ind.cagr3Y?.label || '\u2014';
+
+      // Indicator Health — count RAG across all 10 indicators
+      let gCount = 0, aCount = 0, rCount = 0;
+      IND_ORDER.forEach(k => {
+        const clr = ind[k]?.color;
+        if (clr === 'green') gCount++;
+        else if (clr === 'amber') aCount++;
+        else if (clr === 'red') rCount++;
+      });
 
       const exchLabel = exchangeShort(c.group);
       const watched = isWatched(c.ticker);
@@ -889,13 +873,6 @@ function showResults(allCoins, profile) {
       // Trend direction (Golden / Death) coloured by classification
       const trendDirCls = ind.maCross?.color === 'green' ? 'cell-pos' : ind.maCross?.color === 'red' ? 'cell-neg' : 'cell';
 
-      // Performance score uses 5-tier stability colour
-      const perfClr = c.perfScore >= 90 ? 'var(--teal)'
-                    : c.perfScore >= 80 ? 'var(--teal-muted)'
-                    : c.perfScore >= 60 ? 'var(--amber-d)'
-                    : c.perfScore >= 40 ? 'var(--red-muted)'
-                    : 'var(--red-d)';
-
       return `<div class="t-row" data-ticker="${c.ticker}">
         <div><div class="aname">${c.ticker}${exchLabel ? `<span class="exch-tag">${exchLabel}</span>` : ''}</div><div class="asub">${c.company}</div></div>
         <div class="score-cell"><span class="score-val" style="color:${fitColor}">${c.fitScore}</span><div class="bar-mini"><div class="bar-fill-d" style="width:${c.fitScore}%;background:${fitColor}"></div></div></div>
@@ -903,8 +880,7 @@ function showResults(allCoins, profile) {
         <div class="cell">${formatPrice(c.price, c.group)}</div>
         <div class="${change >= 0 ? 'cell-pos' : 'cell-neg'}">${change >= 0 ? '+' : ''}${change.toFixed(1)}%</div>
         <div class="${ret1YCls}">${ind.return1Y?.label || '\u2014'}</div>
-        <div class="cell" style="color:${perfClr};font-weight:700">${c.perfScore}</div>
-        <div class="cell hide-m" style="color:${perfClr}">${perfBand}</div>
+        <div class="health-cell hide-m"><span class="hl-g">${gCount}</span><span class="hl-sep">/</span><span class="hl-a">${aCount}</span><span class="hl-sep">/</span><span class="hl-r">${rCount}</span></div>
         <div class="${trend50Cls} hide-m">${trend50}</div>
         <div class="${trend200Cls} hide-m">${trend200}</div>
         <div class="${trendDirCls} hide-m">${trendDir}</div>
