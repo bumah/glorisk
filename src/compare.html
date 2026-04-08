@@ -3,75 +3,149 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DailyFinn — Compare Assets</title>
+<title>GloRisk — Compare Assets</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/styles.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
-body { background: var(--bg); color: var(--text); }
+/* ── Compare page (navy redesign — mirrors glorisk_compare_redesign.html) ── */
+body{background:#0D1B3E;}
+.cmp-wrap *{box-sizing:border-box;}
+.cmp-wrap{
+  --navy:#0D1B3E;--navy-light:#1E2E52;--navy-card:#243058;
+  --indigo:#4F46E5;--indigo-mid:#7B8EC8;--indigo-light:#EEF2FF;
+  --warm-white:#F8F7F4;--border-dark:rgba(255,255,255,0.08);--border-mid:rgba(255,255,255,0.14);
+  --teal:#1D9E75;--teal-muted:#5DCAA5;--teal-bg:rgba(29,158,117,0.15);
+  --amber:#EF9F27;--amber-bg:rgba(239,159,39,0.15);
+  --red:#E24B4A;--red-muted:#F09595;--red-bg:rgba(226,75,74,0.12);
+  --text-muted:rgba(255,255,255,0.55);--text-dim:rgba(255,255,255,0.32);
+  background:var(--navy);font-family:'DM Sans',system-ui,sans-serif;padding-bottom:48px;min-height:calc(100vh - 60px);
+}
+.cmp-page-head{padding:24px 32px 0;}
+.cmp-eyebrow{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--indigo-mid);margin-bottom:8px;}
+.cmp-page-title{font-size:22px;font-weight:700;color:var(--warm-white);font-family:Georgia,serif;margin-bottom:4px;}
+.cmp-page-sub{font-size:12px;color:var(--text-muted);}
 
-.page-nav { position: sticky; top: 0; z-index: 50; background: rgba(10,12,15,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 14px 2rem; display: flex; align-items: center; gap: 1rem; }
-.page-nav .logo-text { font-size: 1.1rem; }
-.page-nav a { font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: color 0.15s; }
-.page-nav a:hover { color: var(--accent); }
-.page-nav .nav-right { margin-left: auto; display: flex; gap: 1rem; }
+/* Asset selectors */
+.cmp-asset-selectors{margin:20px 32px;display:grid;grid-template-columns:1fr 48px 1fr;gap:0;align-items:center;}
+.cmp-selector-box{background:var(--navy-light);border:0.5px solid var(--border-mid);border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color 0.15s;position:relative;}
+.cmp-selector-box:hover{border-color:rgba(79,70,229,0.4);}
+.cmp-selector-box.editing{border-color:var(--indigo);}
+.cmp-selector-label{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;}
+.cmp-selector-input{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.cmp-selector-ticker{font-size:16px;font-weight:700;color:var(--warm-white);font-family:Georgia,serif;}
+.cmp-selector-ticker.empty{color:var(--text-dim);font-size:13px;font-family:inherit;font-weight:500;}
+.cmp-selector-name{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.cmp-selector-change{font-size:10px;font-weight:600;margin-top:2px;}
+.cmp-selector-edit{display:none;}
+.cmp-selector-box.editing .cmp-selector-display{display:none;}
+.cmp-selector-box.editing .cmp-selector-edit{display:block;}
+.cmp-selector-edit input{width:100%;background:transparent;border:none;outline:none;font-family:inherit;color:var(--warm-white);font-size:14px;padding:4px 0;}
+.cmp-selector-edit input::placeholder{color:var(--text-dim);}
+.cmp-search-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--navy-card);border:0.5px solid var(--border-mid);border-radius:10px;max-height:280px;overflow-y:auto;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,0.4);display:none;}
+.cmp-search-dropdown.open{display:block;}
+.cmp-dd-item{padding:10px 14px;cursor:pointer;border-bottom:0.5px solid var(--border-dark);}
+.cmp-dd-item:last-child{border-bottom:none;}
+.cmp-dd-item:hover,.cmp-dd-item.active{background:rgba(79,70,229,0.15);}
+.cmp-dd-ticker{font-size:13px;font-weight:700;color:var(--warm-white);font-family:Georgia,serif;}
+.cmp-dd-name{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.cmp-dd-empty{padding:14px;color:var(--text-dim);font-size:11px;text-align:center;}
+.cmp-vs-circle{width:48px;height:48px;border-radius:50%;background:var(--navy-card);border:0.5px solid var(--border-mid);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text-dim);margin:0 auto;}
 
-.page-body { max-width: 1000px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
-.page-title { font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 1.8rem); font-weight: 800; letter-spacing: -0.5px; margin-bottom: 1.5rem; }
+/* Actions row */
+.cmp-actions-row{margin:0 32px 20px;display:flex;gap:8px;}
+.cmp-action-btn{padding:7px 14px;background:transparent;border:0.5px solid var(--border-dark);border-radius:7px;font-size:11px;font-weight:600;color:var(--text-muted);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.15s;}
+.cmp-action-btn:hover{border-color:var(--indigo-mid);color:var(--warm-white);background:rgba(79,70,229,0.06);}
 
-/* Search fields */
-.cmp-search-row { display: flex; gap: 12px; margin-bottom: 2rem; flex-wrap: wrap; align-items: flex-start; }
-.cmp-search { flex: 1; min-width: 200px; position: relative; }
-.cmp-search input { width: 100%; background: var(--surface); border: 1.5px solid var(--border2); border-radius: var(--radius-sm); padding: 12px 16px; font-family: var(--font-body); font-size: 0.9rem; color: var(--text); outline: none; caret-color: var(--accent); }
-.cmp-search input:focus { border-color: var(--accent); }
-.cmp-search input::placeholder { color: var(--muted); }
-.cmp-search .search-dropdown { top: calc(100% + 4px); }
-.cmp-label { font-family: var(--font-mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
-.cmp-vs { font-family: var(--font-display); font-weight: 800; color: var(--muted2); font-size: 1.2rem; padding-top: 28px; }
+/* Section labels with line */
+.cmp-sec-label{font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-dim);margin:0 32px 12px;display:flex;align-items:center;gap:8px;}
+.cmp-sec-label::after{content:'';flex:1;height:0.5px;background:var(--border-dark);}
 
-/* Comparison result */
-.cmp-result { display: none; }
-.cmp-result.active { display: block; }
+/* Profile strip */
+.cmp-profile-strip{margin:0 32px 20px;background:rgba(79,70,229,0.06);border:0.5px solid rgba(79,70,229,0.2);border-radius:10px;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.cmp-profile-label{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--indigo-mid);margin-right:4px;}
+.cmp-ppill{display:flex;align-items:center;gap:5px;background:rgba(79,70,229,0.1);border:0.5px solid rgba(79,70,229,0.2);border-radius:20px;padding:3px 10px;}
+.cmp-ppill-l{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--indigo-mid);}
+.cmp-ppill-v{font-size:11px;font-weight:600;color:var(--warm-white);}
+.cmp-profile-note{margin-left:auto;font-size:10px;color:var(--text-dim);}
+.cmp-profile-cta{margin:0 32px 20px;background:rgba(79,70,229,0.06);border:0.5px solid rgba(79,70,229,0.2);border-radius:10px;padding:14px 16px;text-align:center;font-size:12px;color:var(--text-muted);}
+.cmp-profile-cta a{color:var(--indigo-mid);text-decoration:underline;}
 
-/* Hero comparison */
-.cmp-hero { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; margin-bottom: 2rem; padding: 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
-.cmp-hero-side { text-align: center; }
-.cmp-hero-ticker { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
-.cmp-hero-name { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
-.cmp-hero-score { font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; margin-top: 8px; }
-.cmp-hero-status { margin-top: 6px; }
-.cmp-hero-vs { display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; color: var(--muted2); font-size: 0.9rem; }
+/* Personal fit comparison */
+.cmp-fit-compare{margin:0 32px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cmp-fit-card{background:var(--navy-light);border:0.5px solid var(--border-mid);border-radius:12px;padding:20px;}
+.cmp-fit-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:12px;}
+.cmp-fit-ticker{font-size:18px;font-weight:700;color:var(--warm-white);font-family:Georgia,serif;}
+.cmp-fit-name{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.cmp-fit-score-wrap{text-align:right;}
+.cmp-fit-score{font-size:32px;font-weight:700;font-family:Georgia,serif;line-height:1;}
+.cmp-fit-score-label{font-size:9px;color:var(--text-dim);margin-top:2px;}
+.cmp-fit-badge{display:inline-flex;padding:3px 10px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;margin-top:6px;}
+.cmp-fit-bars{display:flex;gap:4px;margin:14px 0 4px;}
+.cmp-fit-bar{height:8px;border-radius:4px;flex:1;}
+.cmp-fit-bar-labels{display:flex;justify-content:space-between;}
+.cmp-fbl{font-size:8px;color:var(--text-dim);}
+.cmp-fit-breakdown-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:14px;}
+.cmp-fit-bd-card{background:rgba(255,255,255,0.04);border:0.5px solid var(--border-dark);border-radius:7px;padding:8px;text-align:center;}
+.cmp-fit-bd-num{font-size:16px;font-weight:700;font-family:Georgia,serif;}
+.cmp-fit-bd-label{font-size:9px;color:var(--text-dim);}
 
-/* Stats table */
-.cmp-stats { width: 100%; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 2rem; background: var(--surface); }
-.cmp-stat-row { display: grid; grid-template-columns: 1fr 130px 130px; border-bottom: 1px solid var(--border); }
-.cmp-stat-row:last-child { border-bottom: none; }
-.cmp-stat-row.header { background: var(--surface2); }
-.cmp-stat-label { padding: 10px 16px; font-size: 0.82rem; color: var(--muted); }
-.cmp-stat-val { padding: 10px 16px; font-family: var(--font-mono); font-size: 0.82rem; text-align: center; }
-.cmp-stat-better { font-weight: 600; }
+/* Score comparison */
+.cmp-scores-compare{margin:0 32px 20px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:12px;overflow:hidden;}
+.cmp-sc-head{display:grid;grid-template-columns:1fr 120px 120px;padding:10px 18px;border-bottom:0.5px solid var(--border-dark);gap:10px;}
+.cmp-sc-th{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);text-align:right;}
+.cmp-sc-th:first-child{text-align:left;}
+.cmp-sc-row{display:grid;grid-template-columns:1fr 120px 120px;padding:13px 18px;border-bottom:0.5px solid var(--border-dark);align-items:center;gap:10px;}
+.cmp-sc-row:last-child{border-bottom:none;}
+.cmp-sc-metric{font-size:12px;font-weight:600;color:var(--warm-white);}
+.cmp-sc-metric-sub{font-size:10px;color:var(--text-dim);margin-top:2px;}
+.cmp-sc-val{text-align:right;}
+.cmp-sc-num{font-size:14px;font-weight:700;font-family:Georgia,serif;}
+.cmp-sc-sub{font-size:9px;color:var(--text-dim);margin-top:1px;}
+.cmp-sc-badge{display:inline-flex;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;}
+.cmp-unavail-row{background:rgba(255,255,255,0.02);opacity:0.5;}
 
-/* Indicator comparison */
-.cmp-ind-table { width: 100%; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 2rem; background: var(--surface); }
-.cmp-ind-row { display: grid; grid-template-columns: 1fr 110px 110px; border-bottom: 1px solid var(--border); align-items: center; }
-.cmp-ind-row:last-child { border-bottom: none; }
-.cmp-ind-row:hover { background: var(--surface2); }
-.cmp-ind-row.header { background: var(--surface2); }
-.cmp-ind-name { padding: 10px 16px; font-size: 0.82rem; color: var(--text); font-weight: 500; }
-.cmp-ind-val { padding: 10px 16px; font-family: var(--font-mono); font-size: 0.78rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
-.cmp-ind-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+/* Chart */
+.cmp-chart-wrap{margin:0 32px 20px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:12px;padding:20px;}
+.cmp-chart-title{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-dim);margin-bottom:16px;}
+.cmp-chart-legend{display:flex;gap:16px;margin-bottom:14px;}
+.cmp-chart-leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);}
+.cmp-chart-leg-dot{width:10px;height:3px;border-radius:2px;}
+.cmp-chart-canvas-wrap{height:200px;position:relative;}
 
-/* Actions */
-.cmp-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2rem; }
+/* Indicator breakdown */
+.cmp-ind-table{margin:0 32px 20px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:12px;overflow:hidden;}
+.cmp-ind-head{display:grid;grid-template-columns:1.8fr 100px 100px;padding:10px 18px;border-bottom:0.5px solid var(--border-dark);gap:10px;}
+.cmp-ind-th{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);text-align:right;}
+.cmp-ind-th:first-child{text-align:left;}
+.cmp-ind-row{display:grid;grid-template-columns:1.8fr 100px 100px;padding:12px 18px;border-bottom:0.5px solid var(--border-dark);align-items:center;gap:10px;}
+.cmp-ind-row:last-child{border-bottom:none;}
+.cmp-ind-name{font-size:12px;font-weight:600;color:var(--warm-white);}
+.cmp-ind-val{font-size:12px;font-weight:600;font-family:'DM Mono',monospace;text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:6px;}
+.cmp-ind-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 
-/* Print */
-@media print {
-  body { background: #fff; color: #111; }
-  .page-nav, .cmp-search-row, .cmp-actions { display: none !important; }
-  .cmp-hero, .cmp-stats, .cmp-ind-table { background: #fff; border-color: #ddd; }
-  .page-body::after { content: 'dailyfinn.com'; display: block; text-align: center; color: #999; font-size: 0.75rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd; }
+/* Empty state */
+.cmp-empty{margin:60px 32px;padding:40px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:12px;text-align:center;}
+.cmp-empty-title{font-size:18px;font-weight:600;color:var(--warm-white);font-family:Georgia,serif;margin-bottom:6px;}
+.cmp-empty-sub{font-size:12px;color:var(--text-dim);}
+
+/* Footer */
+.cmp-footer{padding:20px 32px;border-top:0.5px solid var(--border-dark);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:11px;color:rgba(255,255,255,0.2);background:var(--navy);}
+.cmp-footer a{color:var(--indigo-mid);text-decoration:none;}
+
+/* Mobile */
+@media (max-width:768px){
+  .cmp-page-head{padding:18px 16px 0;}
+  .cmp-asset-selectors{margin:16px 16px;grid-template-columns:1fr;gap:10px;}
+  .cmp-vs-circle{margin:0 auto;}
+  .cmp-actions-row,.cmp-sec-label,.cmp-profile-strip,.cmp-profile-cta,.cmp-fit-compare,.cmp-scores-compare,.cmp-chart-wrap,.cmp-ind-table,.cmp-empty{margin-left:16px;margin-right:16px;}
+  .cmp-fit-compare{grid-template-columns:1fr;}
+  .cmp-sc-head,.cmp-sc-row{grid-template-columns:1fr 80px 80px;padding:10px 14px;gap:6px;}
+  .cmp-ind-head,.cmp-ind-row{grid-template-columns:1.4fr 80px 80px;padding:10px 14px;gap:6px;}
+  .cmp-sc-metric-sub{display:none;}
+  .cmp-footer{padding:16px;}
 }
 </style>
 </head>
@@ -82,7 +156,7 @@ body { background: var(--bg); color: var(--text); }
   <div class="gn-links">
     <a href="/" class="gn-link">Home</a>
     <a href="/screener.html" class="gn-link">Screener</a>
-    <a href="/tools.html" class="gn-link active">Tools</a>
+    <a href="/watchlist.html" class="gn-link">Watchlist</a>
     <a href="/methodology.html" class="gn-link">About</a>
   </div>
   <div class="gn-right" id="gnAuth">
@@ -90,278 +164,561 @@ body { background: var(--bg); color: var(--text); }
   </div>
 </nav>
 
-<div class="page-body">
-  <div class="page-eyebrow">Compare</div>
-  <h1 class="page-title">Side-by-Side Asset Analysis</h1>
-  <p class="page-sub">Select two assets to compare their risk profiles, scores, and indicators over time.</p>
+<div class="cmp-wrap">
 
-  <div class="cmp-search-row">
-    <div class="cmp-search" id="searchA">
-      <div class="cmp-label">Asset 1</div>
-      <input type="text" placeholder="Search first asset..." id="inputA" autocomplete="off">
-      <div class="search-dropdown" id="dropA"></div>
+  <div class="cmp-page-head">
+    <div class="cmp-eyebrow">Compare</div>
+    <div class="cmp-page-title">Side-by-side risk comparison</div>
+    <div class="cmp-page-sub">See how two assets compare against your personal risk profile</div>
+  </div>
+
+  <!-- Asset selectors -->
+  <div class="cmp-asset-selectors">
+    <div class="cmp-selector-box" data-slot="A">
+      <div class="cmp-selector-label">Asset 1</div>
+      <div class="cmp-selector-display">
+        <div class="cmp-selector-input">
+          <div>
+            <div class="cmp-selector-ticker empty" id="selTickerA">— Click to choose —</div>
+            <div class="cmp-selector-name" id="selNameA"></div>
+            <div class="cmp-selector-change" id="selChangeA"></div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+      <div class="cmp-selector-edit">
+        <div class="cmp-selector-label">Asset 1</div>
+        <input type="text" placeholder="Search by ticker or name…" id="inputA" autocomplete="off">
+      </div>
+      <div class="cmp-search-dropdown" id="dropA"></div>
     </div>
-    <div class="cmp-vs">vs</div>
-    <div class="cmp-search" id="searchB">
-      <div class="cmp-label">Asset 2</div>
-      <input type="text" placeholder="Search second asset..." id="inputB" autocomplete="off">
-      <div class="search-dropdown" id="dropB"></div>
+
+    <div class="cmp-vs-circle">VS</div>
+
+    <div class="cmp-selector-box" data-slot="B">
+      <div class="cmp-selector-label">Asset 2</div>
+      <div class="cmp-selector-display">
+        <div class="cmp-selector-input">
+          <div>
+            <div class="cmp-selector-ticker empty" id="selTickerB">— Click to choose —</div>
+            <div class="cmp-selector-name" id="selNameB"></div>
+            <div class="cmp-selector-change" id="selChangeB"></div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+      <div class="cmp-selector-edit">
+        <div class="cmp-selector-label">Asset 2</div>
+        <input type="text" placeholder="Search by ticker or name…" id="inputB" autocomplete="off">
+      </div>
+      <div class="cmp-search-dropdown" id="dropB"></div>
     </div>
   </div>
 
-  <div class="cmp-result" id="cmpResult">
-    <!-- Populated by JS -->
+  <!-- Actions row -->
+  <div class="cmp-actions-row" id="cmpActionsRow" style="display:none">
+    <button class="cmp-action-btn" id="btnExport">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 6h4M6 4v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Export PDF
+    </button>
+    <button class="cmp-action-btn" id="btnShareX">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      Share on X
+    </button>
   </div>
+
+  <!-- Empty state -->
+  <div class="cmp-empty" id="cmpEmpty">
+    <div class="cmp-empty-title">Pick two assets to compare</div>
+    <div class="cmp-empty-sub">Use the selectors above to choose any two stocks, ETFs, crypto or index funds.</div>
+  </div>
+
+  <!-- Personal fit (only shown if user has profile + both assets selected) -->
+  <div id="cmpFitSection" style="display:none">
+    <div class="cmp-sec-label">Personal fit comparison</div>
+    <div class="cmp-profile-strip" id="cmpProfileStrip"></div>
+    <div class="cmp-fit-compare" id="cmpFitCompare"></div>
+  </div>
+
+  <!-- No-profile CTA -->
+  <div id="cmpProfileCta" style="display:none">
+    <div class="cmp-sec-label">Personal fit comparison</div>
+    <div class="cmp-profile-cta">
+      <a href="/screener.html">Take the 2-minute questionnaire</a> to see how each asset fits your personal risk profile.
+    </div>
+  </div>
+
+  <!-- Score comparison -->
+  <div id="cmpScoresSection" style="display:none">
+    <div class="cmp-sec-label">Score comparison</div>
+    <div class="cmp-scores-compare" id="cmpScoresCompare"></div>
+  </div>
+
+  <!-- Chart -->
+  <div id="cmpChartSection" style="display:none">
+    <div class="cmp-sec-label">Score history</div>
+    <div class="cmp-chart-wrap">
+      <div class="cmp-chart-legend" id="cmpChartLegend"></div>
+      <div class="cmp-chart-canvas-wrap"><canvas id="cmpChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Indicator breakdown -->
+  <div id="cmpIndSection" style="display:none">
+    <div class="cmp-sec-label">Indicator breakdown</div>
+    <div class="cmp-ind-table" id="cmpIndTable"></div>
+  </div>
+
 </div>
 
-<footer class="site-footer">
-  <div class="site-footer-inner">
-    <div class="site-footer-logo">Glo<span>Risk</span></div>
-    <p>GloRisk is a free research tool and not a commercial product. Data is refreshed at least weekly. Nothing on this site constitutes financial advice. Always do your own research.</p>
-    <p><a href="mailto:contact@terencebumah.com">contact@terencebumah.com</a></p>
-  </div>
+<footer class="cmp-footer">
+  <div>© GloRisk · <a href="mailto:contact@terencebumah.com">contact@terencebumah.com</a></div>
+  <div>Not financial advice. Always do your own research.</div>
 </footer>
 
 <script type="module">
-import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE } from '/js/riskEngine.js';
+import { getMoodBand, IND_META, IND_ORDER, FIT_QUESTIONS, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary } from '/js/riskEngine.js';
 import { getUser, signOut } from '/js/supabase.js';
 
 let allCoins = [];
 let coinA = null, coinB = null;
+let chartInstance = null;
 
 function gloriskScore(mood) { return Math.min(95, Math.max(10, 100 - mood.score * 5)); }
+
 const CURRENCY_MAP = { FTSE100: 'p', Nikkei225: '¥', HSI: 'HK$' };
 function formatPrice(p, group) {
   const sym = CURRENCY_MAP[group] || '$';
-  if (p == null) return '\u2014';
+  if (p == null) return '—';
   if (group === 'FTSE100') return p.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + 'p';
   if (p < 1) return sym + p.toFixed(4);
   return sym + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// Search wiring
-function wireSearch(inputId, dropId, onSelect) {
-  const input = document.getElementById(inputId);
-  const drop = document.getElementById(dropId);
-  let timer, results = [], activeIdx = -1;
+function perfBadge(score) {
+  if (score >= 90) return { cls: 'teal',       color: 'var(--teal)',       label: 'Very Stable' };
+  if (score >= 80) return { cls: 'teal-muted', color: 'var(--teal-muted)', label: 'Stable' };
+  if (score >= 60) return { cls: 'amber',      color: 'var(--amber)',      label: 'Unstable' };
+  if (score >= 40) return { cls: 'red-muted',  color: 'var(--red-muted)',  label: 'Stressed' };
+  return                  { cls: 'red',        color: 'var(--red)',        label: 'Critical' };
+}
+
+// Indicator color → mockup CSS variable
+function indColorVar(c) {
+  if (c === 'green') return 'var(--teal)';
+  if (c === 'amber') return 'var(--amber)';
+  if (c === 'red')   return 'var(--red)';
+  return 'var(--text-dim)';
+}
+function indTextColorVar(c) {
+  if (c === 'green') return 'var(--teal-muted)';
+  if (c === 'amber') return 'var(--amber)';
+  if (c === 'red')   return 'var(--red-muted)';
+  return 'var(--text-dim)';
+}
+
+// ── Selector boxes ──────────────────────────────────────────────────────
+function setSelectorDisplay(slot, coin) {
+  const tickerEl = document.getElementById('selTicker' + slot);
+  const nameEl   = document.getElementById('selName'   + slot);
+  const changeEl = document.getElementById('selChange' + slot);
+  if (!coin) {
+    tickerEl.textContent = '— Click to choose —';
+    tickerEl.classList.add('empty');
+    nameEl.textContent = '';
+    changeEl.textContent = '';
+    return;
+  }
+  tickerEl.textContent = coin.ticker;
+  tickerEl.classList.remove('empty');
+  nameEl.textContent = coin.company;
+  const change = coin.priceChange || 0;
+  const sign = change >= 0 ? '+' : '';
+  changeEl.textContent = `${sign}${change.toFixed(2)}% 30D`;
+  changeEl.style.color = change >= 0 ? 'var(--teal-muted)' : 'var(--red-muted)';
+}
+
+function openSelector(slot) {
+  // Close the other slot if open
+  const otherSlot = slot === 'A' ? 'B' : 'A';
+  closeSelector(otherSlot);
+  const box = document.querySelector(`.cmp-selector-box[data-slot="${slot}"]`);
+  box.classList.add('editing');
+  const input = document.getElementById('input' + slot);
+  input.value = '';
+  input.focus();
+}
+
+function closeSelector(slot) {
+  const box = document.querySelector(`.cmp-selector-box[data-slot="${slot}"]`);
+  if (!box) return;
+  box.classList.remove('editing');
+  document.getElementById('drop' + slot).classList.remove('open');
+  document.getElementById('input' + slot).value = '';
+}
+
+function wireSelector(slot) {
+  const box = document.querySelector(`.cmp-selector-box[data-slot="${slot}"]`);
+  const input = document.getElementById('input' + slot);
+  const drop = document.getElementById('drop' + slot);
+  let results = [], activeIdx = -1, timer;
+
+  // Click on display → enter edit mode
+  box.querySelector('.cmp-selector-display').addEventListener('click', (e) => {
+    e.stopPropagation();
+    openSelector(slot);
+  });
 
   input.addEventListener('input', () => {
     clearTimeout(timer);
     const q = input.value.trim().toLowerCase();
     if (!q) { drop.classList.remove('open'); return; }
     timer = setTimeout(() => {
-      results = allCoins.filter(c => c.ticker.toLowerCase().includes(q) || c.company.toLowerCase().includes(q)).slice(0, 8);
+      results = allCoins.filter(c =>
+        c.ticker.toLowerCase().includes(q) || c.company.toLowerCase().includes(q)
+      ).slice(0, 8);
       activeIdx = -1;
       drop.innerHTML = results.length
-        ? results.map((c, i) => `<div class="dd-item" data-idx="${i}"><div class="dd-ticker">${c.ticker}</div><div class="dd-name">${c.company}</div></div>`).join('')
-        : '<div class="dd-empty">No assets found</div>';
+        ? results.map((c, i) => `<div class="cmp-dd-item" data-idx="${i}"><div class="cmp-dd-ticker">${c.ticker}</div><div class="cmp-dd-name">${c.company}</div></div>`).join('')
+        : '<div class="cmp-dd-empty">No assets found</div>';
       drop.classList.add('open');
-    }, 150);
+    }, 120);
   });
 
-  input.addEventListener('keydown', e => {
-    if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx+1, results.length-1); drop.querySelectorAll('.dd-item').forEach((el,i) => el.classList.toggle('active', i===activeIdx)); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx-1, 0); drop.querySelectorAll('.dd-item').forEach((el,i) => el.classList.toggle('active', i===activeIdx)); }
-    else if (e.key === 'Enter' && results[activeIdx >= 0 ? activeIdx : 0]) { select(results[activeIdx >= 0 ? activeIdx : 0]); }
-    else if (e.key === 'Escape') drop.classList.remove('open');
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, results.length - 1); drop.querySelectorAll('.cmp-dd-item').forEach((el, i) => el.classList.toggle('active', i === activeIdx)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); drop.querySelectorAll('.cmp-dd-item').forEach((el, i) => el.classList.toggle('active', i === activeIdx)); }
+    else if (e.key === 'Enter' && results[activeIdx >= 0 ? activeIdx : 0]) { e.preventDefault(); selectCoin(slot, results[activeIdx >= 0 ? activeIdx : 0]); }
+    else if (e.key === 'Escape') { closeSelector(slot); }
   });
 
-  drop.addEventListener('click', e => {
-    const item = e.target.closest('.dd-item');
-    if (item) select(results[parseInt(item.dataset.idx)]);
+  drop.addEventListener('click', (e) => {
+    const item = e.target.closest('.cmp-dd-item');
+    if (!item) return;
+    selectCoin(slot, results[parseInt(item.dataset.idx, 10)]);
   });
-
-  document.addEventListener('click', e => { if (!input.contains(e.target) && !drop.contains(e.target)) drop.classList.remove('open'); });
-
-  function select(coin) {
-    input.value = `${coin.ticker} \u2014 ${coin.company}`;
-    drop.classList.remove('open');
-    onSelect(coin);
-  }
 }
 
-async function renderComparison() {
-  if (!coinA || !coinB) return;
-  const result = document.getElementById('cmpResult');
-  result.classList.add('active');
+function selectCoin(slot, coin) {
+  if (!coin) return;
+  if (slot === 'A') coinA = coin;
+  else coinB = coin;
+  setSelectorDisplay(slot, coin);
+  closeSelector(slot);
+  updateUrl();
+  renderComparison();
+}
 
-  const a = coinA, b = coinB;
-  const perfA = gloriskScore(a.mood), perfB = gloriskScore(b.mood);
-  const bandA = getMoodBand(a.mood.label), bandB = getMoodBand(b.mood.label);
+function updateUrl() {
+  const params = new URLSearchParams();
+  if (coinA) params.set('a', coinA.ticker);
+  if (coinB) params.set('b', coinB.ticker);
+  const url = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+  window.history.replaceState({}, '', url);
+}
 
-  // Fetch Market Position reports for both assets
-  async function fetchPositionScore(ticker) {
-    try {
-      const res = await fetch(`/data/reports/${ticker}.json`);
-      if (!res.ok) return null;
-      const data = await res.json();
-      const report = data.report || '';
-      const scores = [];
-      for (const line of report.split('\n')) {
-        const m = line.match(/\|\s*\*?\*?\d+\.\s*.+?\*?\*?\s*\|\s*(\d+)\s*\|/);
-        if (m) scores.push(parseInt(m[1]));
-      }
-      const internal = scores.length >= 5 ? scores.slice(0, 5) : [];
-      const external = scores.length >= 10 ? scores.slice(5, 10) : [];
-      const intAvg = internal.length ? internal.reduce((s, v) => s + v, 0) / internal.length : null;
-      const extAvg = external.length ? external.reduce((s, v) => s + v, 0) / external.length : null;
-      if (intAvg !== null && extAvg !== null) return Math.round(((intAvg + extAvg) / 2) * 10);
-      return null;
-    } catch { return null; }
+// Close selectors when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.cmp-selector-box')) {
+    closeSelector('A');
+    closeSelector('B');
   }
+});
 
-  const [posA, posB] = await Promise.all([fetchPositionScore(a.ticker), fetchPositionScore(b.ticker)]);
-  const hasBothPos = posA !== null && posB !== null;
-  const gloriskA = hasBothPos ? Math.round((perfA + posA) / 2) : null;
-  const gloriskB = hasBothPos ? Math.round((perfB + posB) / 2) : null;
+// ── Personal fit helpers ────────────────────────────────────────────────
+const SCORE_MATRIX = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 0 }, C: { green: 1, amber: 1, red: 1 } };
+const SCORE_MATRIX_Q9 = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 1 }, C: { green: 0, amber: 0.5, red: 1 } };
 
-  // Score colour helper
-  const scoreClr = v => v >= 70 ? 'var(--green)' : v >= 40 ? 'var(--amber)' : 'var(--red)';
-
-  // Score rows — GloRisk (composite), Performance, Position
-  const scoreRows = [];
-  if (hasBothPos) {
-    scoreRows.push({ label: 'GloRisk Score', vA: gloriskA, vB: gloriskB, colorA: scoreClr(gloriskA), colorB: scoreClr(gloriskB), suffix: ' / 100' });
+function getFitBreakdown(coin, profile) {
+  let strong = 0, partial = 0, low = 0;
+  for (const q of FIT_QUESTIONS) {
+    const ind = coin.indicators[q.key];
+    const answer = profile[q.key];
+    if (!ind || !answer) continue;
+    const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
+    const s = matrix[answer]?.[ind.color] ?? 0;
+    if (s === 1) strong++;
+    else if (s === 0.5) partial++;
+    else low++;
   }
-  scoreRows.push({ label: 'Performance Score', vA: perfA, vB: perfB, colorA: scoreClr(perfA), colorB: scoreClr(perfB), suffix: ' / 100' });
-  scoreRows.push({
-    label: 'Market Position Score',
-    vA: posA !== null ? posA : '\u2014',
-    vB: posB !== null ? posB : '\u2014',
-    colorA: posA !== null ? scoreClr(posA) : '',
-    colorB: posB !== null ? scoreClr(posB) : '',
-    suffix: ' / 100'
-  });
+  return { strong, partial, low };
+}
 
-  // Stats comparison
-  const stats = [
-    ...scoreRows,
-    { label: 'Price', vA: formatPrice(a.price, a.group), vB: formatPrice(b.price, b.group) },
-    { label: '30D Change', vA: (a.priceChange >= 0 ? '+' : '') + a.priceChange?.toFixed(2) + '%', vB: (b.priceChange >= 0 ? '+' : '') + b.priceChange?.toFixed(2) + '%', colorA: a.priceChange >= 0 ? 'var(--green)' : 'var(--red)', colorB: b.priceChange >= 0 ? 'var(--green)' : 'var(--red)' },
-    { label: '12M Average', vA: a.avgScore || '\u2014', vB: b.avgScore || '\u2014' },
+function fitBadgeColor(score) {
+  if (score == null) return { cls: 'dim', bg: 'rgba(255,255,255,0.04)', color: 'var(--text-dim)' };
+  if (score >= 85)   return { cls: 'vs',  bg: 'var(--teal-bg)',          color: 'var(--teal)' };
+  if (score >= 65)   return { cls: 's',   bg: 'rgba(93,202,165,0.15)',   color: 'var(--teal-muted)' };
+  if (score >= 40)   return { cls: 'b',   bg: 'var(--amber-bg)',         color: 'var(--amber)' };
+  if (score >= 20)   return { cls: 'p',   bg: 'rgba(240,149,149,0.15)',  color: 'var(--red-muted)' };
+  return                    { cls: 'vp',  bg: 'var(--red-bg)',           color: 'var(--red)' };
+}
+
+function buildFitCard(coin, profile) {
+  const fitScore = computeFitScore(coin.indicators, profile);
+  if (fitScore == null) return '';
+  const badge = fitBadgeColor(fitScore);
+  const breakdown = getFitBreakdown(coin, profile);
+  const fitClass = getFitClass(fitScore);
+  const bands = [
+    { c: 'var(--red)',        cls: 'vp', label: 'Very Poor'   },
+    { c: 'var(--red-muted)',  cls: 'p',  label: 'Poor'        },
+    { c: 'var(--amber)',      cls: 'b',  label: 'Borderline'  },
+    { c: 'var(--teal-muted)', cls: 's',  label: 'Strong'      },
+    { c: 'var(--teal)',       cls: 'vs', label: 'Very Strong' },
   ];
-
-  const statsHTML = stats.map(s => {
-    const fmtVal = (v, suffix) => typeof v === 'number' ? `${v}${suffix || ''}` : v;
-    return `
-    <div class="cmp-stat-row">
-      <div class="cmp-stat-label">${s.label}</div>
-      <div class="cmp-stat-val" style="${s.colorA ? 'color:'+s.colorA : ''}">${fmtVal(s.vA, s.suffix)}</div>
-      <div class="cmp-stat-val" style="${s.colorB ? 'color:'+s.colorB : ''}">${fmtVal(s.vB, s.suffix)}</div>
-    </div>
-  `}).join('');
-
-  // Indicator comparison
-  const indHTML = IND_ORDER.map(k => {
-    const iA = a.indicators[k], iB = b.indicators[k];
-    if (!iA || !iB) return '';
-    return `
-      <div class="cmp-ind-row">
-        <div class="cmp-ind-name">${IND_META[k].label}</div>
-        <div class="cmp-ind-val"><span class="cmp-ind-dot" style="background:var(--${iA.color})"></span>${iA.label}</div>
-        <div class="cmp-ind-val"><span class="cmp-ind-dot" style="background:var(--${iB.color})"></span>${iB.label}</div>
-      </div>
-    `;
+  const barsHTML = bands.map(b =>
+    `<div class="cmp-fit-bar" style="background:${b.c};${b.cls === fitClass ? 'border:2px solid rgba(255,255,255,0.25)' : 'opacity:0.4'}"></div>`
+  ).join('');
+  const labelsHTML = bands.map(b => {
+    const isCurrent = b.cls === fitClass;
+    return `<span class="cmp-fbl"${isCurrent ? ` style="color:${b.c};font-weight:700"` : ''}>${b.label}${isCurrent ? ' \u2190' : ''}</span>`;
   }).join('');
-
-  result.innerHTML = `
-    <div class="cmp-actions">
-      <button class="ra-btn" onclick="window.print()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Export PDF
-      </button>
-      <button class="ra-btn" id="cmpShareX">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-        Share on X
-      </button>
-      <button class="ra-btn" id="cmpSaveImg">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        Save as Image
-      </button>
-    </div>
-
-    <div id="cmpContent">
-      <div class="cmp-hero">
-        <div class="cmp-hero-side">
-          <div class="cmp-hero-ticker">${a.ticker}</div>
-          <div class="cmp-hero-name">${a.company}</div>
-          <div class="cmp-hero-score" style="color:${bandA.color}">${hasBothPos ? gloriskA : perfA}</div>
-          <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-top:2px">${hasBothPos ? 'GloRisk Score' : 'Performance Score'}</div>
-          <div class="cmp-hero-status"><span class="mood-pill ${bandA.cls}">${bandA.displayLabel}</span></div>
+  const assetType = coin.group === 'Crypto' ? 'Crypto' : coin.group === 'SectorETFs' ? 'ETF' : coin.group === 'Index' ? 'Index' : 'Stock';
+  return `
+    <div class="cmp-fit-card">
+      <div class="cmp-fit-card-header">
+        <div>
+          <div class="cmp-fit-ticker">${coin.ticker}</div>
+          <div class="cmp-fit-name">${coin.company} · ${assetType}</div>
         </div>
-        <div class="cmp-hero-vs">VS</div>
-        <div class="cmp-hero-side">
-          <div class="cmp-hero-ticker">${b.ticker}</div>
-          <div class="cmp-hero-name">${b.company}</div>
-          <div class="cmp-hero-score" style="color:${bandB.color}">${hasBothPos ? gloriskB : perfB}</div>
-          <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-top:2px">${hasBothPos ? 'GloRisk Score' : 'Performance Score'}</div>
-          <div class="cmp-hero-status"><span class="mood-pill ${bandB.cls}">${bandB.displayLabel}</span></div>
+        <div class="cmp-fit-score-wrap">
+          <div class="cmp-fit-score" style="color:${badge.color}">${fitScore}</div>
+          <div class="cmp-fit-score-label">/ 100 fit score</div>
+          <div><span class="cmp-fit-badge" style="background:${badge.bg};color:${badge.color}">${getFitLabel(fitScore)}</span></div>
         </div>
       </div>
-
-      <div class="cmp-stats">
-        <div class="cmp-stat-row header">
-          <div class="cmp-stat-label" style="color:var(--muted)">Metric</div>
-          <div class="cmp-stat-val" style="color:var(--accent);font-weight:600">${a.ticker}</div>
-          <div class="cmp-stat-val" style="color:var(--accent);font-weight:600">${b.ticker}</div>
-        </div>
-        ${statsHTML}
-      </div>
-
-      <div style="margin-bottom:2rem">
-        <div class="chart-header" style="margin-bottom:0.5rem">
-          <div class="chart-title">Score History Comparison</div>
-        </div>
-        <canvas id="cmpChart" style="max-height:200px"></canvas>
-      </div>
-
-      <div class="cmp-ind-table">
-        <div class="cmp-ind-row header">
-          <div class="cmp-ind-name" style="color:var(--muted);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;font-family:var(--font-mono)">Indicator</div>
-          <div class="cmp-ind-val" style="color:var(--accent);font-weight:600;font-size:0.72rem">${a.ticker}</div>
-          <div class="cmp-ind-val" style="color:var(--accent);font-weight:600;font-size:0.72rem">${b.ticker}</div>
-        </div>
-        ${indHTML}
+      <div class="cmp-fit-bars">${barsHTML}</div>
+      <div class="cmp-fit-bar-labels">${labelsHTML}</div>
+      <div class="cmp-fit-breakdown-grid">
+        <div class="cmp-fit-bd-card"><div class="cmp-fit-bd-num" style="color:var(--teal)">${breakdown.strong}</div><div class="cmp-fit-bd-label">Strong</div></div>
+        <div class="cmp-fit-bd-card"><div class="cmp-fit-bd-num" style="color:var(--amber)">${breakdown.partial}</div><div class="cmp-fit-bd-label">Partial</div></div>
+        <div class="cmp-fit-bd-card"><div class="cmp-fit-bd-num" style="color:var(--red-muted)">${breakdown.low}</div><div class="cmp-fit-bd-label">Low</div></div>
       </div>
     </div>
   `;
+}
 
-  // Build overlaid score chart
-  buildCompareChart(a, b);
+function buildProfileStrip(profile) {
+  const summary = getProfileSummary(profile);
+  if (!summary) return '';
+  const types = profile.assetTypes || [];
+  const focusLabels = { stocks: 'Stocks', etfs: 'ETFs', crypto: 'Crypto', indices: 'Indices' };
+  const focusText = types.length ? types.map(t => focusLabels[t] || t).join(' · ') : 'All';
+  return `
+    <span class="cmp-profile-label">Your profile</span>
+    ${summary.riskLevel ? `<div class="cmp-ppill"><span class="cmp-ppill-l">Risk</span><span class="cmp-ppill-v">${summary.riskLevel}</span></div>` : ''}
+    ${summary.horizon ? `<div class="cmp-ppill"><span class="cmp-ppill-l">Horizon</span><span class="cmp-ppill-v">${summary.horizon}</span></div>` : ''}
+    ${summary.philosophy ? `<div class="cmp-ppill"><span class="cmp-ppill-l">Style</span><span class="cmp-ppill-v">${summary.philosophy}</span></div>` : ''}
+    <div class="cmp-ppill"><span class="cmp-ppill-l">Focus</span><span class="cmp-ppill-v">${focusText}</span></div>
+    <div class="cmp-profile-note">Fit scores are calculated against this profile</div>
+  `;
+}
 
-  // Wire share buttons
-  document.getElementById('cmpShareX')?.addEventListener('click', () => {
-    const heroA = hasBothPos ? gloriskA : perfA;
-    const heroB = hasBothPos ? gloriskB : perfB;
-    const shareLabel = hasBothPos ? 'GloRisk Score' : 'Performance Score';
-    const text = `${a.ticker} (${heroA}) vs ${b.ticker} (${heroB}) \u2014 ${shareLabel} comparison on dailyfinn.com`;
-    window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'width=550,height=420');
-  });
+// ── Position score from /data/reports JSON ─────────────────────────────
+async function fetchPositionScore(ticker) {
+  try {
+    const res = await fetch(`/data/reports/${encodeURIComponent(ticker)}.json`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const report = data.report || '';
+    const scores = [];
+    for (const line of report.split('\n')) {
+      const m = line.match(/\|\s*\*?\*?\d+\.\s*.+?\*?\*?\s*\|\s*(\d+)(?:\/10)?\s*\|/);
+      if (m) scores.push(parseInt(m[1]));
+    }
+    if (scores.length < 10) return null;
+    const intAvg = scores.slice(0, 5).reduce((s, v) => s + v, 0) / 5;
+    const extAvg = scores.slice(5, 10).reduce((s, v) => s + v, 0) / 5;
+    return Math.round(((intAvg + extAvg) / 2) * 10);
+  } catch { return null; }
+}
 
-  document.getElementById('cmpSaveImg')?.addEventListener('click', async () => {
-    const el = document.getElementById('cmpContent');
-    const tempDiv = document.createElement('div');
-    tempDiv.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1000px;padding:2rem;background:#0a0c0f;color:#e8edf2;font-family:Inter,sans-serif;';
-    tempDiv.appendChild(el.cloneNode(true));
-    tempDiv.querySelectorAll('.save-img-btn,.ra-btn').forEach(b => b.remove());
-    const wm = document.createElement('div');
-    wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:0.75rem;border-top:1px solid #1e2530;margin-top:1rem;';
-    wm.textContent = 'dailyfinn.com';
-    tempDiv.appendChild(wm);
-    document.body.appendChild(tempDiv);
-    try {
-      const canvas = await html2canvas(tempDiv, { backgroundColor: '#0a0c0f', scale: 2 });
-      document.body.removeChild(tempDiv);
-      canvas.toBlob((blob) => {
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = `${a.ticker}-vs-${b.ticker}-glorisk.png`;
-        anchor.click();
-        URL.revokeObjectURL(url);
-      }, 'image/png');
-    } catch { document.body.removeChild(tempDiv); }
-  });
+// ── Main render ────────────────────────────────────────────────────────
+async function renderComparison() {
+  const empty       = document.getElementById('cmpEmpty');
+  const actionsRow  = document.getElementById('cmpActionsRow');
+  const fitSection  = document.getElementById('cmpFitSection');
+  const profileCta  = document.getElementById('cmpProfileCta');
+  const scoresSec   = document.getElementById('cmpScoresSection');
+  const chartSec    = document.getElementById('cmpChartSection');
+  const indSec      = document.getElementById('cmpIndSection');
+
+  if (!coinA || !coinB) {
+    empty.style.display = '';
+    actionsRow.style.display = 'none';
+    fitSection.style.display = 'none';
+    profileCta.style.display = 'none';
+    scoresSec.style.display = 'none';
+    chartSec.style.display = 'none';
+    indSec.style.display = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  actionsRow.style.display = '';
+
+  const a = coinA, b = coinB;
+  const profile = getProfile();
+
+  // Personal fit comparison (only if profile is set)
+  if (profile) {
+    fitSection.style.display = '';
+    profileCta.style.display = 'none';
+    document.getElementById('cmpProfileStrip').innerHTML = buildProfileStrip(profile);
+    document.getElementById('cmpFitCompare').innerHTML = buildFitCard(a, profile) + buildFitCard(b, profile);
+  } else {
+    fitSection.style.display = 'none';
+    profileCta.style.display = '';
+  }
+
+  // Score comparison table
+  scoresSec.style.display = '';
+  const perfA = gloriskScore(a.mood);
+  const perfB = gloriskScore(b.mood);
+  const [posA, posB] = await Promise.all([fetchPositionScore(a.ticker), fetchPositionScore(b.ticker)]);
+  const fitScoreA = profile ? computeFitScore(a.indicators, profile) : null;
+  const fitScoreB = profile ? computeFitScore(b.indicators, profile) : null;
+
+  const perfBadgeA = perfBadge(perfA);
+  const perfBadgeB = perfBadge(perfB);
+  const fitBadgeA = fitBadgeColor(fitScoreA);
+  const fitBadgeB = fitBadgeColor(fitScoreB);
+
+  const tickerColorA = profile && fitScoreA != null ? fitBadgeA.color : perfBadgeA.color;
+  const tickerColorB = profile && fitScoreB != null ? fitBadgeB.color : perfBadgeB.color;
+
+  const changeA = a.priceChange || 0;
+  const changeB = b.priceChange || 0;
+
+  const rowsHTML = [];
+
+  // Risk Score row (only if profile)
+  if (profile && fitScoreA != null && fitScoreB != null) {
+    rowsHTML.push(`
+      <div class="cmp-sc-row">
+        <div>
+          <div class="cmp-sc-metric">Risk Score</div>
+          <div class="cmp-sc-metric-sub">Overall fit against your profile</div>
+        </div>
+        <div class="cmp-sc-val">
+          <div class="cmp-sc-num" style="color:${fitBadgeA.color}">${fitScoreA}</div>
+          <div><span class="cmp-sc-badge" style="background:${fitBadgeA.bg};color:${fitBadgeA.color}">${getFitLabel(fitScoreA)}</span></div>
+        </div>
+        <div class="cmp-sc-val">
+          <div class="cmp-sc-num" style="color:${fitBadgeB.color}">${fitScoreB}</div>
+          <div><span class="cmp-sc-badge" style="background:${fitBadgeB.bg};color:${fitBadgeB.color}">${getFitLabel(fitScoreB)}</span></div>
+        </div>
+      </div>
+    `);
+  }
+
+  // Performance Score row
+  rowsHTML.push(`
+    <div class="cmp-sc-row">
+      <div>
+        <div class="cmp-sc-metric">Performance Score</div>
+        <div class="cmp-sc-metric-sub">Price action, volatility, trend</div>
+      </div>
+      <div class="cmp-sc-val">
+        <div class="cmp-sc-num" style="color:${perfBadgeA.color}">${perfA}</div>
+        <div class="cmp-sc-sub">/ 100</div>
+      </div>
+      <div class="cmp-sc-val">
+        <div class="cmp-sc-num" style="color:${perfBadgeB.color}">${perfB}</div>
+        <div class="cmp-sc-sub">/ 100</div>
+      </div>
+    </div>
+  `);
+
+  // Position Score row
+  const posRowClass = (posA == null || posB == null) ? 'cmp-sc-row cmp-unavail-row' : 'cmp-sc-row';
+  rowsHTML.push(`
+    <div class="${posRowClass}">
+      <div>
+        <div class="cmp-sc-metric"${posA == null || posB == null ? ' style="color:var(--text-muted)"' : ''}>Position Score</div>
+        <div class="cmp-sc-metric-sub">Fundamentals, governance, market position</div>
+      </div>
+      <div class="cmp-sc-val">
+        <div class="cmp-sc-num" style="color:${posA != null ? perfBadge(posA).color : 'var(--text-dim)'}">${posA != null ? posA : '—'}</div>
+        <div class="cmp-sc-sub">${posA != null ? '/ 100' : 'Stocks only'}</div>
+      </div>
+      <div class="cmp-sc-val">
+        <div class="cmp-sc-num" style="color:${posB != null ? perfBadge(posB).color : 'var(--text-dim)'}">${posB != null ? posB : '—'}</div>
+        <div class="cmp-sc-sub">${posB != null ? '/ 100' : 'Stocks only'}</div>
+      </div>
+    </div>
+  `);
+
+  // Price row
+  rowsHTML.push(`
+    <div class="cmp-sc-row">
+      <div><div class="cmp-sc-metric">Price</div></div>
+      <div class="cmp-sc-val"><div class="cmp-sc-num" style="color:var(--warm-white);font-size:13px">${formatPrice(a.price, a.group)}</div></div>
+      <div class="cmp-sc-val"><div class="cmp-sc-num" style="color:var(--warm-white);font-size:13px">${formatPrice(b.price, b.group)}</div></div>
+    </div>
+  `);
+
+  // 30D Change row
+  const chColorA = changeA >= 0 ? 'var(--teal-muted)' : 'var(--red-muted)';
+  const chColorB = changeB >= 0 ? 'var(--teal-muted)' : 'var(--red-muted)';
+  rowsHTML.push(`
+    <div class="cmp-sc-row">
+      <div><div class="cmp-sc-metric">30D Change</div></div>
+      <div class="cmp-sc-val"><div class="cmp-sc-num" style="color:${chColorA};font-size:13px">${changeA >= 0 ? '+' : ''}${changeA.toFixed(2)}%</div></div>
+      <div class="cmp-sc-val"><div class="cmp-sc-num" style="color:${chColorB};font-size:13px">${changeB >= 0 ? '+' : ''}${changeB.toFixed(2)}%</div></div>
+    </div>
+  `);
+
+  // 12M Average Score row
+  if (a.avgScore || b.avgScore) {
+    rowsHTML.push(`
+      <div class="cmp-sc-row">
+        <div><div class="cmp-sc-metric">12M Average Score</div></div>
+        <div class="cmp-sc-val"><div class="cmp-sc-num" style="color:var(--warm-white);font-size:13px">${a.avgScore || '—'}</div></div>
+        <div class="cmp-sc-val"><div class="cmp-sc-num" style="color:var(--warm-white);font-size:13px">${b.avgScore || '—'}</div></div>
+      </div>
+    `);
+  }
+
+  document.getElementById('cmpScoresCompare').innerHTML = `
+    <div class="cmp-sc-head">
+      <div class="cmp-sc-th" style="text-align:left">Metric</div>
+      <div class="cmp-sc-th" style="color:${tickerColorA}">${a.ticker}</div>
+      <div class="cmp-sc-th" style="color:${tickerColorB}">${b.ticker}</div>
+    </div>
+    ${rowsHTML.join('')}
+  `;
+
+  // Indicator breakdown
+  indSec.style.display = '';
+  const indRows = IND_ORDER.filter(k => k !== 'momentum').map(k => {
+    const iA = a.indicators[k], iB = b.indicators[k];
+    if (!iA || !iB) return '';
+    const meta = IND_META[k] || {};
+    return `
+      <div class="cmp-ind-row">
+        <div class="cmp-ind-name">${meta.label || k}</div>
+        <div class="cmp-ind-val"><div class="cmp-ind-dot" style="background:${indColorVar(iA.color)}"></div><span style="color:${indTextColorVar(iA.color)}">${iA.label}</span></div>
+        <div class="cmp-ind-val"><div class="cmp-ind-dot" style="background:${indColorVar(iB.color)}"></div><span style="color:${indTextColorVar(iB.color)}">${iB.label}</span></div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('cmpIndTable').innerHTML = `
+    <div class="cmp-ind-head">
+      <div class="cmp-ind-th" style="text-align:left">Indicator</div>
+      <div class="cmp-ind-th" style="color:${tickerColorA}">${a.ticker}</div>
+      <div class="cmp-ind-th" style="color:${tickerColorB}">${b.ticker}</div>
+    </div>
+    ${indRows}
+  `;
+
+  // Score history chart
+  chartSec.style.display = '';
+  document.getElementById('cmpChartLegend').innerHTML = `
+    <div class="cmp-chart-leg-item"><div class="cmp-chart-leg-dot" style="background:#4F46E5"></div>${a.ticker}</div>
+    <div class="cmp-chart-leg-item"><div class="cmp-chart-leg-dot" style="background:#EF9F27"></div>${b.ticker}</div>
+  `;
+  await buildCompareChart(a, b);
 }
 
 async function buildCompareChart(a, b) {
@@ -369,7 +726,7 @@ async function buildCompareChart(a, b) {
   if (!ctx) return;
 
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const fmtDate = (d) => { const [,m,dd] = d.split('-'); return `${parseInt(dd)}-${months[parseInt(m)-1]}`; };
+  const fmtDate = (d) => { const [, m, dd] = d.split('-'); return `${parseInt(dd)}-${months[parseInt(m) - 1]}`; };
 
   let tlA = [], tlB = [];
   try {
@@ -385,62 +742,71 @@ async function buildCompareChart(a, b) {
 
   const longer = tlA.length >= tlB.length ? tlA : tlB;
   if (!longer.length) return;
-
   const labels = longer.map(p => fmtDate(p.d));
 
-  new Chart(ctx, {
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+  chartInstance = new Chart(ctx, {
     type: 'line',
     data: {
       labels,
       datasets: [
-        { label: a.ticker, data: tlA.map(p => p.s), borderColor: '#00d4ff', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false },
-        { label: b.ticker, data: tlB.map(p => p.s), borderColor: '#22c55e', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false },
+        { label: a.ticker, data: tlA.map(p => p.s), borderColor: '#4F46E5', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false },
+        { label: b.ticker, data: tlB.map(p => p.s), borderColor: '#EF9F27', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false },
       ],
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: { display: true, labels: { color: '#5a6470', font: { family: 'DM Mono', size: 10 }, boxWidth: 12 } },
-        tooltip: { backgroundColor: '#111418', borderColor: '#252d38', borderWidth: 1, titleColor: '#5a6470', bodyColor: '#e8edf2', bodyFont: { family: 'DM Mono' } },
+        legend: { display: false },
+        tooltip: { backgroundColor: '#1E2E52', borderColor: 'rgba(255,255,255,0.14)', borderWidth: 1, titleColor: 'rgba(255,255,255,0.55)', bodyColor: '#F8F7F4', bodyFont: { family: 'DM Sans' } },
       },
       scales: {
-        x: { grid: { color: '#1e2530' }, ticks: { color: '#5a6470', font: { family: 'DM Mono', size: 9 }, maxTicksLimit: 8, maxRotation: 0 } },
-        y: { min: 0, max: 100, position: 'right', grid: { color: '#1e2530' }, ticks: { color: '#5a6470', font: { family: 'DM Mono', size: 10 }, stepSize: 25 } },
+        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.3)', font: { family: 'DM Sans', size: 9 }, maxTicksLimit: 7, maxRotation: 0 } },
+        y: { min: 0, max: 100, position: 'right', grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.3)', font: { family: 'DM Sans', size: 9 }, stepSize: 25 } },
       },
     },
   });
 }
 
-// Init
+// ── Init ───────────────────────────────────────────────────────────────
 async function init() {
   const res = await fetch('/data/coins.json');
   const data = await res.json();
   allCoins = data.coins;
 
-  wireSearch('inputA', 'dropA', (c) => { coinA = c; renderComparison(); });
-  wireSearch('inputB', 'dropB', (c) => { coinB = c; renderComparison(); });
+  wireSelector('A');
+  wireSelector('B');
 
-  // Handle URL params: ?a=MSFT&b=AAPL
+  // URL params: ?a=MSFT&b=AAPL
   const params = new URLSearchParams(window.location.search);
   const pA = params.get('a'), pB = params.get('b');
   if (pA) {
     coinA = allCoins.find(c => c.ticker === pA.toUpperCase());
-    if (coinA) document.getElementById('inputA').value = `${coinA.ticker} \u2014 ${coinA.company}`;
+    if (coinA) setSelectorDisplay('A', coinA);
   }
   if (pB) {
     coinB = allCoins.find(c => c.ticker === pB.toUpperCase());
-    if (coinB) document.getElementById('inputB').value = `${coinB.ticker} \u2014 ${coinB.company}`;
+    if (coinB) setSelectorDisplay('B', coinB);
   }
-  if (coinA && coinB) await renderComparison();
+  if (coinA || coinB) await renderComparison();
 
-  // Update nav sign in/out button
-  const gnUser = await getUser();
-  const gnBtn = document.getElementById('gnSignIn');
-  if (gnBtn && gnUser) {
-    gnBtn.textContent = 'Sign Out';
-    gnBtn.href = '#';
-    gnBtn.addEventListener('click', async (e) => {
+  // Wire share/export buttons
+  document.getElementById('btnExport')?.addEventListener('click', () => window.print());
+  document.getElementById('btnShareX')?.addEventListener('click', () => {
+    if (!coinA || !coinB) return;
+    const text = `${coinA.ticker} vs ${coinB.ticker} — risk comparison on glorisk.com`;
+    window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'width=550,height=420');
+  });
+
+  // Auth: nav sign in/out button
+  const user = await getUser();
+  const btn = document.getElementById('gnSignIn');
+  if (btn && user) {
+    btn.textContent = 'Sign Out';
+    btn.href = '#';
+    btn.addEventListener('click', async (e) => {
       e.preventDefault();
       await signOut();
       window.location.reload();
@@ -455,7 +821,6 @@ init().catch(console.error);
 <div class="global-mobile-nav">
   <a href="/" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a>
   <a href="/screener.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Screener</span></a>
-  <a href="/tools.html" class="gmn-item active"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Tools</span></a>
   <a href="/watchlist.html" class="gmn-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span>Watchlist</span></a>
 </div>
 </body>
