@@ -408,20 +408,20 @@ html,body{overflow-y:auto !important;}
 
   <div class="table-wrap-d">
     <div class="t-head">
-      <div class="th">Asset</div>
-      <div class="th">Fit</div>
-      <div class="th" style="text-align:center">Rating</div>
-      <div class="th">Price</div>
-      <div class="th">30D</div>
-      <div class="th">1Y</div>
-      <div class="th">Perf</div>
-      <div class="th hide-m">Perf Rating</div>
-      <div class="th hide-m">50D</div>
-      <div class="th hide-m">200D</div>
-      <div class="th hide-m">Trend</div>
-      <div class="th hide-m">Range</div>
-      <div class="th hide-m">3Y</div>
-      <div class="th">Actions</div>
+      <div class="th th-tip" data-tip="Ticker and company name. Click any row to open the asset scorecard.">Asset</div>
+      <div class="th th-tip" data-tip="Personal fit score (0–100). How well this asset matches your risk profile.">Fit</div>
+      <div class="th th-tip" data-tip="Fit rating tier: Very Strong, Strong, Borderline, Poor, or Very Poor." style="text-align:center">Rating</div>
+      <div class="th th-tip" data-tip="Current price. Refreshed weekly.">Price</div>
+      <div class="th th-tip" data-tip="Price change over the past 30 days.">30D</div>
+      <div class="th th-tip" data-tip="Price change over the past 12 months.">1Y</div>
+      <div class="th th-tip" data-tip="Performance score (0–100). Derived from price action, volatility, and trend indicators.">Perf</div>
+      <div class="th th-tip hide-m" data-tip="Stability rating tier based on the performance score.">Perf Rating</div>
+      <div class="th th-tip hide-m" data-tip="Price relative to the 50-day moving average. Positive means trading above trend.">50D</div>
+      <div class="th th-tip hide-m" data-tip="Price relative to the 200-day moving average. Positive means the long-term uptrend is intact.">200D</div>
+      <div class="th th-tip hide-m" data-tip="Golden Cross (50D above 200D, bullish) or Death Cross (50D below 200D, bearish).">Trend</div>
+      <div class="th th-tip hide-m" data-tip="Where the current price sits in its 52-week high–low range. Higher = closer to yearly high.">Range</div>
+      <div class="th th-tip hide-m" data-tip="3-year compound annual growth rate. Negative means value lost over 3 years.">3Y</div>
+      <div class="th th-tip th-tip--right" data-tip="Add to watchlist, compare with another asset, or open the full scorecard.">Actions</div>
     </div>
     <div id="screenerBody"></div>
   </div>
@@ -949,9 +949,34 @@ function showResults(allCoins, profile) {
     body.querySelectorAll('[data-compare]').forEach(a => {
       a.addEventListener('click', (e) => e.stopPropagation());
     });
+    // Stop the row click from firing when the View button is clicked
+    body.querySelectorAll('.act-v').forEach(a => {
+      a.addEventListener('click', (e) => e.stopPropagation());
+    });
+    // Row click → open the asset scorecard
+    body.querySelectorAll('.t-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const ticker = row.dataset.ticker;
+        if (ticker) window.location.href = `/browse.html?asset=${encodeURIComponent(ticker)}`;
+      });
+    });
   }
 
   renderTable();
+
+  // Column-header tooltips — tap-to-show on touch devices
+  document.querySelectorAll('.th-tip').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.th-tip.tapped').forEach(o => o !== el && o.classList.remove('tapped'));
+      el.classList.toggle('tapped');
+    });
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.th-tip')) {
+      document.querySelectorAll('.th-tip.tapped').forEach(el => el.classList.remove('tapped'));
+    }
+  });
 }
 
 init().catch(console.error);

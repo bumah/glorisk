@@ -2448,6 +2448,60 @@ body {
   .section, .section--alt { padding: 3rem 1rem; }
 }
 
+/* ── Shared column-header tooltip (used in screener + watchlist tables) ── */
+.th-tip { position: relative; cursor: help; }
+.th-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 180px;
+  max-width: 260px;
+  background: #243058;
+  border: 0.5px solid rgba(255,255,255,0.14);
+  border-radius: 7px;
+  padding: 9px 12px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: #F8F7F4;
+  text-transform: none;
+  text-align: left;
+  line-height: 1.5;
+  white-space: normal;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+}
+.th-tip::before {
+  content: '';
+  position: absolute;
+  top: calc(100% + 1px);
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #243058;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 201;
+}
+.th-tip:hover::after,
+.th-tip:hover::before,
+.th-tip.tapped::after,
+.th-tip.tapped::before {
+  opacity: 1;
+}
+/* Keep the tooltip inside the viewport at the right edge of the table */
+.th-tip.th-tip--right::after,
+.th-tip.th-tip--right::before { left: auto; right: 0; transform: none; }
+.th-tip.th-tip--right::before { right: 8px; }
+
 /* ── Shared minimal footer (used on every page) ───────────────────────── */
 .glo-footer {
   padding: 18px 32px;

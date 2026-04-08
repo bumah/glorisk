@@ -514,7 +514,7 @@ function renderTable() {
       else if (c === 'red')   r++;
     }
 
-    return `<div class="wl-t-row">
+    return `<div class="wl-t-row" data-ticker="${ticker}" style="cursor:pointer">
       <div>
         <div class="wl-aname"><a href="/browse.html?asset=${encodeURIComponent(ticker)}">${ticker}</a></div>
         <div class="wl-asub">${coin.company}</div>
@@ -541,22 +541,23 @@ function renderTable() {
   area.innerHTML = `
     <div class="wl-table-wrap">
       <div class="wl-t-head">
-        <div class="wl-th">Asset</div>
-        <div class="wl-th">Price</div>
-        <div class="wl-th">30D</div>
-        <div class="wl-th">Perf</div>
-        <div class="wl-th">Overall</div>
-        <div class="wl-th">Indicators</div>
-        <div class="wl-th" style="text-align:center">Fit rating</div>
+        <div class="wl-th th-tip" data-tip="Ticker and company name. Click any row to open the asset scorecard.">Asset</div>
+        <div class="wl-th th-tip" data-tip="Current price. Refreshed weekly.">Price</div>
+        <div class="wl-th th-tip" data-tip="Price change over the past 30 days.">30D</div>
+        <div class="wl-th th-tip" data-tip="Performance score (0–100). Derived from price action, volatility, and trend.">Perf</div>
+        <div class="wl-th th-tip" data-tip="Personal fit score (0–100). How well this asset matches your risk profile.">Overall</div>
+        <div class="wl-th th-tip" data-tip="Count of indicators in each tier: green (healthy) / amber (warning) / red (critical).">Indicators</div>
+        <div class="wl-th th-tip" data-tip="Fit rating tier: Very Strong, Strong, Borderline, Poor, or Very Poor." style="text-align:center">Fit rating</div>
         <div class="wl-th"></div>
       </div>
       ${rowsHTML}
     </div>
   `;
 
-  // Wire delete buttons
+  // Wire delete buttons — stop propagation so the row click doesn't also fire
   area.querySelectorAll('.wl-del-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const ticker = btn.dataset.ticker;
       if (currentTab === 'portfolio') {
         removeFromPortfolio(ticker);
@@ -568,6 +569,19 @@ function renderTable() {
         if (currentUser) saveWatchlistCloud(getWatchlist());
       }
       renderAll();
+    });
+  });
+
+  // Stop asset-name anchor clicks from double-firing the row click
+  area.querySelectorAll('.wl-aname a').forEach(a => {
+    a.addEventListener('click', (e) => e.stopPropagation());
+  });
+
+  // Row click → open the asset scorecard
+  area.querySelectorAll('.wl-t-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const ticker = row.dataset.ticker;
+      if (ticker) window.location.href = `/browse.html?asset=${encodeURIComponent(ticker)}`;
     });
   });
 }
@@ -787,6 +801,19 @@ async function init() {
   }
 
   renderAll();
+
+  // Column-header tooltips — tap-to-show on touch devices (delegated since
+  // the table headers are re-rendered when the tab/filter changes)
+  document.addEventListener('click', (e) => {
+    const tip = e.target.closest('.th-tip');
+    if (tip) {
+      e.stopPropagation();
+      document.querySelectorAll('.th-tip.tapped').forEach(o => o !== tip && o.classList.remove('tapped'));
+      tip.classList.toggle('tapped');
+    } else {
+      document.querySelectorAll('.th-tip.tapped').forEach(el => el.classList.remove('tapped'));
+    }
+  });
 }
 
 init().catch(console.error);
