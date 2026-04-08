@@ -26,8 +26,8 @@
 .lp h2 { font-size: 22px; font-weight: 600; color: #1A1A2E; margin-bottom: 12px; font-family: Georgia, serif; }
 .lp h3 { font-size: 14px; font-weight: 600; color: #1A1A2E; margin-bottom: 6px; }
 .lp p { font-size: 14px; line-height: 1.8; color: #4A5568; }
-.lp-sub-dark { font-size: 15px; line-height: 1.8; color: rgba(255,255,255,0.6); max-width: 520px; }
-.lp-sub-light { font-size: 15px; line-height: 1.8; color: #4A5568; max-width: 540px; }
+.lp p.lp-sub-dark { font-size: 15px; line-height: 1.8; color: #F8F7F4; max-width: 560px; }
+.lp p.lp-sub-light { font-size: 15px; line-height: 1.8; color: #4A5568; max-width: 540px; }
 .lp-tagline { font-size: 13px; font-weight: 600; color: #F8F7F4; margin: 8px 0 24px; letter-spacing: 0.03em; }
 .lp-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #4F46E5; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; letter-spacing: 0.01em; text-decoration: none; transition: all 0.2s; }
 .lp-btn:hover { background: #4338CA; transform: translateY(-1px); }
@@ -101,9 +101,9 @@
 <div id="landing" class="lp">
 
   <div class="lp-sec lp-navy lp-centered">
-    <div class="lp-eyebrow-light">Risk Screener for Every Investor</div>
-    <h1>Know which <span class="rotate" id="rotator">stocks</span> fit your risk.</h1>
-    <p class="lp-sub-dark">Investing is about risk and return. But most tools only focus on returns. GloRisk ranks every stock, crypto, and ETF by your personal risk appetite — so you always see the full picture.</p>
+    <div class="lp-eyebrow-light">See the full picture</div>
+    <h1>Your Personalised Risk Scorecard for <span class="rotate" id="rotator">Stocks</span></h1>
+    <p class="lp-sub-dark">Investing is about risk and return. But most tools only focus on returns. GloRisk ranks stocks, crypto, ETFs, and index funds by your personal risk appetite — so you always see the full picture.</p>
     <p class="lp-tagline">Define your risk. Get your scores. Track your fits.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
       <a href="/screener.html" class="lp-btn">Get your risk scores →</a>
@@ -119,9 +119,9 @@
 
   <div class="lp-sec lp-white lp-centered">
     <div class="lp-eyebrow">The problem</div>
-    <p style="font-size:24px;font-weight:600;color:#1A1A2E;font-family:Georgia,serif;max-width:600px;line-height:1.3;margin-bottom:6px">Most investment tools show you returns.</p>
-    <p style="font-size:24px;font-weight:600;color:#4F46E5;font-family:Georgia,serif;max-width:600px;line-height:1.3;margin-bottom:18px">GloRisk shows you what they're missing.</p>
-    <p class="lp-sub-light">Returns tell you how much an asset gained. They don't tell you whether it matches your risk appetite. Risk does. And without it, you're looking at half the information you need.</p>
+    <p style="font-size:24px;font-weight:600;color:#1A1A2E;font-family:Georgia,serif;max-width:600px;line-height:1.3;margin-bottom:6px">Most investment tools focus on returns.</p>
+    <p style="font-size:24px;font-weight:600;color:#4F46E5;font-family:Georgia,serif;max-width:600px;line-height:1.3;margin-bottom:18px">GloRisk shows you what they're missing — risk.</p>
+    <p class="lp-sub-light">Returns tell you how much an asset gained or lost. They don't tell you whether it matches your risk appetite in the short or long term. GloRisk does. A risk scorecard built for you. And without it, you're looking at half the information you need.</p>
   </div>
 
   <div class="lp-divider"></div>
@@ -150,7 +150,7 @@
 
   <div class="lp-sec lp-white lp-centered">
     <div class="lp-eyebrow">What you get</div>
-    <h2>Built around your risk, not the market's</h2>
+    <h2>Risk scorecard built around your profile, not generic rankings</h2>
     <div class="lp-feat-grid">
       <div class="lp-feat-card">
         <div class="lp-feat-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="10" width="3" height="5" rx="1" fill="#4F46E5"/><rect x="6" y="6" width="3" height="9" rx="1" fill="#4F46E5" opacity="0.6"/><rect x="11" y="2" width="3" height="13" rx="1" fill="#4F46E5" opacity="0.3"/></svg></div>
@@ -232,7 +232,7 @@ if (assetParam) {
 let selectedCoin = null;
 
 // Rotating words
-const words = ['stocks', 'crypto', 'ETFs', 'index funds', 'investments'];
+const words = ['Stocks', 'Crypto', 'ETFs', 'Index Funds'];
 let wordIdx = 0;
 const rotator = document.getElementById('rotator');
 if (rotator) {
