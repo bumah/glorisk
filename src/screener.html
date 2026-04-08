@@ -51,10 +51,10 @@ html,body{overflow-y:auto !important;}
 .tab-d{padding:6px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);cursor:pointer;border-radius:6px 6px 0 0;border:0.5px solid transparent;background:none;font-family:inherit;}
 .tab-d.active{background:var(--navy-light);color:var(--warm-white);border-color:var(--border-dark);border-bottom-color:var(--navy-light);}
 .table-wrap-d{margin:0 32px 28px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:0 10px 10px 10px;overflow-x:auto;}
-.t-head{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 0.6fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.7fr;padding:10px 16px;border-bottom:0.5px solid var(--border-dark);}
+.t-head{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 0.6fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1.4fr;padding:10px 16px;border-bottom:0.5px solid var(--border-dark);}
 .th{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.22);text-align:right;}
 .th:first-child{text-align:left;}
-.t-row{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 0.6fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.7fr;padding:13px 16px;border-bottom:0.5px solid var(--border-dark);align-items:center;cursor:pointer;}
+.t-row{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 0.6fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1.4fr;padding:13px 16px;border-bottom:0.5px solid var(--border-dark);align-items:center;cursor:pointer;}
 .t-row:last-child{border-bottom:none;}
 .t-row:hover{background:rgba(79,70,229,0.05);}
 .aname{font-size:13px;font-weight:700;color:var(--warm-white);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
@@ -73,10 +73,16 @@ html,body{overflow-y:auto !important;}
 .badge-b{background:var(--amber-bg);color:var(--amber-d);}
 .badge-p{background:var(--red-muted-bg);color:var(--red-muted);}
 .badge-vp{background:var(--red-bg);color:var(--red-d);}
-.actions-d{display:flex;gap:5px;justify-content:flex-end;}
+.actions-d{display:flex;gap:5px;justify-content:flex-end;align-items:center;}
 .act-d{font-size:9px;font-weight:700;letter-spacing:0.05em;padding:4px 9px;border-radius:5px;cursor:pointer;border:none;font-family:inherit;text-transform:uppercase;text-decoration:none;}
 .act-s{background:rgba(79,70,229,0.15);color:var(--indigo-mid);}
 .act-v{background:rgba(79,70,229,0.25);color:#A5B4FC;}
+.act-icon{width:26px;height:26px;border-radius:5px;background:rgba(79,70,229,0.10);color:var(--indigo-mid);display:inline-flex;align-items:center;justify-content:center;border:none;cursor:pointer;text-decoration:none;transition:all 0.15s;padding:0;flex-shrink:0;}
+.act-icon:hover{background:rgba(79,70,229,0.22);color:#A5B4FC;}
+.act-icon svg{width:13px;height:13px;display:block;}
+.act-icon svg path,.act-icon svg rect{stroke:currentColor;fill:none;}
+.act-icon.is-active{background:rgba(79,70,229,0.30);color:#C7D2FE;}
+.act-icon.is-active svg path{fill:currentColor;stroke:currentColor;}
 /* Profile form */
 .pf-wrap{max-width:600px;margin:0 auto;padding:3rem 1.5rem;}
 .pf-title{font-size:26px;font-weight:700;color:var(--warm-white);font-family:Georgia,serif;text-align:center;margin-bottom:6px;}
@@ -462,6 +468,27 @@ function exchangeShort(group) {
   };
   return map[group] || '';
 }
+
+// ── Watchlist helpers (shared with /watchlist.html via localStorage) ──
+function getWatchlistTickers() {
+  try { return JSON.parse(localStorage.getItem('glorisk-watchlist') || '[]'); }
+  catch { return []; }
+}
+function isWatched(ticker) {
+  return getWatchlistTickers().includes(ticker);
+}
+function toggleWatch(ticker) {
+  const list = getWatchlistTickers();
+  const idx = list.indexOf(ticker);
+  if (idx >= 0) list.splice(idx, 1);
+  else list.push(ticker);
+  localStorage.setItem('glorisk-watchlist', JSON.stringify(list));
+  return idx < 0; // true if just added
+}
+
+// Inline SVGs for the action icons
+const ICON_BOOKMARK = '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+const ICON_COMPARE  = '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="16" rx="1"/></svg>';
 
 async function init() {
   const data = await loadData();
@@ -858,6 +885,7 @@ function showResults(allCoins, profile) {
       const growth3y = ind.cagr3Y?.label || '\u2014';
 
       const exchLabel = exchangeShort(c.group);
+      const watched = isWatched(c.ticker);
       return `<div class="t-row" data-ticker="${c.ticker}">
         <div><div class="aname">${c.ticker}${exchLabel ? `<span class="exch-tag">${exchLabel}</span>` : ''}</div><div class="asub">${c.company}</div></div>
         <div class="score-cell"><span class="score-val" style="color:${fitColor}">${c.fitScore}</span><div class="bar-mini"><div class="bar-fill-d" style="width:${c.fitScore}%;background:${fitColor}"></div></div></div>
@@ -872,9 +900,29 @@ function showResults(allCoins, profile) {
         <div class="cell hide-m">${trendDir}</div>
         <div class="cell hide-m">${range}</div>
         <div class="cell hide-m">${growth3y}</div>
-        <div class="actions-d"><a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="act-d act-v">View</a></div>
+        <div class="actions-d">
+          <button class="act-icon ${watched ? 'is-active' : ''}" data-watch="${c.ticker}" title="${watched ? 'Remove from watchlist' : 'Add to watchlist'}">${ICON_BOOKMARK}</button>
+          <a class="act-icon" href="/compare.html?a=${encodeURIComponent(c.ticker)}" title="Compare with another asset" data-compare>${ICON_COMPARE}</a>
+          <a href="/browse.html?asset=${encodeURIComponent(c.ticker)}" class="act-d act-v">View</a>
+        </div>
       </div>`;
     }).join('');
+
+    // Wire watch buttons (toggle local state + flip class + update tooltip)
+    body.querySelectorAll('[data-watch]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const ticker = btn.dataset.watch;
+        const nowWatched = toggleWatch(ticker);
+        btn.classList.toggle('is-active', nowWatched);
+        btn.title = nowWatched ? 'Remove from watchlist' : 'Add to watchlist';
+      });
+    });
+    // Stop the row click from firing when the compare link is clicked
+    body.querySelectorAll('[data-compare]').forEach(a => {
+      a.addEventListener('click', (e) => e.stopPropagation());
+    });
   }
 
   renderTable();

@@ -2510,6 +2510,32 @@ input:focus, select:focus {
 }
 .ad-action-btn:hover { background: rgba(79,70,229,0.12); color: var(--ad-warm-white); border-color: var(--ad-indigo); }
 
+/* Right cluster on the asset detail topbar — watch + compare icons + back link */
+.ad-topbar-right { display: flex; align-items: center; gap: 10px; }
+.ad-icon-btn {
+  width: 32px; height: 32px;
+  border-radius: 7px;
+  background: rgba(79,70,229,0.10);
+  border: 0.5px solid rgba(79,70,229,0.22);
+  color: var(--ad-indigo-mid);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+  padding: 0;
+  flex-shrink: 0;
+}
+.ad-icon-btn:hover { background: rgba(79,70,229,0.22); color: #C7D2FE; border-color: rgba(79,70,229,0.45); }
+.ad-icon-btn svg { width: 15px; height: 15px; display: block; }
+.ad-icon-btn svg path,
+.ad-icon-btn svg rect { stroke: currentColor; fill: none; }
+.ad-icon-btn.is-active {
+  background: rgba(79,70,229,0.32);
+  border-color: var(--ad-indigo);
+  color: #E0E7FF;
+}
+.ad-icon-btn.is-active svg path { fill: currentColor; stroke: currentColor; }
+
 .ad-header {
   padding: 28px 32px 24px;
   border-bottom: 0.5px solid var(--ad-border-dark);
@@ -2850,6 +2876,10 @@ input:focus, select:focus {
 /* Mobile */
 @media (max-width: 768px) {
   .ad-topbar { padding: 14px 16px; }
+  .ad-topbar-right { gap: 6px; }
+  .ad-icon-btn { width: 28px; height: 28px; }
+  .ad-icon-btn svg { width: 13px; height: 13px; }
+  .ad-back-btn { font-size: 10px; }
   .ad-header { padding: 20px 16px 18px; }
   .ad-sec-label { margin: 20px 16px 10px; }
   .ad-rows-wrap { margin: 0 16px; }

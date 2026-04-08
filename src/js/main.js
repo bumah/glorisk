@@ -1010,12 +1010,37 @@ function adIndColor(c) {
   return 'var(--ad-text-dim)';
 }
 
-// Topbar with logo + back button
-function buildAdTopbar() {
+// ── Watchlist helpers (shared with /watchlist.html via localStorage) ──
+function getWatchlistTickers() {
+  try { return JSON.parse(localStorage.getItem('glorisk-watchlist') || '[]'); }
+  catch { return []; }
+}
+function isWatched(ticker) {
+  return getWatchlistTickers().includes(ticker);
+}
+function toggleWatch(ticker) {
+  const list = getWatchlistTickers();
+  const idx = list.indexOf(ticker);
+  if (idx >= 0) list.splice(idx, 1);
+  else list.push(ticker);
+  localStorage.setItem('glorisk-watchlist', JSON.stringify(list));
+  return idx < 0; // true if just added
+}
+
+// Topbar with logo + watch/compare icons + back button (icons grouped right)
+function buildAdTopbar(coin) {
+  const ticker = coin?.ticker || '';
+  const watched = ticker ? isWatched(ticker) : false;
+  const ICON_BOOKMARK = '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+  const ICON_COMPARE  = '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="16" rx="1"/></svg>';
   return `
     <div class="ad-topbar">
       <a href="/" class="ad-logo">Glo<span>Risk</span></a>
-      <a href="/screener.html" class="ad-back-btn">\u2190 Back to rankings</a>
+      <div class="ad-topbar-right">
+        <button class="ad-icon-btn ${watched ? 'is-active' : ''}" id="adWatchBtn" title="${watched ? 'Remove from watchlist' : 'Add to watchlist'}">${ICON_BOOKMARK}</button>
+        <a class="ad-icon-btn" href="/compare.html?a=${encodeURIComponent(ticker)}" title="Compare with another asset">${ICON_COMPARE}</a>
+        <a href="/screener.html" class="ad-back-btn">\u2190 Back to rankings</a>
+      </div>
     </div>
   `;
 }
@@ -1553,13 +1578,24 @@ function renderReport(coin) {
   const shareUrl = window.location.origin + '/browse.html?asset=' + encodeURIComponent(coin.ticker);
 
   body.innerHTML = `
-    ${buildAdTopbar()}
+    ${buildAdTopbar(coin)}
     ${buildAdHeader(coin)}
     ${buildAdFitSection(coin)}
     ${buildAdScoresSection(coin)}
   `;
 
   wireAdToggles(body);
+
+  // Wire watch button — toggles localStorage + flips icon state + tooltip
+  const watchBtn = body.querySelector('#adWatchBtn');
+  if (watchBtn) {
+    watchBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const nowWatched = toggleWatch(coin.ticker);
+      watchBtn.classList.toggle('is-active', nowWatched);
+      watchBtn.title = nowWatched ? 'Remove from watchlist' : 'Add to watchlist';
+    });
+  }
 
   // Auto-open the Personal Fit row so users see the breakdown immediately
   const fitBody = body.querySelector('[data-row-body="fit"]');
