@@ -24,8 +24,16 @@
 .lp h2 { font-size: 22px; font-weight: 600; color: #1A1A2E; margin-bottom: 12px; font-family: Georgia, serif; }
 .lp h3 { font-size: 14px; font-weight: 600; color: #1A1A2E; margin-bottom: 6px; }
 .lp p { font-size: 14px; line-height: 1.8; color: #4A5568; }
-.lp-sub-dark { font-size: 15px; line-height: 1.8; color: rgba(255,255,255,0.6); max-width: 520px; }
-.lp-sub-light { font-size: 15px; line-height: 1.8; color: #4A5568; max-width: 540px; }
+.lp p.lp-sub-dark { font-size: 15px; line-height: 1.8; color: #F8F7F4; max-width: 600px; }
+.lp p.lp-sub-light { font-size: 15px; line-height: 1.8; color: #4A5568; max-width: 540px; }
+.line-sec { padding: 64px 40px; background: #F8F7F4; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.line-headline { font-size: 26px; font-weight: 600; color: #1A1A2E; font-family: Georgia, serif; line-height: 1.3; max-width: 640px; margin-bottom: 14px; }
+.line-headline span { color: #4F46E5; }
+.line-sub { font-size: 15px; line-height: 1.8; color: #4A5568; max-width: 560px; }
+.experts-band { padding: 36px 40px; background: #0D1B3E; border-top: 0.5px solid rgba(255,255,255,0.08); text-align: center; }
+.experts-eyebrow { font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #7B8EC8; margin-bottom: 10px; }
+.lp p.experts-text { font-size: 16px; color: #F8F7F4; font-family: Georgia, serif; line-height: 1.6; max-width: 580px; margin: 0 auto; }
+.lp p.experts-text span { color: rgba(255,255,255,0.55); font-size: 14px; display: block; margin-top: 4px; }
 .lp-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #4F46E5; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; text-decoration: none; transition: all 0.2s; }
 .lp-btn:hover { background: #4338CA; }
 .body-block { max-width: 600px; display: flex; flex-direction: column; gap: 16px; text-align: left; }
@@ -85,19 +93,26 @@
 
   <!-- Hero -->
   <div class="lp-sec lp-navy lp-centered">
-    <div class="lp-eyebrow-light">About GloRisk</div>
-    <h1>Investment Rankings<span>.</span> For You<span>.</span><br>Not the Crowd<span>.</span></h1>
-    <p class="lp-sub-dark">Risk is personal. Most investment tools forgot that.</p>
+    <div class="lp-eyebrow-light">See the full picture</div>
+    <h1>Risk Ratings for You<span>.</span><br>Not the Crowd<span>.</span></h1>
+    <p class="lp-sub-dark">Investing is about risk and return. Most tools only show you one.</p>
   </div>
 
-  <!-- Body -->
+  <!-- The problem -->
   <div class="lp-sec lp-white lp-centered">
+    <div class="lp-eyebrow">The problem</div>
     <div class="body-block">
-      <p class="lead">Every screener, every top pick list, every analyst recommendation is built on the same flawed assumption — that risk means the same thing to everyone.</p>
-      <p>It doesn't. Your risk appetite depends on your goals, your timeline, your tolerance for loss. Yet the tools available to most investors ignore this entirely — ranking assets against a generic benchmark that represents nobody in particular.</p>
-      <p>The financial industry has spent decades perfecting recommendations for the average investor. The problem? <span class="highlight">The average investor doesn't exist.</span></p>
-      <p>GloRisk is built differently. We score every stock, crypto, and ETF globally against your personal risk profile — so the ranking you see is built for you. Not the crowd. Not the analyst. Not an algorithm trained on someone else's preferences.</p>
+      <p class="lead">Most screeners, top pick lists, analyst recommendations are built around one thing — returns. How much did it gain? What's the upside?</p>
+      <p>But returns without risk context is half a story. <span class="highlight">And half a story costs you.</span></p>
+      <p>The asset that doubled last year might be completely wrong for your risk appetite. The one that looks boring might be exactly what your portfolio needs. A return figure alone will never tell you that.</p>
+      <p>GloRisk completes the picture. We score stocks, crypto, ETFs, and funds globally against your personal risk appetite — so you always see both sides of the equation. <span class="highlight">Risk and return. Together.</span></p>
     </div>
+  </div>
+
+  <!-- The line -->
+  <div class="line-sec">
+    <p class="line-headline">Returns are general. <span>Risk is personal.</span></p>
+    <p class="line-sub">Analysts, influencers, and generic screeners don't know your risk appetite. Only you do. That's why we score investments against yours.</p>
   </div>
 
   <div class="lp-divider"></div>
@@ -105,8 +120,8 @@
   <!-- Mission -->
   <div class="lp-sec lp-warm lp-centered">
     <div class="lp-eyebrow">Our mission</div>
-    <h2>Make personal risk intelligence available to everyone</h2>
-    <p class="lp-sub-light">Not just institutions. Not just professionals. Every investor deserves a ranking built around their risk — not the market's.</p>
+    <h2>We give every investor the full picture</h2>
+    <p class="lp-sub-light">Not just institutions. Not just professionals. Every investor deserves a personalised risk scorecard — ranked against their own appetite, not the crowd.</p>
     <div class="stat-row">
       <div class="stat-card"><div class="stat-num">1k+</div><div class="stat-label">Assets scored globally</div></div>
       <div class="stat-card"><div class="stat-num">100%</div><div class="stat-label">Based on your profile</div></div>
@@ -126,25 +141,25 @@
         <div class="pact-letter">P</div>
         <div class="pact-word">Personal</div>
         <h3>Your risk profile. Yours alone.</h3>
-        <p style="font-size:13px;margin-top:6px">Not a template. Not a default. Built around how you actually invest — your goals, your timeline, your tolerance for loss.</p>
+        <p style="font-size:13px;margin-top:6px">Built around how you actually invest — your goals, your timeline, your tolerance for loss. Not a template. Not a default.</p>
       </div>
       <div class="pact-card">
         <div class="pact-letter">A</div>
         <div class="pact-word">Adapts</div>
-        <h3>Your appetite changes. So do your rankings.</h3>
-        <p style="font-size:13px;margin-top:6px">Risk isn't static. As your profile evolves — your life, your goals, your confidence — GloRisk evolves with you.</p>
+        <h3>Your risk appetite changes. Your scorecard changes with it.</h3>
+        <p style="font-size:13px;margin-top:6px">GloRisk evolves as you do — always current, always yours.</p>
       </div>
       <div class="pact-card">
         <div class="pact-letter">C</div>
         <div class="pact-word">Comprehensive</div>
-        <h3>One profile. Every market.</h3>
-        <p style="font-size:13px;margin-top:6px">Stocks, crypto, and ETFs across all major global markets. One risk profile drives every ranking, every score, every alert.</p>
+        <h3>One profile. All your assets.</h3>
+        <p style="font-size:13px;margin-top:6px">Stocks, crypto, ETFs, index funds across all major global markets.</p>
       </div>
       <div class="pact-card">
         <div class="pact-letter">T</div>
-        <div class="pact-word">Trust</div>
-        <h3>No black boxes. No hidden agendas.</h3>
-        <p style="font-size:13px;margin-top:6px">Everything is data-driven. Our methodology is open for anyone to read — because trust is built on transparency.</p>
+        <div class="pact-word">Transparent</div>
+        <h3>No black boxes. Everything is data-driven.</h3>
+        <p style="font-size:13px;margin-top:6px">Our methodology is open for anyone to read. We don't take commission. We don't push investments.</p>
       </div>
     </div>
   </div>
@@ -164,12 +179,12 @@
       <div class="principle-card">
         <div class="principle-num">02</div>
         <h3>Returns aren't everything</h3>
-        <p style="font-size:13px">The best investment isn't the highest return. It's the one that fits your risk profile and lets you sleep at night.</p>
+        <p style="font-size:13px">The best investment isn't the highest return. It's the one that matches your risk appetite.</p>
       </div>
       <div class="principle-card">
         <div class="principle-num">03</div>
         <h3>Clarity beats complexity</h3>
-        <p style="font-size:13px">Risk intelligence shouldn't require a finance degree. GloRisk makes it simple, visual, and actionable.</p>
+        <p style="font-size:13px">Risk intelligence doesn't require a finance degree. GloRisk makes it simple, visual, and actionable.</p>
       </div>
     </div>
   </div>
@@ -181,12 +196,18 @@
     <p class="m-bold" style="margin-top:8px">What fits <span>your</span> risk.</p>
   </div>
 
+  <!-- Built by risk experts -->
+  <div class="experts-band">
+    <div class="experts-eyebrow">Built by risk experts</div>
+    <p class="experts-text">20+ years managing risk in global markets.<span>Same institutional frameworks, built for individual investors.</span></p>
+  </div>
+
   <!-- CTA -->
   <div class="lp-cta-sec">
     <div class="lp-eyebrow">Get started</div>
-    <h2 style="font-size:26px;max-width:380px;line-height:1.3;font-family:Georgia,serif">Your risk appetite.<br>Your rankings.</h2>
-    <p class="lp-sub-light" style="margin-top:10px;margin-bottom:24px;font-size:14px">Takes two minutes to set up. Free to start. No account needed.</p>
-    <a href="/screener.html" class="lp-btn" style="font-size:14px;padding:14px 28px">Start free — no account needed →</a>
+    <h2 style="font-size:26px;max-width:420px;line-height:1.3;font-family:Georgia,serif">Your risk.<br>Your scorecard.</h2>
+    <p class="lp-sub-light" style="margin-top:10px;margin-bottom:24px;font-size:14px">Two minutes to set up. Free to start.</p>
+    <a href="/screener.html" class="lp-btn" style="font-size:14px;padding:14px 28px">Get your risk scorecard free →</a>
     <p style="font-size:12px;color:#A0AEC0;margin-top:12px">Not financial advice. Always do your own research.</p>
   </div>
 
