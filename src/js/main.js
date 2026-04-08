@@ -7,6 +7,7 @@
 'use strict';
 
 import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary, FIT_QUESTIONS, isAssetInScope } from './riskEngine.js';
+import { isWatched, addToWatchlistWithPrompt, removeFromWatchlist, showToast } from './lists.js';
 import { loadData, searchCoins, fetchAssetData } from './data.js';
 import html2canvas from 'html2canvas';
 import { getUser, signOut } from './supabase.js';
@@ -1010,22 +1011,7 @@ function adIndColor(c) {
   return 'var(--ad-text-dim)';
 }
 
-// ── Watchlist helpers (shared with /watchlist.html via localStorage) ──
-function getWatchlistTickers() {
-  try { return JSON.parse(localStorage.getItem('glorisk-watchlist') || '[]'); }
-  catch { return []; }
-}
-function isWatched(ticker) {
-  return getWatchlistTickers().includes(ticker);
-}
-function toggleWatch(ticker) {
-  const list = getWatchlistTickers();
-  const idx = list.indexOf(ticker);
-  if (idx >= 0) list.splice(idx, 1);
-  else list.push(ticker);
-  localStorage.setItem('glorisk-watchlist', JSON.stringify(list));
-  return idx < 0; // true if just added
-}
+// Watchlist helpers + toast are imported from ./lists.js (see top of file)
 
 // Topbar with logo + watch/compare icons + back button (icons grouped right)
 function buildAdTopbar(coin) {
@@ -1586,14 +1572,21 @@ function renderReport(coin) {
 
   wireAdToggles(body);
 
-  // Wire watch button — toggles localStorage + flips icon state + tooltip
+  // Wire watch button — toggles localStorage, flips icon state, shows toast prompt
   const watchBtn = body.querySelector('#adWatchBtn');
   if (watchBtn) {
     watchBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      const nowWatched = toggleWatch(coin.ticker);
-      watchBtn.classList.toggle('is-active', nowWatched);
-      watchBtn.title = nowWatched ? 'Remove from watchlist' : 'Add to watchlist';
+      if (isWatched(coin.ticker)) {
+        removeFromWatchlist(coin.ticker);
+        watchBtn.classList.remove('is-active');
+        watchBtn.title = 'Add to watchlist';
+        showToast(`<strong>${coin.ticker}</strong> removed from watchlist`, { duration: 2000 });
+      } else {
+        addToWatchlistWithPrompt(coin.ticker);
+        watchBtn.classList.add('is-active');
+        watchBtn.title = 'Remove from watchlist';
+      }
     });
   }
 
