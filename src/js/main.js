@@ -1110,6 +1110,23 @@ function adIndicatorExplain(key, v, ticker) {
 }
 
 // Build the 3 indicator groups (Going well / Concerning / Critical) for Performance body
+// Returns-style indicators (signed % values) → coloured by sign
+const RETURN_KEYS = new Set(['shortTrend', 'longTrend', 'return1M', 'return1Y', 'cagr3Y']);
+// Volatility-style indicators (magnitudes) → no colour
+const NEUTRAL_KEYS = new Set(['volatility', 'volSpike', 'vsPeak', 'range52W']);
+
+// Decide the colour for an indicator's data cell
+function adValueColor(key, v, dotColor) {
+  if (NEUTRAL_KEYS.has(key)) return 'var(--ad-warm-white)';
+  if (RETURN_KEYS.has(key)) {
+    if (v.raw > 0) return 'var(--ad-teal-muted)';
+    if (v.raw < 0) return 'var(--ad-red-muted)';
+    return 'var(--ad-warm-white)';
+  }
+  // Text-based indicators (e.g. maCross "Golden / Death Cross") → group dot colour
+  return dotColor;
+}
+
 function buildAdIndGroups(coin) {
   const ind = coin.indicators;
   const ticker = coin.ticker;
@@ -1120,7 +1137,7 @@ function buildAdIndGroups(coin) {
     if (!v) continue;
     const meta = IND_META[key] || {};
     allCards.push({
-      color: v.color, key,
+      color: v.color, key, raw: v.raw,
       title: meta.label || key,
       label: v.label,
       text: adIndicatorExplain(key, v, ticker),
@@ -1141,9 +1158,10 @@ function buildAdIndGroups(coin) {
     } else {
       html += `<div class="ad-ind-head"><div class="ad-ind-th">Indicator</div><div class="ad-ind-th">Data</div><div class="ad-ind-th">Explanation</div></div>`;
       for (const c of g.cards) {
+        const valColor = adValueColor(c.key, c, g.dot);
         html += `<div class="ad-ind-row">
           <div class="ad-ind-name"><div class="ad-ind-dot" style="background:${g.dot}"></div>${c.title}</div>
-          <div class="ad-ind-data" style="color:${g.dot}">${c.label}</div>
+          <div class="ad-ind-data" style="color:${valColor}">${c.label}</div>
           <div class="ad-ind-exp">${c.text}</div>
         </div>`;
       }

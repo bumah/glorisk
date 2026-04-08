@@ -481,6 +481,13 @@ async function init() {
   const allCoins = data.coins;
   const profile = getProfile();
 
+  // Last refreshed stamp in nav
+  const gnDate = document.getElementById('gnDate');
+  if (gnDate && data.asOf) {
+    const asOfDate = new Date(data.asOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    gnDate.textContent = `Last refreshed ${asOfDate}`;
+  }
+
   if (profile) {
     showResults(allCoins, profile);
   } else {
@@ -872,20 +879,37 @@ function showResults(allCoins, profile) {
 
       const exchLabel = exchangeShort(c.group);
       const watched = isWatched(c.ticker);
+
+      // Returns coloured by sign (green positive / red negative)
+      const signClass = (raw) => raw == null ? 'cell' : raw > 0 ? 'cell-pos' : raw < 0 ? 'cell-neg' : 'cell';
+      const ret1YCls = signClass(ind.return1Y?.raw);
+      const trend50Cls = signClass(ind.shortTrend?.raw);
+      const trend200Cls = signClass(ind.longTrend?.raw);
+      const growth3yCls = signClass(ind.cagr3Y?.raw);
+      // Trend direction (Golden / Death) coloured by classification
+      const trendDirCls = ind.maCross?.color === 'green' ? 'cell-pos' : ind.maCross?.color === 'red' ? 'cell-neg' : 'cell';
+
+      // Performance score uses 5-tier stability colour
+      const perfClr = c.perfScore >= 90 ? 'var(--teal)'
+                    : c.perfScore >= 80 ? 'var(--teal-muted)'
+                    : c.perfScore >= 60 ? 'var(--amber-d)'
+                    : c.perfScore >= 40 ? 'var(--red-muted)'
+                    : 'var(--red-d)';
+
       return `<div class="t-row" data-ticker="${c.ticker}">
         <div><div class="aname">${c.ticker}${exchLabel ? `<span class="exch-tag">${exchLabel}</span>` : ''}</div><div class="asub">${c.company}</div></div>
         <div class="score-cell"><span class="score-val" style="color:${fitColor}">${c.fitScore}</span><div class="bar-mini"><div class="bar-fill-d" style="width:${c.fitScore}%;background:${fitColor}"></div></div></div>
         <div style="text-align:center"><span class="badge-d badge-${fitClass}">${fitLabel}</span></div>
         <div class="cell">${formatPrice(c.price, c.group)}</div>
         <div class="${change >= 0 ? 'cell-pos' : 'cell-neg'}">${change >= 0 ? '+' : ''}${change.toFixed(1)}%</div>
-        <div class="cell">${ind.return1Y?.label || '\u2014'}</div>
-        <div class="cell">${c.perfScore}</div>
-        <div class="cell hide-m">${perfBand}</div>
-        <div class="cell hide-m">${trend50}</div>
-        <div class="cell hide-m">${trend200}</div>
-        <div class="cell hide-m">${trendDir}</div>
+        <div class="${ret1YCls}">${ind.return1Y?.label || '\u2014'}</div>
+        <div class="cell" style="color:${perfClr};font-weight:700">${c.perfScore}</div>
+        <div class="cell hide-m" style="color:${perfClr}">${perfBand}</div>
+        <div class="${trend50Cls} hide-m">${trend50}</div>
+        <div class="${trend200Cls} hide-m">${trend200}</div>
+        <div class="${trendDirCls} hide-m">${trendDir}</div>
         <div class="cell hide-m">${range}</div>
-        <div class="cell hide-m">${growth3y}</div>
+        <div class="${growth3yCls} hide-m">${growth3y}</div>
         <div class="actions-d">
           <button class="act-icon ${watched ? 'is-active' : ''}" data-watch="${c.ticker}" title="${watched ? 'Remove from watchlist' : 'Add to watchlist'}">${ICON_BOOKMARK}</button>
           <a class="act-icon" href="/compare.html?a=${encodeURIComponent(c.ticker)}" title="Compare with another asset" data-compare>${ICON_COMPARE}</a>

@@ -245,7 +245,8 @@ body{background:#0D1B3E;}
     <div class="wl-search-dropdown" id="wlSearchDropdown"></div>
   </div>
 
-  <div class="wl-auth-hint" id="wlAuthHint"></div>
+  <!-- auth hint removed — sign in/out lives in the global nav -->
+  <div class="wl-auth-hint" id="wlAuthHint" style="display:none"></div>
 
   <div class="wl-filter-row" id="wlFilterRow">
     <button class="wl-filter-btn active" data-filter="all">All</button>
@@ -314,9 +315,12 @@ function fitBadgeStyle(score) {
 }
 
 function perfColor(score) {
+  // 5-tier stability colours (matches asset detail + screener)
+  if (score >= 90) return 'var(--teal)';
   if (score >= 80) return 'var(--teal-muted)';
   if (score >= 60) return 'var(--amber)';
-  return 'var(--red-muted)';
+  if (score >= 40) return 'var(--red-muted)';
+  return 'var(--red)';
 }
 
 function indColorVar(c) {
@@ -677,29 +681,11 @@ function wireFilters() {
 
 /* ── Auth modal ───────────────────────────────────────────────────────── */
 function updateAuthHint() {
-  const hint = document.getElementById('wlAuthHint');
-  if (!hint) return;
-  if (currentUser) {
-    hint.innerHTML = `<span style="color:var(--teal-muted)">\u2713</span> Signed in as ${currentUser.email} \u00b7 <a href="#" id="wlBtnSignOut">Sign out</a>`;
-    hint.querySelector('#wlBtnSignOut')?.addEventListener('click', async (e) => {
-      e.preventDefault();
-      await signOut();
-      currentUser = null;
-      updateAuthHint();
-      window.location.reload();
-    });
-  } else {
-    hint.innerHTML = `Your watchlist is saved in this browser. <a href="#" id="wlBtnShowAuth">Sign in</a> to sync across devices.`;
-    hint.querySelector('#wlBtnShowAuth')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      document.getElementById('wlAuthModal').classList.add('open');
-    });
-  }
-  // Update nav sign in/out button
+  // Auth hint UI removed — only the nav Sign In / Sign Out link is updated.
   const gnBtn = document.getElementById('gnSignIn');
   if (gnBtn) {
     if (currentUser) {
-      gnBtn.textContent = 'Sign Out';
+      gnBtn.textContent = 'Sign out';
       gnBtn.href = '#';
       gnBtn.onclick = async (e) => {
         e.preventDefault();
@@ -707,6 +693,12 @@ function updateAuthHint() {
         currentUser = null;
         updateAuthHint();
         window.location.reload();
+      };
+    } else {
+      gnBtn.textContent = 'Sign in';
+      gnBtn.onclick = (e) => {
+        e.preventDefault();
+        document.getElementById('wlAuthModal').classList.add('open');
       };
     }
   }

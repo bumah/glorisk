@@ -249,7 +249,7 @@ async function init() {
   // Show data date in nav
   const asOfDate = new Date(data.asOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   const gnDate = document.getElementById('gnDate');
-  if (gnDate) gnDate.textContent = `Data: ${asOfDate}`;
+  if (gnDate) gnDate.textContent = `Last refreshed ${asOfDate}`;
 
   // Wire search
   const input = document.getElementById('landingInput');
