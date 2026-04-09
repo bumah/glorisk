@@ -1039,9 +1039,11 @@ function buildAdTopbar(coin) {
   `;
 }
 
-// Asset header (ticker, name, type, price, change, date)
+// Asset header (ticker, name, type, price, 3M change, date)
 function buildAdHeader(coin) {
-  const change = coin.priceChange || 0;
+  const perf3M = coin.indicators?.perf3M?.raw;
+  const change = perf3M != null ? perf3M : (coin.priceChange || 0);
+  const changePeriod = perf3M != null ? '3M' : '1D';
   const changeCls = change >= 0 ? 'pos' : 'neg';
   const asOf = coin.lastDate
     ? new Date(coin.lastDate).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
@@ -1056,7 +1058,7 @@ function buildAdHeader(coin) {
         </div>
         <div style="text-align:right">
           <div class="ad-price">${formatPrice(coin.price, coin.currency)}</div>
-          <div class="ad-change ${changeCls}">${change >= 0 ? '+' : ''}${change.toFixed(2)}% \u00b7 1D</div>
+          <div class="ad-change ${changeCls}">${change >= 0 ? '+' : ''}${change.toFixed(2)}% \u00b7 ${changePeriod}</div>
           <div class="ad-date">${asOf ? `As of ${asOf}` : ''}</div>
         </div>
       </div>
@@ -1108,7 +1110,7 @@ function buildAdIndGroups(coin) {
     });
   }
   const groups = [
-    { label: 'Positive',   color: 'green', dot: 'var(--ad-teal)',       cards: allCards.filter(c => c.color === 'green') },
+    { label: 'OK',         color: 'green', dot: 'var(--ad-teal)',       cards: allCards.filter(c => c.color === 'green') },
     { label: 'Warning',    color: 'amber', dot: 'var(--ad-amber)',      cards: allCards.filter(c => c.color === 'amber') },
     { label: 'Red Flags',  color: 'red',   dot: 'var(--ad-red-muted)',  cards: allCards.filter(c => c.color === 'red') },
   ];
@@ -1285,7 +1287,7 @@ function buildAdFitSection(coin) {
             <div class="ad-rh-numsub">/ 100</div>
           </div>
           <div><span class="ad-badge ${fitBadge.cls}">${fitBadge.label}</span></div>
-          <div class="ad-rh-desc">${strong} of ${matchCount} indicators OK. ${align}</div>
+          <div class="ad-rh-desc"></div>
           <div></div>
         </div>
         <div class="ad-row-body" data-row-body="fit">
@@ -1311,8 +1313,6 @@ function buildAdFitSection(coin) {
               Total: <span style="color:var(--ad-teal)">OK (${strong})</span> \u00b7 <span style="color:var(--ad-amber)">Warning (${partial})</span> \u00b7 <span style="color:var(--ad-red-muted)">Red Flags (${low})</span>
             </div>
           </div>
-          <div class="ad-body-label">Indicators to watch</div>
-          ${changesHTML}
         </div>
       </div>
     </div>
@@ -1514,12 +1514,10 @@ function buildAdIndicatorHealthRow(coin) {
                   : a >= 5 ? 'var(--ad-teal-muted)'
                   : 'var(--ad-teal)';
 
-  // Badge mirrors the dominant tone
-  const badge = r >= 8  ? { cls: 'vp', label: 'Very Poor' }
-              : r >= 3  ? { cls: 'p',  label: 'Poor' }
-              : a >= 10 ? { cls: 'b',  label: 'Borderline' }
-              : a >= 5  ? { cls: 's',  label: 'Strong' }
-              : { cls: 'vs', label: 'Very Strong' };
+  // Overall dot color
+  const overallDot = r >= 8  ? 'var(--ad-red-muted)'
+                   : r >= 3 || a >= 10 ? 'var(--ad-amber)'
+                   : 'var(--ad-teal)';
 
   // Dot-based summary: 5(green) 2(amber) 15(red)
   const dotSummary = `<span style="color:var(--ad-teal)">\u25CF ${g}</span> \u00a0 <span style="color:var(--ad-amber)">\u25CF ${a}</span> \u00a0 <span style="color:var(--ad-red-muted)">\u25CF ${r}</span>`;
@@ -1539,7 +1537,7 @@ function buildAdIndicatorHealthRow(coin) {
         <div>
           <div class="ad-rh-num" style="color:${headColor};font-size:0.85em">${dotSummary}</div>
         </div>
-        <div><span class="ad-badge ${badge.cls}">${badge.label}</span></div>
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:9px;color:var(--ad-text-dim);text-transform:uppercase;letter-spacing:0.08em">Overall</span><span style="color:${overallDot};font-size:16px">\u25CF</span></div>
         <div class="ad-rh-desc"></div>
         <div></div>
       </div>
@@ -1566,8 +1564,6 @@ function buildAdCompanyStrip(coin) {
     { label: 'Industry',  value: coin.industry || '\u2014' },
     { label: 'Sector',    value: coin.sector || '\u2014' },
     { label: 'Market Cap', value: fmtCap(coin.marketCap) },
-    { label: 'Beta 5Y',   value: coin.beta != null ? coin.beta.toFixed(2) : '\u2014' },
-    { label: 'Analyst',   value: coin.analystRating || '\u2014' },
   ];
   return `
     <div class="ad-uni-strip">
