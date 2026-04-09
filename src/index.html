@@ -44,6 +44,11 @@
 .lp-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 900px; margin-top: 28px; }
 .lp-step-card { background: #FFFFFF; border: 0.5px solid #E2E8F0; border-radius: 12px; padding: 22px; }
 .lp-step-num { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid #4F46E5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #4F46E5; margin-bottom: 12px; }
+.lp-why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 900px; margin-top: 28px; }
+.lp-why-card { background: #FFFFFF; border: 0.5px solid #E2E8F0; border-radius: 12px; padding: 26px 22px; text-align: left; }
+.lp-why-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.lp-why-badge { width: 28px; height: 28px; border-radius: 8px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.lp-why-title { font-size: 15px; font-weight: 700; color: #1A1A2E; font-family: Georgia, serif; }
 .lp-feat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; max-width: 900px; margin-top: 28px; }
 .lp-feat-card { background: #FFFFFF; border: 0.5px solid #E2E8F0; border-radius: 12px; padding: 22px; text-align: left; }
 .lp-feat-icon { width: 34px; height: 34px; border-radius: 8px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
@@ -72,6 +77,7 @@
   .lp-sec { padding: 40px 20px; }
   .lp h1 { font-size: 26px; }
   .lp-steps { grid-template-columns: 1fr; }
+  .lp-why-grid { grid-template-columns: 1fr; }
   .lp-feat-grid { grid-template-columns: 1fr; }
   .lp-ticker-row { gap: 6px; }
   .lp-pill { font-size: 10px; padding: 4px 10px; }
@@ -102,26 +108,25 @@
 
   <div class="lp-sec lp-navy lp-centered">
     <div class="lp-eyebrow-light">See the full picture</div>
-    <h1>Create your personal scorecard for <span class="rotate" id="rotator">Stocks</span></h1>
-    <p class="lp-sub-dark">Investing is about risk and return. But most tools only focus on returns. GloRisk ranks stocks, crypto, ETFs, and index funds by your personal risk appetite — so you always see the full picture.</p>
-    <p class="lp-tagline">Define your risk. Get your scores. Track your fits.</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
-      <a href="/screener.html" class="lp-btn">Get your risk scores →</a>
+    <h1>Find <span class="rotate" id="rotator">US</span> stocks that fit your risk persona</h1>
+    <p class="lp-sub-dark">Create your personal scorecard and rank 20,000+ stocks globally by your unique risk appetite — in seconds.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+      <a href="/screener.html" class="lp-btn">Build your scorecard →</a>
     </div>
-    <div class="lp-ticker-row">
+    <div class="lp-ticker-row" id="heroTickerRow">
       <div class="lp-pill"><div class="lp-dot lp-dot-gm"></div>AAPL · Strong</div>
-      <div class="lp-pill"><div class="lp-dot lp-dot-g"></div>VOO · Very Strong</div>
-      <div class="lp-pill"><div class="lp-dot lp-dot-r"></div>BTC · Very Poor</div>
-      <div class="lp-pill"><div class="lp-dot lp-dot-a"></div>ETH · Borderline</div>
-      <div class="lp-pill"><div class="lp-dot lp-dot-rm"></div>TSLA · Poor</div>
+      <div class="lp-pill"><div class="lp-dot lp-dot-g"></div>MAKS · Very Strong</div>
+      <div class="lp-pill"><div class="lp-dot lp-dot-r"></div>NKE · Very Poor</div>
+      <div class="lp-pill"><div class="lp-dot lp-dot-a"></div>4426 · Borderline</div>
+      <div class="lp-pill"><div class="lp-dot lp-dot-gm"></div>TCS · Strong</div>
     </div>
   </div>
 
   <div class="lp-sec lp-white lp-centered">
     <div class="lp-eyebrow">The problem</div>
-    <p style="font-size:24px;font-weight:600;color:#1A1A2E;font-family:Georgia,serif;max-width:600px;line-height:1.3;margin-bottom:6px">Most investment tools focus on returns.</p>
-    <p style="font-size:24px;font-weight:600;color:#4F46E5;font-family:Georgia,serif;max-width:600px;line-height:1.3;margin-bottom:18px">GloRisk shows you what they're missing — risk.</p>
-    <p class="lp-sub-light">Returns tell you how much an asset gained or lost. They don't tell you whether it matches your risk appetite in the short or long term. GloRisk does. A risk scorecard built for you. And without it, you're looking at half the information you need.</p>
+    <p style="font-size:24px;font-weight:600;color:#1A1A2E;font-family:Georgia,serif;max-width:640px;line-height:1.3;margin-bottom:6px">See the full picture.</p>
+    <p style="font-size:24px;font-weight:600;color:#4F46E5;font-family:Georgia,serif;max-width:640px;line-height:1.3;margin-bottom:18px">Risk and return — together.</p>
+    <p class="lp-sub-light">Most investment tools focus on returns. GloRisk shows you what they're missing — risk. Returns tell you how much an asset gained or lost. They don't tell you whether it matches your risk appetite in the short or long term. GloRisk does. A risk scorecard built for you. Without it, you're only seeing half the information you need.</p>
   </div>
 
   <div class="lp-divider"></div>
@@ -148,9 +153,41 @@
     </div>
   </div>
 
+  <div class="lp-divider"></div>
+
+  <div class="lp-sec lp-white lp-centered">
+    <div class="lp-eyebrow">Why GloRisk?</div>
+    <h2>Seeing through a risk lens unlocks more</h2>
+    <div class="lp-why-grid">
+      <div class="lp-why-card">
+        <div class="lp-why-head">
+          <div class="lp-why-badge"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L2 4v4.5c0 3.5 2.5 6 6 6.5 3.5-.5 6-3 6-6.5V4L8 1.5z" stroke="#4F46E5" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.5 8l2 2 3-3.5" stroke="#4F46E5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="lp-why-title">More control</div>
+        </div>
+        <p style="font-size:13px">Stay within your risk appetite. See what fits and what doesn't, so you're always in control.</p>
+      </div>
+      <div class="lp-why-card">
+        <div class="lp-why-head">
+          <div class="lp-why-badge"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#4F46E5" stroke-width="1.5"/><path d="M2 8h12M8 2a9 9 0 0 1 0 12M8 2a9 9 0 0 0 0 12" stroke="#4F46E5" stroke-width="1.2"/></svg></div>
+          <div class="lp-why-title">More opportunity</div>
+        </div>
+        <p style="font-size:13px">Explore assets previously out of sight. Nearly 30,000 stocks across 16+ regions — all ranked by <em>your</em> scorecard.</p>
+      </div>
+      <div class="lp-why-card">
+        <div class="lp-why-head">
+          <div class="lp-why-badge"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="9" width="3" height="5" rx="0.5" fill="#4F46E5"/><rect x="6.5" y="6" width="3" height="8" rx="0.5" fill="#4F46E5" opacity="0.6"/><rect x="11" y="3" width="3" height="11" rx="0.5" fill="#4F46E5" opacity="0.3"/></svg></div>
+          <div class="lp-why-title">More clarity</div>
+        </div>
+        <p style="font-size:13px">Know the full picture. We turn complex market data into clear, digestible indicators you can read at a glance.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="lp-divider"></div>
+
   <div class="lp-sec lp-white lp-centered">
     <div class="lp-eyebrow">What you get</div>
-    <h2>Risk scorecard built around your profile, not generic rankings</h2>
+    <h2>A scorecard built around your profile, not generic rankings</h2>
     <div class="lp-feat-grid">
       <div class="lp-feat-card">
         <div class="lp-feat-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="10" width="3" height="5" rx="1" fill="#4F46E5"/><rect x="6" y="6" width="3" height="9" rx="1" fill="#4F46E5" opacity="0.6"/><rect x="11" y="2" width="3" height="13" rx="1" fill="#4F46E5" opacity="0.3"/></svg></div>
@@ -168,9 +205,9 @@
         <p style="font-size:13px">Track assets against your risk range. Always know where they stand.</p>
       </div>
       <div class="lp-feat-card">
-        <div class="lp-feat-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2a4 4 0 0 1 4 4c0 3 2 4 2 4H2s2-1 2-4a4 4 0 0 1 4-4z" stroke="#4F46E5" stroke-width="1.5"/><path d="M6.5 13a1.5 1.5 0 0 0 3 0" stroke="#4F46E5" stroke-width="1.5"/></svg></div>
-        <h3>Fit alerts</h3>
-        <p style="font-size:13px">Get notified when an asset moves in or out of your risk range.</p>
+        <div class="lp-feat-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="6" r="2.5" fill="#4F46E5"/><circle cx="11" cy="6" r="2.5" fill="#4F46E5" opacity="0.6"/><circle cx="4" cy="11.5" r="2" fill="#4F46E5" opacity="0.4"/><circle cx="11" cy="11.5" r="2" fill="#4F46E5" opacity="0.3"/></svg></div>
+        <h3>Portfolio match</h3>
+        <p style="font-size:13px">Track the aggregate match of your holdings. See how your portfolio stacks up across tiers — and where the gaps are.</p>
       </div>
     </div>
   </div>
@@ -180,13 +217,13 @@
   <div class="lp-sec lp-warm lp-centered">
     <div class="lp-eyebrow">Your market</div>
     <h2>See how it works for you</h2>
-    <p class="lp-sub-light">A preview of your personalised ranking — unlocked when you set your profile.</p>
+    <p class="lp-sub-light">A preview of your personalised ranking — unlocked when you set your profile. Know what fits, and what doesn't.</p>
     <div class="lp-asset-list lp-lock-wrap">
-      <div class="lp-asset-row"><div class="lp-avatar">VOO</div><div style="flex:1"><div class="lp-asset-name">Vanguard S&P 500 ETF</div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:88%;background:#1D9E75"></div></div></div><div class="lp-badge" style="background:#E1F5EE;color:#085041">88 · Very Strong</div></div>
-      <div class="lp-asset-row"><div class="lp-avatar">AAPL</div><div style="flex:1"><div class="lp-asset-name">Apple Inc.</div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:74%;background:#5DCAA5"></div></div></div><div class="lp-badge" style="background:#E4F6EE;color:#0E5C3F">74 · Strong</div></div>
-      <div class="lp-asset-row"><div class="lp-avatar">ETH</div><div style="flex:1"><div class="lp-asset-name">Ethereum</div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:51%;background:#EF9F27"></div></div></div><div class="lp-badge" style="background:#FAEEDA;color:#633806">51 · Borderline</div></div>
+      <div class="lp-asset-row"><div class="lp-avatar">MAKS</div><div style="flex:1"><div class="lp-asset-name">Making Science Group SA <span style="color:#A0AEC0;font-weight:400">· Spain</span></div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:88%;background:#1D9E75"></div></div></div><div class="lp-badge" style="background:#E1F5EE;color:#085041">88 · Very Strong</div></div>
+      <div class="lp-asset-row"><div class="lp-avatar">AAPL</div><div style="flex:1"><div class="lp-asset-name">Apple Inc. <span style="color:#A0AEC0;font-weight:400">· United States</span></div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:74%;background:#5DCAA5"></div></div></div><div class="lp-badge" style="background:#E4F6EE;color:#0E5C3F">74 · Strong</div></div>
+      <div class="lp-asset-row"><div class="lp-avatar">AQY</div><div style="flex:1"><div class="lp-asset-name">Aqylon Nexus Limited <span style="color:#A0AEC0;font-weight:400">· India</span></div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:51%;background:#EF9F27"></div></div></div><div class="lp-badge" style="background:#FAEEDA;color:#633806">51 · Borderline</div></div>
       <div style="position:relative">
-        <div class="lp-asset-row lp-locked"><div class="lp-avatar">BTC</div><div style="flex:1"><div class="lp-asset-name">Bitcoin</div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:28%;background:#F09595"></div></div></div><div class="lp-badge" style="background:#FDEDED;color:#8A2E2E">28 · Poor</div></div>
+        <div class="lp-asset-row lp-locked"><div class="lp-avatar">4426</div><div style="flex:1"><div class="lp-asset-name">Li-Cheng Enterprise Co., Ltd <span style="color:#A0AEC0;font-weight:400">· Taiwan</span></div><div class="lp-bar-wrap"><div class="lp-bar-fill" style="width:28%;background:#F09595"></div></div></div><div class="lp-badge" style="background:#FDEDED;color:#8A2E2E">28 · Poor</div></div>
         <div class="lp-lock-overlay"><a href="/screener.html" class="lp-lock-badge" style="text-decoration:none">Set your profile to see your full ranking</a></div>
       </div>
     </div>
@@ -198,9 +235,9 @@
 
   <div class="lp-cta-sec">
     <div class="lp-eyebrow">Get started</div>
-    <h2 style="font-size:26px;max-width:460px;line-height:1.3;font-family:Georgia,serif">See the full picture.<br>Risk and return, together.</h2>
+    <h2 style="font-size:26px;max-width:460px;line-height:1.3;font-family:Georgia,serif">Start seeing the full picture.<br>Risk and return, together.</h2>
     <p class="lp-sub-light" style="margin-top:10px;margin-bottom:24px;font-size:14px">Takes two minutes to set up. Free to start.</p>
-    <a href="/screener.html" class="lp-btn" style="font-size:14px;padding:14px 28px">Get your risk rankings free →</a>
+    <a href="/screener.html" class="lp-btn" style="font-size:14px;padding:14px 28px">Build your scorecard →</a>
     <p style="font-size:12px;color:#A0AEC0;margin-top:12px">Not financial advice. Always do your own research.</p>
   </div>
 
@@ -222,8 +259,8 @@ if (assetParam) {
 
 let selectedCoin = null;
 
-// Rotating words
-const words = ['Stocks', 'Crypto', 'ETFs', 'Index Funds'];
+// Rotating words — regional framing
+const words = ['US', 'UK', 'Asian', 'Global'];
 let wordIdx = 0;
 const rotator = document.getElementById('rotator');
 if (rotator) {
@@ -233,9 +270,57 @@ if (rotator) {
   }, 2200);
 }
 
+// Randomised hero ticker pills — pick 5 real stocks from the catalog and
+// show a simple health-derived rating so visitors see real tickers and
+// real signals without needing a scorecard. Biased toward large caps so
+// the pills showcase recognisable names (AAPL, TSMC, Toyota, HSBC…) on
+// every page load.
+function renderHeroTickers(coins) {
+  const row = document.getElementById('heroTickerRow');
+  if (!row || !coins?.length) return;
+  // Top ~500 by market cap, then shuffle for variety on every load
+  const pool = [...coins]
+    .filter(c => c.marketCap)
+    .sort((a, b) => b.marketCap - a.marketCap)
+    .slice(0, 500);
+  const shuffled = pool.sort(() => Math.random() - 0.5);
+  const picked = [];
+  const wantTiers = ['vs', 's', 'b', 'p', 'vp']; // aim for variety
+  const tierOf = (greens) => greens >= 8 ? 'vs' : greens >= 6 ? 's' : greens >= 4 ? 'b' : greens >= 2 ? 'p' : 'vp';
+  const labelOf = { vs: 'Very Strong', s: 'Strong', b: 'Borderline', p: 'Poor', vp: 'Very Poor' };
+  const dotOf   = { vs: 'lp-dot-g', s: 'lp-dot-gm', b: 'lp-dot-a', p: 'lp-dot-rm', vp: 'lp-dot-r' };
+  const usedTickers = new Set();
+  for (const want of wantTiers) {
+    const hit = shuffled.find(c => {
+      if (usedTickers.has(c.ticker)) return false;
+      const greens = Object.values(c.indicators || {}).filter(v => v.color === 'green').length;
+      return tierOf(greens) === want;
+    });
+    if (hit) {
+      const greens = Object.values(hit.indicators || {}).filter(v => v.color === 'green').length;
+      picked.push({ ticker: hit.ticker, tier: tierOf(greens) });
+      usedTickers.add(hit.ticker);
+    }
+  }
+  // Backfill if we didn't find all 5 tiers
+  while (picked.length < 5) {
+    const c = shuffled.find(x => !usedTickers.has(x.ticker));
+    if (!c) break;
+    const greens = Object.values(c.indicators || {}).filter(v => v.color === 'green').length;
+    picked.push({ ticker: c.ticker, tier: tierOf(greens) });
+    usedTickers.add(c.ticker);
+  }
+  row.innerHTML = picked.map(p =>
+    `<div class="lp-pill"><div class="lp-dot ${dotOf[p.tier]}"></div>${p.ticker} · ${labelOf[p.tier]}</div>`
+  ).join('');
+}
+
 async function init() {
   const data = await loadData();
   const allCoins = data.coins;
+
+  // Randomise hero ticker pills on every load
+  renderHeroTickers(allCoins);
 
   // Show data date in nav
   const asOfDate = new Date(data.asOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
