@@ -799,7 +799,7 @@ function buildFitRows(coin) {
       if (!scores) return '';
       const s = scores[ind.color] ?? 0;
       const fitDot = s === 1 ? '\u{1F7E2}' : s === 0.5 ? '\u{1F7E1}' : '\u{1F534}';
-      const fitLabel = s === 1 ? 'Strong' : s === 0.5 ? 'Partial' : 'Low';
+      const fitLabel = s === 1 ? 'OK' : s === 0.5 ? 'Warning' : 'Red Flag';
       const fitColor = s === 1 ? 'var(--green)' : s === 0.5 ? 'var(--amber)' : 'var(--red)';
       if (s === 1) strong++; else if (s === 0.5) partial++; else low++;
       const meta = IND_META[indKey] || {};
@@ -815,7 +815,7 @@ function buildFitRows(coin) {
 
   setTimeout(() => {
     const totalEl = document.getElementById('fitBdTotal');
-    if (totalEl) totalEl.innerHTML = `<span style="color:var(--green)">Strong (${strong})</span> \u00b7 <span style="color:var(--amber)">Partial (${partial})</span> \u00b7 <span style="color:var(--red)">Low (${low})</span>`;
+    if (totalEl) totalEl.innerHTML = `<span style="color:var(--green)">OK (${strong})</span> \u00b7 <span style="color:var(--amber)">Warning (${partial})</span> \u00b7 <span style="color:var(--red)">Red Flags (${low})</span>`;
   }, 0);
 
   return rows;
@@ -1191,7 +1191,7 @@ function buildAdFitSection(coin) {
       const ind = coin.indicators[indKey];
       if (!ind) return '';
       const s = scores[ind.color] ?? 0;
-      const fitLabel = s === 1 ? 'Strong' : s === 0.5 ? 'Partial' : 'Low';
+      const fitLabel = s === 1 ? 'OK' : s === 0.5 ? 'Warning' : 'Red Flag';
       const fitColor = s === 1 ? 'var(--ad-teal)' : s === 0.5 ? 'var(--ad-amber)' : 'var(--ad-red-muted)';
       if (s === 1) strong++;
       else if (s === 0.5) partial++;
@@ -1223,7 +1223,7 @@ function buildAdFitSection(coin) {
           <div class="ad-bt-desc">${desc}</div>
           <div class="ad-bt-value">${indLbl}</div>
           <div class="ad-bt-pref">${prefText}</div>
-          <div class="ad-bt-fit" style="color:${fitColor}"><div class="ad-bt-dot" style="background:${fitColor}"></div>${fitLabel}</div>
+          <div class="ad-bt-fit" style="color:${fitColor}"><span class="ad-bt-dot" style="background:${fitColor};display:inline-block"></span> ${fitLabel}</div>
         </div>
       `;
     });
@@ -1285,7 +1285,7 @@ function buildAdFitSection(coin) {
             <div class="ad-rh-numsub">/ 100</div>
           </div>
           <div><span class="ad-badge ${fitBadge.cls}">${fitBadge.label}</span></div>
-          <div class="ad-rh-desc">${strong} of ${matchCount} indicators match your risk preferences. ${align}</div>
+          <div class="ad-rh-desc">${strong} of ${matchCount} indicators OK. ${align}</div>
           <div></div>
         </div>
         <div class="ad-row-body" data-row-body="fit">
@@ -1293,9 +1293,9 @@ function buildAdFitSection(coin) {
           <div class="ad-fit-dots-row">${dotsHTML}</div>
           <div class="ad-fit-dot-labels">${labelsHTML}</div>
           <div class="ad-fit-sum-grid">
-            <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-teal)">${strong}</div><div class="ad-fit-sum-label">Strong matches</div></div>
-            <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-amber)">${partial}</div><div class="ad-fit-sum-label">Partial matches</div></div>
-            <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-red-muted)">${low}</div><div class="ad-fit-sum-label">Low matches</div></div>
+            <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-teal)">${strong}</div><div class="ad-fit-sum-label">OK</div></div>
+            <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-amber)">${partial}</div><div class="ad-fit-sum-label">Warning</div></div>
+            <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-red-muted)">${low}</div><div class="ad-fit-sum-label">Red Flags</div></div>
           </div>
           <div class="ad-body-label">Breakdown \u2014 how it scored against your scorecard</div>
           <div class="ad-bt-table">
@@ -1308,7 +1308,7 @@ function buildAdFitSection(coin) {
             </div>
             ${rowsHTML}
             <div class="ad-bt-total">
-              Total: <span style="color:var(--ad-teal)">Strong (${strong})</span> \u00b7 <span style="color:var(--ad-amber)">Partial (${partial})</span> \u00b7 <span style="color:var(--ad-red-muted)">Low (${low})</span>
+              Total: <span style="color:var(--ad-teal)">OK (${strong})</span> \u00b7 <span style="color:var(--ad-amber)">Warning (${partial})</span> \u00b7 <span style="color:var(--ad-red-muted)">Red Flags (${low})</span>
             </div>
           </div>
           <div class="ad-body-label">Indicators to watch</div>

@@ -810,7 +810,7 @@ function showResults(allCoins, profile) {
         if (!scores) return '';
         const sc = scores[ind.color] ?? 0;
         const fitColor = sc === 1 ? 'var(--teal)' : sc === 0.5 ? 'var(--amber-d)' : 'var(--red-d)';
-        const fitLbl = sc === 1 ? 'Strong' : sc === 0.5 ? 'Partial' : 'Low';
+        const fitLbl = sc === 1 ? 'OK' : sc === 0.5 ? 'Warning' : 'Red Flag';
         if (sc === 1) strong++; else if (sc === 0.5) partial++; else low++;
         const meta = IND_META[indKey] || {};
         return `<tr>
@@ -839,7 +839,7 @@ function showResults(allCoins, profile) {
             <tbody>${rows}</tbody>
             <tfoot><tr>
               <td colspan="4" style="text-align:right;font-family:var(--font-mono);font-size:0.68rem;color:var(--muted)">Total:</td>
-              <td class="fit-bd-th-fit"><span style="color:var(--teal)">Strong (${strong})</span> \u00b7 <span style="color:var(--amber-d)">Partial (${partial})</span> \u00b7 <span style="color:var(--red-d)">Low (${low})</span></td>
+              <td class="fit-bd-th-fit"><span style="color:var(--teal)">OK (${strong})</span> \u00b7 <span style="color:var(--amber-d)">Warning (${partial})</span> \u00b7 <span style="color:var(--red-d)">Red Flags (${low})</span></td>
             </tr></tfoot>
           </table>
         </div>
