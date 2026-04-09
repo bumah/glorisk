@@ -1,5 +1,5 @@
 /**
- * DailyFinn — Main Application
+ * GloRisk — Main Application
  * ─────────────────────────────────────────────────────────────────────────────
  * SPA entry point: landing, browse grid, per-asset report.
  */
@@ -1919,7 +1919,7 @@ async function saveElementAsImage(el, filename) {
   tempDiv.querySelectorAll('.save-img-btn, .section-share').forEach(b => b.remove());
   const wm = document.createElement('div');
   wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:0.75rem;border-top:1px solid #1e2530;margin-top:1rem;';
-  wm.textContent = 'dailyfinn.com';
+  wm.textContent = 'glorisk.com';
   tempDiv.appendChild(wm);
   document.body.appendChild(tempDiv);
   try {
@@ -1953,7 +1953,7 @@ async function captureReportImage(coin) {
   tempDiv.querySelectorAll('.report-actions').forEach(el => el.remove());
   const wm = document.createElement('div');
   wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:1rem;border-top:1px solid #1e2530;margin-top:1.5rem;';
-  wm.textContent = 'dailyfinn.com';
+  wm.textContent = 'glorisk.com';
   tempDiv.appendChild(wm);
   document.body.appendChild(tempDiv);
 
@@ -2015,7 +2015,7 @@ function wireReportActions(coin, shareText, shareUrl) {
     // Add a GloRisk watermark
     const watermark = document.createElement('div');
     watermark.style.cssText = 'font-family:Bricolage Grotesque,sans-serif;font-size:0.75rem;color:#3a4250;text-align:center;padding-top:1rem;border-top:1px solid #1e2530;margin-top:1.5rem;';
-    watermark.textContent = 'dailyfinn.com \u00b7 dailyfinn.com';
+    watermark.textContent = 'glorisk.com \u00b7 glorisk.com';
 
     elements.forEach(el => {
       const clone = el.cloneNode(true);
@@ -2076,7 +2076,7 @@ function wireReportActions(coin, shareText, shareUrl) {
     // Watermark
     const wm = document.createElement('div');
     wm.style.cssText = 'font-size:0.75rem;color:#3a4250;text-align:center;padding-top:1rem;border-top:1px solid #1e2530;margin-top:1rem;';
-    wm.textContent = 'dailyfinn.com';
+    wm.textContent = 'glorisk.com';
     tempDiv.appendChild(wm);
     document.body.appendChild(tempDiv);
 

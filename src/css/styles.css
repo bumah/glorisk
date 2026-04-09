@@ -1462,7 +1462,7 @@ body {
   .rsb { border-width: 1px; }
   canvas { max-height: 200px !important; }
   .report-body::after {
-    content: 'dailyfinn.com';
+    content: 'glorisk.com';
     display: block;
     text-align: center;
     color: #999;
