@@ -235,14 +235,23 @@ export const PHILOSOPHY_LABELS = {
   D: 'Growth at any price',
 };
 
-// Map profile.markets values → the index name as it appears in coin.indices
-// (the fundamentals file's `Index` column is a comma-separated list of index memberships).
-export const MARKET_INDEX_MAP = {
-  sp500:  'S&P 500',
-  nasdaq: 'NASDAQ 100',
-  ftse:   'FTSE 100',
-  nikkei: 'Nikkei 225',
-  hsi:    'Hang Seng Index',
+// Map profile.markets values → the region codes that should match.
+// The new-style keys are us/uk/jp/hk/row (region-wide). The legacy index
+// keys (sp500/nasdaq/ftse/nikkei/hsi) are kept here for backward-compat
+// so users who answered the old questionnaire don't suddenly see zero
+// results — their answers get rewritten to the closest region match.
+const MARKET_REGION_MAP = {
+  us:  ['US'],
+  uk:  ['UK'],
+  jp:  ['JP'],
+  hk:  ['HK'],
+  row: ['CA', 'EU', 'KR', 'CN', 'TW', 'IN', 'SG', 'AU', 'ME', 'LATAM', 'AF', 'SEA', 'Other'],
+  // Legacy index-level keys — mapped to the equivalent region
+  sp500:  ['US'],
+  nasdaq: ['US'],
+  ftse:   ['UK'],
+  nikkei: ['JP'],
+  hsi:    ['HK'],
 };
 
 /**
@@ -267,10 +276,13 @@ export function isAssetInScope(coin, profile) {
   if (hasTypes && !types.includes('stocks')) return false;
 
   if (hasMarkets) {
-    const indices = coin.indices || [];
-    const wanted = markets.map(m => MARKET_INDEX_MAP[m]).filter(Boolean);
-    // Match if the coin belongs to any of the requested indices
-    return wanted.some(name => indices.includes(name));
+    const allowed = new Set();
+    for (const m of markets) {
+      const regions = MARKET_REGION_MAP[m] || [];
+      for (const r of regions) allowed.add(r);
+    }
+    if (allowed.size === 0) return true; // unknown markets — don't filter
+    return allowed.has(coin.region);
   }
   return true;
 }
