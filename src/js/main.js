@@ -6,7 +6,7 @@
 
 'use strict';
 
-import { IND_META, IND_ORDER, CATEGORIES, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary, FIT_QUESTIONS, isAssetInScope, labelFor } from './riskEngine.js';
+import { IND_META, IND_ORDER, CATEGORIES, THRESHOLDS, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary, FIT_QUESTIONS, isAssetInScope, labelFor } from './riskEngine.js';
 import { isWatched, addToWatchlistWithPrompt, removeFromWatchlist, showToast } from './lists.js';
 import { loadData, searchCoins } from './data.js';
 import html2canvas from 'html2canvas';
@@ -1064,17 +1064,16 @@ function buildAdHeader(coin) {
   `;
 }
 
-// One-line description for an indicator using its metadata and RAG color
+// One-line description for an indicator using its metadata and value
 function adIndicatorExplain(key, v, ticker) {
   const lbl = labelFor(key, v.raw, v.color);
   const meta = IND_META[key];
   if (!meta) return '';
   const desc = meta.desc || '';
-  const colorWord = v.color === 'green' ? 'healthy' : v.color === 'amber' ? 'borderline' : 'stressed';
-  return `${desc.split('.')[0]} \u2014 currently ${lbl} (${colorWord}).`;
+  return `${desc.split('.')[0]} \u2014 currently ${lbl}.`;
 }
 
-// Build the 3 indicator groups (Going well / Concerning / Critical) for Performance body
+// Build the 3 indicator groups (Positive / Warning / Red Flags) for Performance body
 // Returns-style indicators (signed % values) → coloured by sign
 const RETURN_KEYS = new Set(['shortTrend', 'longTrend', 'perf3M', 'perf6M', 'perfYTD', 'nearLow3M', 'momDiv', 'volChg1W', 'volChg1M']);
 // Magnitude / ratio indicators → no colour
@@ -1109,9 +1108,9 @@ function buildAdIndGroups(coin) {
     });
   }
   const groups = [
-    { label: 'Going well', color: 'green', dot: 'var(--ad-teal)',       cards: allCards.filter(c => c.color === 'green') },
-    { label: 'Concerning', color: 'amber', dot: 'var(--ad-amber)',      cards: allCards.filter(c => c.color === 'amber') },
-    { label: 'Critical',   color: 'red',   dot: 'var(--ad-red-muted)',  cards: allCards.filter(c => c.color === 'red') },
+    { label: 'Positive',   color: 'green', dot: 'var(--ad-teal)',       cards: allCards.filter(c => c.color === 'green') },
+    { label: 'Warning',    color: 'amber', dot: 'var(--ad-amber)',      cards: allCards.filter(c => c.color === 'amber') },
+    { label: 'Red Flags',  color: 'red',   dot: 'var(--ad-red-muted)',  cards: allCards.filter(c => c.color === 'red') },
   ];
   let html = '';
   for (const g of groups) {
@@ -1203,20 +1202,28 @@ function buildAdFitSection(coin) {
       const indLbl = labelFor(indKey, ind.raw, ind.color);
 
       if (s === 1 && ind.color === 'green' && scores.amber != null && scores.amber < 1) {
+        // Find threshold that would trigger amber
+        const t = THRESHOLDS[indKey];
+        let threshold = null;
+        if (t) {
+          if (t.greenBelow != null) threshold = t.greenBelow;
+          else if (t.greenAbove != null) threshold = t.greenAbove;
+        }
         sensitiveChanges.push({
           label: meta.label || indKey,
           current: indLbl,
-          wouldBecome: scores.amber === 0.5 ? 'Partial' : 'Low',
+          threshold: threshold != null ? threshold : null,
+          indKey,
         });
       }
 
       return `
         <div class="ad-bt-row">
-          <div class="ad-bt-indicator"><div class="ad-bt-dot" style="background:${fitColor}"></div>${meta.label || indKey}</div>
+          <div class="ad-bt-indicator">${meta.label || indKey}</div>
           <div class="ad-bt-desc">${desc}</div>
-          <div class="ad-bt-value" style="color:${fitColor}">${indLbl}</div>
+          <div class="ad-bt-value">${indLbl}</div>
           <div class="ad-bt-pref">${prefText}</div>
-          <div class="ad-bt-fit" style="color:${fitColor}">${fitLabel}</div>
+          <div class="ad-bt-fit" style="color:${fitColor}"><div class="ad-bt-dot" style="background:${fitColor}"></div>${fitLabel}</div>
         </div>
       `;
     });
@@ -1236,23 +1243,24 @@ function buildAdFitSection(coin) {
   ).join('');
   const labelsHTML = dots.map(d => {
     const isCurrent = d.key === fitClass;
-    return `<span class="ad-fit-dot-label${isCurrent ? ' current' : ''}" style="${isCurrent ? `color:${d.c};font-weight:700` : ''}">${d.label}${isCurrent ? ' \u2190' : ''}</span>`;
+    return `<span class="ad-fit-dot-label${isCurrent ? ' current' : ''}" style="${isCurrent ? `color:${d.c};font-weight:700` : ''}">${d.label}</span>`;
   }).join('');
 
-  // What could change this match
+  // Indicators to watch — close to borderline
   let changesHTML;
   if (sensitiveChanges.length === 0) {
-    changesHTML = `<div class="ad-no-changes">This asset scores <strong style="color:var(--ad-warm-white)">${fitBadge.label}</strong> against your scorecard. No near-term deterioration would reduce the match \u2014 unless your own scorecard changes. You can update it at any time.</div>`;
+    changesHTML = `<div class="ad-no-changes">No indicators are close to their threshold boundaries. The current match is stable unless your scorecard changes.</div>`;
   } else {
-    changesHTML = `<div class="ad-changes-list">` + sensitiveChanges.slice(0, 3).map(c =>
-      `<div class="ad-change-card">
+    changesHTML = `<div class="ad-changes-list">` + sensitiveChanges.slice(0, 5).map(c => {
+      const thresholdText = c.threshold != null ? `Trigger threshold: ${c.threshold}` : '';
+      return `<div class="ad-change-card">
         <div class="ad-change-icon" style="background:var(--ad-amber-bg);color:var(--ad-amber)">!</div>
         <div>
-          <div class="ad-change-title">If ${c.label} weakens</div>
-          <div class="ad-change-desc">Currently <strong style="color:var(--ad-warm-white)">${c.current}</strong> and scoring a Strong match. If it deteriorates, the match on this indicator would drop to <strong style="color:var(--ad-amber)">${c.wouldBecome}</strong>.</div>
+          <div class="ad-change-title">${c.label}</div>
+          <div class="ad-change-desc">Current value: <strong style="color:var(--ad-warm-white)">${c.current}</strong>${thresholdText ? `. ${thresholdText}.` : ''}</div>
         </div>
-      </div>`
-    ).join('') + `</div>`;
+      </div>`;
+    }).join('') + `</div>`;
   }
 
   const matchCount = strong + partial + low;
@@ -1303,7 +1311,7 @@ function buildAdFitSection(coin) {
               Total: <span style="color:var(--ad-teal)">Strong (${strong})</span> \u00b7 <span style="color:var(--ad-amber)">Partial (${partial})</span> \u00b7 <span style="color:var(--ad-red-muted)">Low (${low})</span>
             </div>
           </div>
-          <div class="ad-body-label">What could change this match</div>
+          <div class="ad-body-label">Indicators to watch</div>
           ${changesHTML}
         </div>
       </div>
@@ -1319,11 +1327,11 @@ function buildAdPerformanceRow(coin) {
   const a = IND_ORDER.filter(k => coin.indicators[k]?.color === 'amber').length;
   const r = IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length;
   const summary = r === 0 && a === 0
-    ? 'All 10 indicators green \u2014 clean, consistent price action.'
-    : r >= 2
-    ? `${r} critical indicator${r > 1 ? 's' : ''} flagging material weakness.`
-    : a >= 3
-    ? `${a} indicators concerning \u2014 mixed signals worth monitoring.`
+    ? 'All indicators positive \u2014 clean, consistent price action.'
+    : r >= 5
+    ? `${r} red flags flagging material weakness.`
+    : a >= 8
+    ? `${a} warnings \u2014 mixed signals worth monitoring.`
     : 'Generally stable with only minor concerns.';
   return `
     <div class="ad-row">
@@ -1491,48 +1499,33 @@ function buildAdOverallRow(coin, isStock) {
   `;
 }
 
-// Indicator Health row — shows raw RAG counts and the grouped indicator breakdown.
-// GloRisk is independent: we don't score the asset, we just flag how many of the 10
-// risk indicators are green / amber / red against our published thresholds.
+// Stock Health row — shows RAG counts as dots and the grouped indicator breakdown.
 function buildAdIndicatorHealthRow(coin) {
-  const g = IND_ORDER.filter(k => k !== 'momentum' && coin.indicators[k]?.color === 'green').length;
-  const a = IND_ORDER.filter(k => k !== 'momentum' && coin.indicators[k]?.color === 'amber').length;
-  const r = IND_ORDER.filter(k => k !== 'momentum' && coin.indicators[k]?.color === 'red').length;
+  const g = IND_ORDER.filter(k => coin.indicators[k]?.color === 'green').length;
+  const a = IND_ORDER.filter(k => coin.indicators[k]?.color === 'amber').length;
+  const r = IND_ORDER.filter(k => coin.indicators[k]?.color === 'red').length;
   const total = g + a + r;
-  const MAX_INDICATORS = 10;
-  const isPartial = total < MAX_INDICATORS;
+  const MAX_INDICATORS = 36;
+  const isPartial = total < 30;
 
-  // Pick the dominant colour for the headline number
-  const headColor = r >= 3 ? 'var(--ad-red-muted)'
-                  : r >= 1 || a >= 4 ? 'var(--ad-amber)'
-                  : a >= 2 ? 'var(--ad-teal-muted)'
+  // Pick the dominant colour for the headline
+  const headColor = r >= 8 ? 'var(--ad-red-muted)'
+                  : r >= 3 || a >= 10 ? 'var(--ad-amber)'
+                  : a >= 5 ? 'var(--ad-teal-muted)'
                   : 'var(--ad-teal)';
 
   // Badge mirrors the dominant tone
-  const badge = r >= 3 ? { cls: 'vp', label: 'Stressed' }
-              : r >= 1 ? { cls: 'b',  label: 'Watch' }
-              : a >= 4 ? { cls: 'b',  label: 'Mixed' }
-              : a >= 2 ? { cls: 's',  label: 'Mostly healthy' }
-              : { cls: 'vs', label: 'Healthy' };
+  const badge = r >= 8  ? { cls: 'vp', label: 'Very Poor' }
+              : r >= 3  ? { cls: 'p',  label: 'Poor' }
+              : a >= 10 ? { cls: 'b',  label: 'Borderline' }
+              : a >= 5  ? { cls: 's',  label: 'Strong' }
+              : { cls: 'vs', label: 'Very Strong' };
 
-  let summary = r === 0 && a === 0
-    ? `All ${total} indicators green against our thresholds.`
-    : r >= 2
-    ? `${r} critical indicator${r > 1 ? 's' : ''} flagging stress.`
-    : a >= 3
-    ? `${a} indicators in the caution zone \u2014 worth monitoring.`
-    : `${g} healthy, ${a} caution, ${r} stressed.`;
-
-  if (isPartial) {
-    summary += ` <span style="color:var(--ad-text-dim);font-weight:500">(${total} of ${MAX_INDICATORS} measured)</span>`;
-  }
-
-  const subLabel = isPartial
-    ? `${total} of ${MAX_INDICATORS} indicators measured from snapshot data`
-    : 'RAG count across our 10 risk indicators';
+  // Dot-based summary: 5(green) 2(amber) 15(red)
+  const dotSummary = `<span style="color:var(--ad-teal)">\u25CF ${g}</span> \u00a0 <span style="color:var(--ad-amber)">\u25CF ${a}</span> \u00a0 <span style="color:var(--ad-red-muted)">\u25CF ${r}</span>`;
 
   const partialNote = isPartial
-    ? `<div class="ad-coverage-note">Some indicators couldn't be measured from the snapshot for this ticker — ${MAX_INDICATORS - total} of ${MAX_INDICATORS} are missing (likely because a moving-average or historical peak value wasn't available).</div>`
+    ? `<div class="ad-coverage-note">Some indicators couldn\u2019t be measured \u2014 ${MAX_INDICATORS - total} of ${MAX_INDICATORS} are missing.</div>`
     : '';
 
   return `
@@ -1540,15 +1533,14 @@ function buildAdIndicatorHealthRow(coin) {
       <div class="ad-row-head" data-row="health">
         <div class="ad-chev">\u25B6</div>
         <div>
-          <div class="ad-rh-name">Indicator Health</div>
-          <div class="ad-rh-sub">${subLabel}</div>
+          <div class="ad-rh-name">Stock Health</div>
+          <div class="ad-rh-sub">What\u2019s going well and what to watch</div>
         </div>
         <div>
-          <div class="ad-rh-num" style="color:${headColor}">${g}<span style="font-size:0.45em;color:var(--ad-text-dim)">/${total}</span></div>
-          <div class="ad-rh-numsub">Green</div>
+          <div class="ad-rh-num" style="color:${headColor};font-size:0.85em">${dotSummary}</div>
         </div>
         <div><span class="ad-badge ${badge.cls}">${badge.label}</span></div>
-        <div class="ad-rh-desc">${summary}</div>
+        <div class="ad-rh-desc"></div>
         <div></div>
       </div>
       <div class="ad-row-body" data-row-body="health">
@@ -1586,7 +1578,7 @@ function buildAdCompanyStrip(coin) {
 
 function buildAdScoresSection(coin) {
   return `
-    <div class="ad-sec-label">Indicator Health</div>
+    <div class="ad-sec-label">Stock Health</div>
     <div class="ad-rows-wrap">
       ${buildAdIndicatorHealthRow(coin)}
     </div>
@@ -2319,9 +2311,9 @@ function buildFullAnalysis(coin) {
 
   // Group by severity: red → amber → green
   const groups = [
-    { color: 'red',   label: 'Critical',  cards: allCards.filter(c => c.color === 'red') },
-    { color: 'amber', label: 'Concerning', cards: allCards.filter(c => c.color === 'amber') },
-    { color: 'green', label: 'Going Well', cards: allCards.filter(c => c.color === 'green') },
+    { color: 'red',   label: 'Red Flags', cards: allCards.filter(c => c.color === 'red') },
+    { color: 'amber', label: 'Warning',   cards: allCards.filter(c => c.color === 'amber') },
+    { color: 'green', label: 'Positive',   cards: allCards.filter(c => c.color === 'green') },
   ];
 
   let html = '';
@@ -2557,9 +2549,9 @@ function buildAdPositionIndGroups(rd, report) {
   }).filter(Boolean);
 
   const groups = [
-    { label: 'Going well', dot: 'var(--ad-teal)',      cards: cards.filter(c => c.color === 'green') },
-    { label: 'Concerning', dot: 'var(--ad-amber)',     cards: cards.filter(c => c.color === 'amber') },
-    { label: 'Critical',   dot: 'var(--ad-red-muted)', cards: cards.filter(c => c.color === 'red') },
+    { label: 'Positive',   dot: 'var(--ad-teal)',      cards: cards.filter(c => c.color === 'green') },
+    { label: 'Warning',    dot: 'var(--ad-amber)',     cards: cards.filter(c => c.color === 'amber') },
+    { label: 'Red Flags',  dot: 'var(--ad-red-muted)', cards: cards.filter(c => c.color === 'red') },
   ];
   let html = '';
   for (const g of groups) {
