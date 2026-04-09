@@ -51,10 +51,10 @@ html,body{overflow-y:auto !important;}
 .tab-d{padding:6px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);cursor:pointer;border-radius:6px 6px 0 0;border:0.5px solid transparent;background:none;font-family:inherit;}
 .tab-d.active{background:var(--navy-light);color:var(--warm-white);border-color:var(--border-dark);border-bottom-color:var(--navy-light);}
 .table-wrap-d{margin:0 32px 28px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:0 10px 10px 10px;overflow-x:auto;}
-.t-head{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 1.3fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1.4fr;padding:10px 16px;border-bottom:0.5px solid var(--border-dark);}
+.t-head{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 1.3fr 0.8fr 0.8fr 0.8fr 0.8fr 1.4fr;padding:10px 16px;border-bottom:0.5px solid var(--border-dark);}
 .th{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.22);text-align:right;}
 .th:first-child{text-align:left;}
-.t-row{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 1.3fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1.4fr;padding:13px 16px;border-bottom:0.5px solid var(--border-dark);align-items:center;cursor:pointer;}
+.t-row{display:grid;grid-template-columns:2.6fr 0.8fr 1.2fr 1fr 0.8fr 0.8fr 1.3fr 0.8fr 0.8fr 0.8fr 0.8fr 1.4fr;padding:13px 16px;border-bottom:0.5px solid var(--border-dark);align-items:center;cursor:pointer;}
 .t-row:last-child{border-bottom:none;}
 .t-row:hover{background:rgba(79,70,229,0.05);}
 .aname{font-size:13px;font-weight:700;color:var(--warm-white);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
@@ -125,7 +125,7 @@ html,body{overflow-y:auto !important;}
 @media(max-width:768px){
 .page-head,.search-row,.tabs-d{padding-left:16px;padding-right:16px;}
 .profile-bar,.summary-row,.legend,.table-wrap-d{margin-left:16px;margin-right:16px;}
-.t-head,.t-row{grid-template-columns:1.5fr 55px 75px 60px 50px 50px;font-size:10px;padding:10px 12px;}
+.t-head,.t-row{grid-template-columns:1.5fr 55px 75px 60px 50px 50px;font-size:10px;padding:10px 10px;}
 .hide-m{display:none !important;}
 .summary-row{flex-wrap:wrap;}
 .sum-card{min-width:calc(50% - 4px);}
@@ -152,25 +152,29 @@ html,body{overflow-y:auto !important;}
 <div id="profileForm" class="dash">
   <div class="pf-wrap">
     <div class="pf-title">Set Up Your Risk Profile</div>
-    <div class="pf-sub">14 quick questions. Takes about 2 minutes.</div>
+    <div class="pf-sub">20 quick questions. Takes about 3 minutes.</div>
 
     <div class="pf-section-label">Your scope <span class="pf-section-hint">2 questions</span></div>
 
-    <!-- Q1: Asset types (multi-select) -->
-    <div class="pf-q pf-q-context" data-key="assetTypes" data-kind="multi">
-      <div class="pf-num">1 / 14 &middot; multiple allowed</div>
-      <div class="pf-text">What types of assets are you interested in?</div>
+    <!-- Q1: Sectors (multi-select) -->
+    <div class="pf-q pf-q-context" data-key="sectors" data-kind="multi">
+      <div class="pf-num">1 / 20 &middot; multiple allowed</div>
+      <div class="pf-text">Which sectors are you interested in?</div>
       <div class="pf-opts-grid">
-        <label class="pf-opt"><input type="checkbox" name="assetTypes" value="stocks"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Individual stocks</div></div></label>
-        <label class="pf-opt"><input type="checkbox" name="assetTypes" value="etfs"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">ETFs</div><div class="pf-opt-desc">Sector, index, thematic</div></div></label>
-        <label class="pf-opt"><input type="checkbox" name="assetTypes" value="crypto"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Crypto</div></div></label>
-        <label class="pf-opt"><input type="checkbox" name="assetTypes" value="indices"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Market indices</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="sectors" value="tech"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Technology</div><div class="pf-opt-desc">Electronics, software, semiconductors, IT services</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="sectors" value="finance"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Finance</div><div class="pf-opt-desc">Banks, insurance, asset management, fintech</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="sectors" value="healthcare"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Healthcare</div><div class="pf-opt-desc">Pharma, biotech, medical devices, health services</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="sectors" value="manufacturing"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Manufacturing &amp; Industrials</div><div class="pf-opt-desc">Aerospace, machinery, automotive, industrial services</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="sectors" value="consumer"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Consumer</div><div class="pf-opt-desc">Food, beverages, apparel, retail, leisure, household</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="sectors" value="energy"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Energy &amp; Materials</div><div class="pf-opt-desc">Oil, gas, mining, metals, chemicals</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="sectors" value="services"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Business Services</div><div class="pf-opt-desc">Logistics, distribution, transport, consulting</div></div></label>
+        <label class="pf-opt"><input type="checkbox" name="sectors" value="utilities"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">Utilities &amp; Telecom</div><div class="pf-opt-desc">Power, water, gas utilities, telecoms</div></div></label>
       </div>
     </div>
 
     <!-- Q2: Markets & regions (multi-select) -->
     <div class="pf-q pf-q-context" data-key="markets" data-kind="multi">
-      <div class="pf-num">2 / 14 &middot; multiple allowed</div>
+      <div class="pf-num">2 / 20 &middot; multiple allowed</div>
       <div class="pf-text">Which markets do you want to track?</div>
       <div class="pf-opts-grid">
         <label class="pf-opt"><input type="checkbox" name="markets" value="us"><span class="pf-check"></span><div class="pf-opt-body"><div class="pf-opt-label">United States</div><div class="pf-opt-desc">~4,000 US-listed stocks</div></div></label>
@@ -185,7 +189,7 @@ html,body{overflow-y:auto !important;}
 
     <!-- Q3: Horizon -->
     <div class="pf-q pf-q-context" data-key="horizon" data-kind="single">
-      <div class="pf-num">3 / 14</div>
+      <div class="pf-num">3 / 20</div>
       <div class="pf-text">What&rsquo;s your typical holding period?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="horizon" value="A"><span class="pf-dot" style="background:#EF9F27"></span><div class="pf-opt-body"><div class="pf-opt-label">Short-term</div><div class="pf-opt-desc">days to a few weeks &mdash; I&rsquo;m in and out quickly</div></div></label>
@@ -197,7 +201,7 @@ html,body{overflow-y:auto !important;}
 
     <!-- Q4: Philosophy -->
     <div class="pf-q pf-q-context" data-key="philosophy" data-kind="single">
-      <div class="pf-num">4 / 14</div>
+      <div class="pf-num">4 / 20</div>
       <div class="pf-text">Which of these best describes how you invest?</div>
       <div class="pf-opts">
         <label class="pf-opt"><input type="radio" name="philosophy" value="A"><span class="pf-dot" style="background:#EF9F27"></span><div class="pf-opt-body"><div class="pf-opt-label">Buy the dips</div><div class="pf-opt-desc">I prefer assets that have pulled back &mdash; cheaper entry, contrarian bets</div></div></label>
@@ -207,115 +211,181 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
-    <div class="pf-section-label">Your risk appetite <span class="pf-section-hint">10 questions &middot; one per indicator</span></div>
+    <div class="pf-section-label">Your risk appetite <span class="pf-section-hint">16 questions &middot; one per risk dimension</span></div>
 
-    <!-- Q5: volatility → Daily Volatility -->
-    <div class="pf-q" data-key="volatility" data-kind="single">
-      <div class="pf-num">5 / 14 <span class="pf-ind-tag">Daily Volatility</span></div>
-      <div class="pf-text">How much price movement are you comfortable with?</div>
+    <!-- Q5: Market Risk — market sensitivity -->
+    <div class="pf-q" data-key="catMarketSens" data-kind="single">
+      <div class="pf-num">5 / 20 <span class="pf-ind-tag">Market Risk</span></div>
+      <div class="pf-text">How sensitive should the stock be to overall market moves?</div>
       <div class="pf-opts">
-        <label class="pf-opt"><input type="radio" name="volatility" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>I prefer steady, stable stocks</span></label>
-        <label class="pf-opt"><input type="radio" name="volatility" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>I'm okay with some ups and downs</span></label>
-        <label class="pf-opt"><input type="radio" name="volatility" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I'm comfortable with big swings</span></label>
+        <label class="pf-opt"><input type="radio" name="catMarketSens" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Low sensitivity &mdash; I prefer stable stocks</span></label>
+        <label class="pf-opt"><input type="radio" name="catMarketSens" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Some sensitivity is fine</span></label>
+        <label class="pf-opt"><input type="radio" name="catMarketSens" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>High sensitivity is OK &mdash; I want to ride the market</span></label>
       </div>
     </div>
 
-    <!-- Q6: volSpike → Volatility Spike -->
-    <div class="pf-q" data-key="volSpike" data-kind="single">
-      <div class="pf-num">6 / 14 <span class="pf-ind-tag">Volatility Spike</span></div>
-      <div class="pf-text">If a stock suddenly becomes more unstable, what would you do?</div>
+    <!-- Q6: Market Risk — peak/drawdown -->
+    <div class="pf-q" data-key="catPeakDraw" data-kind="single">
+      <div class="pf-num">6 / 20 <span class="pf-ind-tag">Market Risk</span></div>
+      <div class="pf-text">How far from its peak are you comfortable buying?</div>
       <div class="pf-opts">
-        <label class="pf-opt"><input type="radio" name="volSpike" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>I'd avoid it or sell</span></label>
-        <label class="pf-opt"><input type="radio" name="volSpike" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>I'd keep an eye on it</span></label>
-        <label class="pf-opt"><input type="radio" name="volSpike" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I'd stay invested</span></label>
+        <label class="pf-opt"><input type="radio" name="catPeakDraw" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Only near the top &mdash; I want proven winners</span></label>
+        <label class="pf-opt"><input type="radio" name="catPeakDraw" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Some decline is fine</span></label>
+        <label class="pf-opt"><input type="radio" name="catPeakDraw" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Big drops don&rsquo;t bother me</span></label>
       </div>
     </div>
 
-    <!-- Q7: vsPeak → Distance from Peak -->
-    <div class="pf-q" data-key="vsPeak" data-kind="single">
-      <div class="pf-num">7 / 14 <span class="pf-ind-tag">Distance from Peak</span></div>
-      <div class="pf-text">If a stock drops from its peak, how much is acceptable to you?</div>
+    <!-- Q7: Market Risk — recent performance -->
+    <div class="pf-q" data-key="catRecentPerf" data-kind="single">
+      <div class="pf-num">7 / 20 <span class="pf-ind-tag">Market Risk</span></div>
+      <div class="pf-text">What recent performance matters to you?</div>
       <div class="pf-opts">
-        <label class="pf-opt"><input type="radio" name="vsPeak" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Only small drops</span></label>
-        <label class="pf-opt"><input type="radio" name="vsPeak" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Some decline is fine</span></label>
-        <label class="pf-opt"><input type="radio" name="vsPeak" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Big drops don't bother me</span></label>
+        <label class="pf-opt"><input type="radio" name="catRecentPerf" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Positive returns over 6 months and year-to-date</span></label>
+        <label class="pf-opt"><input type="radio" name="catRecentPerf" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Small losses are acceptable</span></label>
+        <label class="pf-opt"><input type="radio" name="catRecentPerf" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I don&rsquo;t mind significant recent losses</span></label>
       </div>
     </div>
 
-    <!-- Q8: shortTrend → 50-Day Trend -->
-    <div class="pf-q" data-key="shortTrend" data-kind="single">
-      <div class="pf-num">8 / 14 <span class="pf-ind-tag">50-Day Trend</span></div>
-      <div class="pf-text">What do you want to see in the short term?</div>
+    <!-- Q8: Volatility — swing level -->
+    <div class="pf-q" data-key="catVolSwing" data-kind="single">
+      <div class="pf-num">8 / 20 <span class="pf-ind-tag">Volatility</span></div>
+      <div class="pf-text">How much daily/weekly price swing can you handle?</div>
       <div class="pf-opts">
-        <label class="pf-opt"><input type="radio" name="shortTrend" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>The price going up</span></label>
-        <label class="pf-opt"><input type="radio" name="shortTrend" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Moving sideways is fine</span></label>
-        <label class="pf-opt"><input type="radio" name="shortTrend" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I'm okay if it drops short term</span></label>
+        <label class="pf-opt"><input type="radio" name="catVolSwing" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>I prefer steady, stable stocks</span></label>
+        <label class="pf-opt"><input type="radio" name="catVolSwing" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>I&rsquo;m okay with some ups and downs</span></label>
+        <label class="pf-opt"><input type="radio" name="catVolSwing" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I&rsquo;m comfortable with big swings</span></label>
       </div>
     </div>
 
-    <!-- Q9: longTrend → 200-Day Trend -->
-    <div class="pf-q" data-key="longTrend" data-kind="single">
-      <div class="pf-num">9 / 14 <span class="pf-ind-tag">200-Day Trend</span></div>
-      <div class="pf-text">Over time, what kind of trend do you prefer?</div>
+    <!-- Q9: Volatility — risk-adjusted returns -->
+    <div class="pf-q" data-key="catRiskAdj" data-kind="single">
+      <div class="pf-num">9 / 20 <span class="pf-ind-tag">Volatility</span></div>
+      <div class="pf-text">Do you care about risk-adjusted returns or raw returns?</div>
       <div class="pf-opts">
-        <label class="pf-opt"><input type="radio" name="longTrend" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Clear upward growth</span></label>
-        <label class="pf-opt"><input type="radio" name="longTrend" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Mixed or uncertain trend</span></label>
-        <label class="pf-opt"><input type="radio" name="longTrend" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I'm okay taking risks for potential upside</span></label>
+        <label class="pf-opt"><input type="radio" name="catRiskAdj" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Risk-adjusted is key &mdash; returns per unit of risk</span></label>
+        <label class="pf-opt"><input type="radio" name="catRiskAdj" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>A balance of both</span></label>
+        <label class="pf-opt"><input type="radio" name="catRiskAdj" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Raw returns matter most &mdash; I accept the risk</span></label>
       </div>
     </div>
 
-    <!-- Q10: maCross → Trend Direction -->
-    <div class="pf-q" data-key="maCross" data-kind="single">
-      <div class="pf-num">10 / 14 <span class="pf-ind-tag">Trend Direction</span></div>
-      <div class="pf-text">How important is it that the stock is clearly trending upward?</div>
+    <!-- Q10: Volatility — trading range -->
+    <div class="pf-q" data-key="catRangeWidth" data-kind="single">
+      <div class="pf-num">10 / 20 <span class="pf-ind-tag">Volatility</span></div>
+      <div class="pf-text">How wide a trading range is acceptable?</div>
       <div class="pf-opts">
-        <label class="pf-opt"><input type="radio" name="maCross" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Very important</span></label>
-        <label class="pf-opt"><input type="radio" name="maCross" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Somewhat important</span></label>
-        <label class="pf-opt"><input type="radio" name="maCross" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Not important</span></label>
+        <label class="pf-opt"><input type="radio" name="catRangeWidth" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Tight ranges &mdash; I want predictability</span></label>
+        <label class="pf-opt"><input type="radio" name="catRangeWidth" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Moderate swings are fine</span></label>
+        <label class="pf-opt"><input type="radio" name="catRangeWidth" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Wide ranges are OK &mdash; more opportunity</span></label>
       </div>
     </div>
 
-    <!-- Q11: return1M → 30-Day Return -->
-    <div class="pf-q" data-key="return1M" data-kind="single">
-      <div class="pf-num">11 / 14 <span class="pf-ind-tag">30-Day Return</span></div>
-      <div class="pf-text">Over the past month, what would you prefer?</div>
+    <!-- Q11: Trend — trend direction -->
+    <div class="pf-q" data-key="catTrendDir" data-kind="single">
+      <div class="pf-num">11 / 20 <span class="pf-ind-tag">Trend</span></div>
+      <div class="pf-text">How important is the overall trend direction?</div>
       <div class="pf-opts">
-        <label class="pf-opt"><input type="radio" name="return1M" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Gains</span></label>
-        <label class="pf-opt"><input type="radio" name="return1M" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Flat performance</span></label>
-        <label class="pf-opt"><input type="radio" name="return1M" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I'm okay with losses</span></label>
+        <label class="pf-opt"><input type="radio" name="catTrendDir" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Very important &mdash; I only want uptrending stocks</span></label>
+        <label class="pf-opt"><input type="radio" name="catTrendDir" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Somewhat important</span></label>
+        <label class="pf-opt"><input type="radio" name="catTrendDir" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Not important &mdash; I buy regardless of trend</span></label>
       </div>
     </div>
 
-    <!-- Q12: return1Y → 12-Month Return -->
-    <div class="pf-q" data-key="return1Y" data-kind="single">
-      <div class="pf-num">12 / 14 <span class="pf-ind-tag">12-Month Return</span></div>
-      <div class="pf-text">Over the past year, what are you aiming for?</div>
+    <!-- Q12: Trend — highs vs lows -->
+    <div class="pf-q" data-key="catHighLow" data-kind="single">
+      <div class="pf-num">12 / 20 <span class="pf-ind-tag">Trend</span></div>
+      <div class="pf-text">Do you prefer stocks near recent highs or recovering from lows?</div>
       <div class="pf-opts">
-        <label class="pf-opt"><input type="radio" name="return1Y" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Steady, reliable growth</span></label>
-        <label class="pf-opt"><input type="radio" name="return1Y" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Moderate growth</span></label>
-        <label class="pf-opt"><input type="radio" name="return1Y" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>High returns even if risky</span></label>
+        <label class="pf-opt"><input type="radio" name="catHighLow" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Near highs &mdash; momentum matters</span></label>
+        <label class="pf-opt"><input type="radio" name="catHighLow" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Either is fine</span></label>
+        <label class="pf-opt"><input type="radio" name="catHighLow" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Recovering from lows &mdash; I like the upside potential</span></label>
       </div>
     </div>
 
-    <!-- Q13: range52W → Position in Range -->
-    <div class="pf-q" data-key="range52W" data-kind="single">
-      <div class="pf-num">13 / 14 <span class="pf-ind-tag">Position in Range</span></div>
-      <div class="pf-text">When do you prefer to buy a stock?</div>
+    <!-- Q13: Trend — decline tolerance -->
+    <div class="pf-q" data-key="catDecline" data-kind="single">
+      <div class="pf-num">13 / 20 <span class="pf-ind-tag">Trend</span></div>
+      <div class="pf-text">How much recent price decline is acceptable?</div>
       <div class="pf-opts">
-        <label class="pf-opt"><input type="radio" name="range52W" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>When it's already doing well</span></label>
-        <label class="pf-opt"><input type="radio" name="range52W" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Anytime</span></label>
-        <label class="pf-opt"><input type="radio" name="range52W" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>When it's dropped (cheap but risky)</span></label>
+        <label class="pf-opt"><input type="radio" name="catDecline" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Very little &mdash; I want consistent performance</span></label>
+        <label class="pf-opt"><input type="radio" name="catDecline" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Some pullback is fine</span></label>
+        <label class="pf-opt"><input type="radio" name="catDecline" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Significant declines don&rsquo;t worry me</span></label>
       </div>
     </div>
 
-    <!-- Q14: cagr5Y → 5-Year Growth -->
-    <div class="pf-q" data-key="cagr5Y" data-kind="single">
-      <div class="pf-num">14 / 14 <span class="pf-ind-tag">5-Year Growth</span></div>
-      <div class="pf-text">What matters more to you?</div>
+    <!-- Q14: Fundamental — debt -->
+    <div class="pf-q" data-key="catDebt" data-kind="single">
+      <div class="pf-num">14 / 20 <span class="pf-ind-tag">Fundamental</span></div>
+      <div class="pf-text">How much debt are you comfortable with?</div>
       <div class="pf-opts">
-        <label class="pf-opt"><input type="radio" name="cagr5Y" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Protecting my money</span></label>
-        <label class="pf-opt"><input type="radio" name="cagr5Y" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>A balance of safety and growth</span></label>
-        <label class="pf-opt"><input type="radio" name="cagr5Y" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Maximising growth</span></label>
+        <label class="pf-opt"><input type="radio" name="catDebt" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Low debt only &mdash; financial safety first</span></label>
+        <label class="pf-opt"><input type="radio" name="catDebt" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Moderate debt is fine</span></label>
+        <label class="pf-opt"><input type="radio" name="catDebt" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Debt level doesn&rsquo;t concern me</span></label>
+      </div>
+    </div>
+
+    <!-- Q15: Fundamental — cash generation -->
+    <div class="pf-q" data-key="catCashGen" data-kind="single">
+      <div class="pf-num">15 / 20 <span class="pf-ind-tag">Fundamental</span></div>
+      <div class="pf-text">How important is cash generation?</div>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="catCashGen" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Very &mdash; I want cash-rich, low-dilution companies</span></label>
+        <label class="pf-opt"><input type="radio" name="catCashGen" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Somewhat important</span></label>
+        <label class="pf-opt"><input type="radio" name="catCashGen" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I&rsquo;m focused on growth, not current cash flow</span></label>
+      </div>
+    </div>
+
+    <!-- Q16: Fundamental — earnings quality -->
+    <div class="pf-q" data-key="catEarnings" data-kind="single">
+      <div class="pf-num">16 / 20 <span class="pf-ind-tag">Fundamental</span></div>
+      <div class="pf-text">Do you care about earnings quality and valuation?</div>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="catEarnings" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Yes &mdash; I want high-quality, fairly valued companies</span></label>
+        <label class="pf-opt"><input type="radio" name="catEarnings" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Somewhat &mdash; a balance</span></label>
+        <label class="pf-opt"><input type="radio" name="catEarnings" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I&rsquo;m willing to pay up for growth</span></label>
+      </div>
+    </div>
+
+    <!-- Q17: Liquidity — trading activity -->
+    <div class="pf-q" data-key="catLiquidity" data-kind="single">
+      <div class="pf-num">17 / 20 <span class="pf-ind-tag">Liquidity</span></div>
+      <div class="pf-text">How important is trading activity and liquidity?</div>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="catLiquidity" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Very &mdash; I want actively traded stocks</span></label>
+        <label class="pf-opt"><input type="radio" name="catLiquidity" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Some activity is enough</span></label>
+        <label class="pf-opt"><input type="radio" name="catLiquidity" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I don&rsquo;t mind thinly traded stocks</span></label>
+      </div>
+    </div>
+
+    <!-- Q18: Liquidity — company size -->
+    <div class="pf-q" data-key="catCompSize" data-kind="single">
+      <div class="pf-num">18 / 20 <span class="pf-ind-tag">Liquidity</span></div>
+      <div class="pf-text">What company size are you comfortable investing in?</div>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="catCompSize" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Large &amp; mega-cap only</span></label>
+        <label class="pf-opt"><input type="radio" name="catCompSize" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Mid-cap and above</span></label>
+        <label class="pf-opt"><input type="radio" name="catCompSize" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Any size &mdash; including small &amp; micro-cap</span></label>
+      </div>
+    </div>
+
+    <!-- Q19: Sentiment — analyst opinions -->
+    <div class="pf-q" data-key="catAnalyst" data-kind="single">
+      <div class="pf-num">19 / 20 <span class="pf-ind-tag">Sentiment</span></div>
+      <div class="pf-text">How much do analyst opinions matter to you?</div>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="catAnalyst" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>A lot &mdash; I follow consensus recommendations</span></label>
+        <label class="pf-opt"><input type="radio" name="catAnalyst" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Somewhat &mdash; one factor among many</span></label>
+        <label class="pf-opt"><input type="radio" name="catAnalyst" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Not at all &mdash; I make my own decisions</span></label>
+      </div>
+    </div>
+
+    <!-- Q20: Sentiment — volume confirmation -->
+    <div class="pf-q" data-key="catTrendConfirm" data-kind="single">
+      <div class="pf-num">20 / 20 <span class="pf-ind-tag">Sentiment</span></div>
+      <div class="pf-text">Do you prefer stocks where volume confirms the trend?</div>
+      <div class="pf-opts">
+        <label class="pf-opt"><input type="radio" name="catTrendConfirm" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Yes &mdash; confirmed moves only</span></label>
+        <label class="pf-opt"><input type="radio" name="catTrendConfirm" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>Nice to have but not essential</span></label>
+        <label class="pf-opt"><input type="radio" name="catTrendConfirm" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>I don&rsquo;t look at volume signals</span></label>
       </div>
     </div>
 
@@ -416,17 +486,16 @@ html,body{overflow-y:auto !important;}
   <div class="table-wrap-d">
     <div class="t-head">
       <div class="th th-tip" data-tip="Ticker and company name. Click any row to open the asset scorecard.">Asset</div>
-      <div class="th th-tip" data-tip="How closely this asset matches your personal scorecard — based on your answers to the 10 risk questions.">Match</div>
+      <div class="th th-tip" data-tip="How closely this asset matches your personal scorecard — based on your answers to the 16 risk questions.">Match</div>
       <div class="th th-tip" data-tip="Match strength: Very Strong, Strong, Borderline, Poor, or Very Poor." style="text-align:center">Rating</div>
       <div class="th th-tip" data-tip="Current price. Refreshed weekly.">Price</div>
-      <div class="th th-tip" data-tip="Price change over the past 30 days.">30D</div>
-      <div class="th th-tip" data-tip="Price change over the past 12 months.">1Y</div>
-      <div class="th th-tip hide-m" data-tip="Indicator Health — count of green (healthy), amber (caution) and red (stressed) indicators out of 10.">Health</div>
+      <div class="th th-tip" data-tip="Price change over the past day.">1D</div>
+      <div class="th th-tip" data-tip="6-month return.">6M</div>
+      <div class="th th-tip hide-m" data-tip="Indicator Health — count of green (healthy), amber (caution) and red (stressed) indicators out of 36.">Health</div>
       <div class="th th-tip hide-m" data-tip="Price relative to the 50-day moving average. Positive means trading above trend.">50D</div>
       <div class="th th-tip hide-m" data-tip="Price relative to the 200-day moving average. Positive means the long-term uptrend is intact.">200D</div>
       <div class="th th-tip hide-m" data-tip="Golden Cross (50D above 200D, bullish) or Death Cross (50D below 200D, bearish).">Trend</div>
       <div class="th th-tip hide-m" data-tip="Where the current price sits in its 52-week high–low range. Higher = closer to yearly high.">Range</div>
-      <div class="th th-tip hide-m" data-tip="5-year compound annual growth rate. Negative means value lost over 5 years.">5Y</div>
       <div class="th th-tip th-tip--right" data-tip="Add to watchlist, compare with another asset, or open the full scorecard.">Actions</div>
     </div>
     <div id="screenerBody"></div>
@@ -440,7 +509,7 @@ html,body{overflow-y:auto !important;}
 
 <script type="module">
 import { loadData } from '/js/data.js';
-import { IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, saveProfile, FIT_QUESTIONS, getProfileSummary, isAssetInScope, labelFor } from '/js/riskEngine.js';
+import { IND_ORDER, IND_META, CATEGORIES, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, saveProfile, FIT_QUESTIONS, getProfileSummary, isAssetInScope, labelFor } from '/js/riskEngine.js';
 import { getUser, signOut } from '/js/supabase.js';
 import { isWatched, addToWatchlistWithPrompt, removeFromWatchlist, showToast } from '/js/lists.js';
 
@@ -728,39 +797,30 @@ function showResults(allCoins, profile) {
     }
 
     const SCORE_MATRIX = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 0 }, C: { green: 1, amber: 1, red: 1 } };
-    const SCORE_MATRIX_Q9 = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 1 }, C: { green: 0, amber: 0.5, red: 1 } };
-    const indMeta = {
-      volatility: { label: 'Daily Volatility', desc: 'Day-to-day price swings' },
-      volSpike: { label: 'Volatility Spike', desc: 'Recent vs average volatility' },
-      vsPeak: { label: 'Distance from Peak', desc: 'Drop from all-time high' },
-      shortTrend: { label: '50-Day Trend', desc: 'Price vs 50-day average' },
-      longTrend: { label: '200-Day Trend', desc: 'Price vs 200-day average' },
-      maCross: { label: 'Trend Direction', desc: 'Golden or Death Cross' },
-      return1M: { label: '30-Day Return', desc: 'Past month return' },
-      return1Y: { label: '12-Month Return', desc: 'Past year return' },
-      range52W: { label: 'Position in Range', desc: 'Where in 52-week range' },
-      cagr5Y: { label: '5-Year Growth', desc: 'Annualised 5-year growth' },
-    };
 
     let strong = 0, partial = 0, low = 0;
-    const rows = FIT_QUESTIONS.map(q => {
-      const ind = coin.indicators[q.key];
+    const rows = FIT_QUESTIONS.flatMap(q => {
       const answer = profile[q.key];
-      if (!ind || !answer) return '';
-      const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
-      const sc = matrix[answer]?.[ind.color] ?? 0;
-      const fitColor = sc === 1 ? 'var(--teal)' : sc === 0.5 ? 'var(--amber-d)' : 'var(--red-d)';
-      const fitLbl = sc === 1 ? 'Strong' : sc === 0.5 ? 'Partial' : 'Low';
-      if (sc === 1) strong++; else if (sc === 0.5) partial++; else low++;
+      if (!answer) return [];
       const prefMap = { A: q.a.split(' ').slice(0, 3).join(' '), B: q.b.split(' ').slice(0, 3).join(' '), C: q.c.split(' ').slice(0, 3).join(' ') };
-      const meta = indMeta[q.key] || {};
-      return `<tr>
-        <td style="font-weight:500;color:var(--text)">${meta.label}</td>
-        <td style="color:var(--muted);font-weight:300">${meta.desc}</td>
-        <td style="font-family:var(--font-mono);font-size:0.78rem">${labelFor(q.key, ind.raw, ind.color)}</td>
-        <td style="font-size:0.72rem;color:var(--muted)">${prefMap[answer]}</td>
-        <td class="fit-bd-th-fit" style="color:${fitColor};font-weight:600">${fitLbl}</td>
-      </tr>`;
+      return q.indicators.map(indKey => {
+        const ind = coin.indicators[indKey];
+        if (!ind) return '';
+        const scores = SCORE_MATRIX[answer];
+        if (!scores) return '';
+        const sc = scores[ind.color] ?? 0;
+        const fitColor = sc === 1 ? 'var(--teal)' : sc === 0.5 ? 'var(--amber-d)' : 'var(--red-d)';
+        const fitLbl = sc === 1 ? 'Strong' : sc === 0.5 ? 'Partial' : 'Low';
+        if (sc === 1) strong++; else if (sc === 0.5) partial++; else low++;
+        const meta = IND_META[indKey] || {};
+        return `<tr>
+          <td style="font-weight:500;color:var(--text)">${meta.label || indKey}</td>
+          <td style="color:var(--muted);font-weight:300">${meta.desc ? meta.desc.split('.')[0] : ''}</td>
+          <td style="font-family:var(--font-mono);font-size:0.78rem">${labelFor(indKey, ind.raw, ind.color)}</td>
+          <td style="font-size:0.72rem;color:var(--muted)">${prefMap[answer]}</td>
+          <td class="fit-bd-th-fit" style="color:${fitColor};font-weight:600">${fitLbl}</td>
+        </tr>`;
+      });
     }).join('');
 
     const fitScore = coin.fitScore;
@@ -830,12 +890,12 @@ function showResults(allCoins, profile) {
         return filters.cats.some(cat => {
           if (cat === 'Mag7') return MAG7.includes(c.ticker);
           if (cat === 'Gainers') {
-            const r1m = c.indicators?.return1M?.raw;
-            return r1m != null && r1m > 20;
+            const r3m = c.indicators?.perf3M?.raw;
+            return r3m != null && r3m > 20;
           }
           if (cat === 'Losers') {
-            const r1m = c.indicators?.return1M?.raw;
-            return r1m != null && r1m < -20;
+            const r3m = c.indicators?.perf3M?.raw;
+            return r3m != null && r3m < -20;
           }
           return false;
         });
@@ -865,9 +925,9 @@ function showResults(allCoins, profile) {
       const trend200 = label('longTrend');
       const trendDir = ind.maCross?.color === 'green' ? 'Golden' : ind.maCross?.color === 'red' ? 'Death' : '\u2014';
       const range = label('range52W');
-      const growth5y = label('cagr5Y');
+      const perf6m = label('perf6M');
 
-      // Indicator Health — count RAG across the 10 indicators, track measured
+      // Indicator Health — count RAG across the 36 indicators
       let gCount = 0, aCount = 0, rCount = 0, measured = 0;
       IND_ORDER.forEach(k => {
         const clr = ind[k]?.color;
@@ -875,18 +935,16 @@ function showResults(allCoins, profile) {
         else if (clr === 'amber') { aCount++; measured++; }
         else if (clr === 'red')   { rCount++; measured++; }
       });
-      const isPartial = measured < 10;
+      const isPartial = measured < 30;
 
       const regionLabel = regionShort(c.region);
       const watched = isWatched(c.ticker);
 
-      // Returns coloured by sign (green positive / red negative)
+      // Returns coloured by sign
       const signClass = (raw) => raw == null ? 'cell' : raw > 0 ? 'cell-pos' : raw < 0 ? 'cell-neg' : 'cell';
-      const ret1YCls = signClass(ind.return1Y?.raw);
+      const perf6mCls = signClass(ind.perf6M?.raw);
       const trend50Cls = signClass(ind.shortTrend?.raw);
       const trend200Cls = signClass(ind.longTrend?.raw);
-      const growth5yCls = signClass(ind.cagr5Y?.raw);
-      // Trend direction (Golden / Death) coloured by classification
       const trendDirCls = ind.maCross?.color === 'green' ? 'cell-pos' : ind.maCross?.color === 'red' ? 'cell-neg' : 'cell';
 
       return `<div class="t-row" data-ticker="${c.ticker}">
@@ -895,13 +953,12 @@ function showResults(allCoins, profile) {
         <div style="text-align:center"><span class="badge-d badge-${fitClass}">${fitLabel}</span></div>
         <div class="cell">${formatPrice(c.price, c.currency)}</div>
         <div class="${change >= 0 ? 'cell-pos' : 'cell-neg'}">${change >= 0 ? '+' : ''}${change.toFixed(1)}%</div>
-        <div class="${ret1YCls}">${label('return1Y')}</div>
-        <div class="health-cell hide-m" ${isPartial ? `title="Partial data — ${measured} of 10 indicators measured"` : ''}><span class="hl-g">${gCount}</span><span class="hl-sep">/</span><span class="hl-a">${aCount}</span><span class="hl-sep">/</span><span class="hl-r">${rCount}</span>${isPartial ? `<span class="hl-partial">·${measured}/10</span>` : ''}</div>
+        <div class="${perf6mCls}">${perf6m}</div>
+        <div class="health-cell hide-m" ${isPartial ? `title="Partial data — ${measured} of 36 indicators measured"` : ''}><span class="hl-g">${gCount}</span><span class="hl-sep">/</span><span class="hl-a">${aCount}</span><span class="hl-sep">/</span><span class="hl-r">${rCount}</span>${isPartial ? `<span class="hl-partial">\u00b7${measured}/36</span>` : ''}</div>
         <div class="${trend50Cls} hide-m">${trend50}</div>
         <div class="${trend200Cls} hide-m">${trend200}</div>
         <div class="${trendDirCls} hide-m">${trendDir}</div>
         <div class="cell hide-m">${range}</div>
-        <div class="${growth5yCls} hide-m">${growth5y}</div>
         <div class="actions-d">
           <button class="act-icon ${watched ? 'is-active' : ''}" data-watch="${c.ticker}" title="${watched ? 'Remove from watchlist' : 'Add to watchlist'}">${ICON_BOOKMARK}</button>
           <a class="act-icon" href="/compare.html?a=${encodeURIComponent(c.ticker)}" title="Compare with another asset" data-compare>${ICON_COMPARE}</a>

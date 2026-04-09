@@ -6,7 +6,7 @@
 
 'use strict';
 
-import { IND_META, IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary, FIT_QUESTIONS, isAssetInScope, labelFor } from './riskEngine.js';
+import { IND_META, IND_ORDER, CATEGORIES, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary, FIT_QUESTIONS, isAssetInScope, labelFor } from './riskEngine.js';
 import { isWatched, addToWatchlistWithPrompt, removeFromWatchlist, showToast } from './lists.js';
 import { loadData, searchCoins } from './data.js';
 import html2canvas from 'html2canvas';
@@ -786,31 +786,33 @@ function buildFitRows(coin) {
   const profile = getProfile();
   if (!profile) return '';
   const SCORE_MATRIX = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 0 }, C: { green: 1, amber: 1, red: 1 } };
-  const SCORE_MATRIX_Q9 = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 1 }, C: { green: 0, amber: 0.5, red: 1 } };
   let strong = 0, partial = 0, low = 0;
 
-  const rows = FIT_QUESTIONS.map(q => {
-    const ind = coin.indicators[q.key];
+  const rows = FIT_QUESTIONS.flatMap(q => {
     const answer = profile[q.key];
-    if (!ind || !answer) return '';
-    const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
-    const s = matrix[answer]?.[ind.color] ?? 0;
-    const fitDot = s === 1 ? '\u{1F7E2}' : s === 0.5 ? '\u{1F7E1}' : '\u{1F534}';
-    const fitLabel = s === 1 ? 'Strong' : s === 0.5 ? 'Partial' : 'Low';
-    const fitColor = s === 1 ? 'var(--green)' : s === 0.5 ? 'var(--amber)' : 'var(--red)';
-    if (s === 1) strong++; else if (s === 0.5) partial++; else low++;
+    if (!answer) return [];
     const prefMap = { A: q.a.split(' ').slice(0, 3).join(' '), B: q.b.split(' ').slice(0, 3).join(' '), C: q.c.split(' ').slice(0, 3).join(' ') };
-    const meta = IND_META[q.key] || {};
-    return `<tr>
-      <td style="font-weight:500;color:var(--text)">${meta.label || q.key}</td>
-      <td style="color:var(--muted);font-weight:300">${meta.desc ? meta.desc.split('.')[0] : ''}</td>
-      <td style="font-family:var(--font-mono);font-size:0.78rem">${ind.label}</td>
-      <td style="font-size:0.72rem;color:var(--muted)">${prefMap[answer]}</td>
-      <td class="fit-bd-th-fit" style="color:${fitColor};font-weight:600"><span style="font-size:0.7rem">${fitDot}</span> ${fitLabel}</td>
-    </tr>`;
+    return q.indicators.map(indKey => {
+      const ind = coin.indicators[indKey];
+      if (!ind) return '';
+      const scores = SCORE_MATRIX[answer];
+      if (!scores) return '';
+      const s = scores[ind.color] ?? 0;
+      const fitDot = s === 1 ? '\u{1F7E2}' : s === 0.5 ? '\u{1F7E1}' : '\u{1F534}';
+      const fitLabel = s === 1 ? 'Strong' : s === 0.5 ? 'Partial' : 'Low';
+      const fitColor = s === 1 ? 'var(--green)' : s === 0.5 ? 'var(--amber)' : 'var(--red)';
+      if (s === 1) strong++; else if (s === 0.5) partial++; else low++;
+      const meta = IND_META[indKey] || {};
+      return `<tr>
+        <td style="font-weight:500;color:var(--text)">${meta.label || indKey}</td>
+        <td style="color:var(--muted);font-weight:300">${meta.desc ? meta.desc.split('.')[0] : ''}</td>
+        <td style="font-family:var(--font-mono);font-size:0.78rem">${labelFor(indKey, ind.raw, ind.color)}</td>
+        <td style="font-size:0.72rem;color:var(--muted)">${prefMap[answer]}</td>
+        <td class="fit-bd-th-fit" style="color:${fitColor};font-weight:600"><span style="font-size:0.7rem">${fitDot}</span> ${fitLabel}</td>
+      </tr>`;
+    });
   }).join('');
 
-  // Store totals for the tfoot (set via JS after render)
   setTimeout(() => {
     const totalEl = document.getElementById('fitBdTotal');
     if (totalEl) totalEl.innerHTML = `<span style="color:var(--green)">Strong (${strong})</span> \u00b7 <span style="color:var(--amber)">Partial (${partial})</span> \u00b7 <span style="color:var(--red)">Low (${low})</span>`;
@@ -1062,65 +1064,21 @@ function buildAdHeader(coin) {
   `;
 }
 
-// One-line description for an indicator when scored against a user preference
+// One-line description for an indicator using its metadata and RAG color
 function adIndicatorExplain(key, v, ticker) {
   const lbl = labelFor(key, v.raw, v.color);
-  const defs = {
-    volatility: () => v.raw < 30
-      ? `Low annualised volatility (${lbl}) \u2014 calm, predictable day-to-day price movement.`
-      : v.raw < 60
-      ? `Moderate annualised volatility (${lbl}) \u2014 the price can move meaningfully from day to day.`
-      : `High annualised volatility (${lbl}) \u2014 the price swings significantly from day to day.`,
-    volSpike: () => v.raw < 1.0
-      ? `Recent volatility lower than historical average (${lbl}) \u2014 price behaviour calmer than usual.`
-      : v.raw < 2.0
-      ? `Recent volatility slightly above average (${lbl}) \u2014 something may be shifting.`
-      : `Recent volatility well above average (${lbl}) \u2014 heightened uncertainty.`,
-    vsPeak: () => v.raw < 20
-      ? `Only ${lbl} below the all-time high \u2014 holding up close to peak value.`
-      : v.raw < 30
-      ? `A noticeable ${lbl} pullback from the all-time high.`
-      : `A deep ${lbl} drawdown from the all-time high \u2014 significant peak loss.`,
-    shortTrend: () => v.raw > 0
-      ? `Trading ${lbl} above the 50-day average \u2014 short-term trend upward.`
-      : v.raw > -6
-      ? `Trading ${lbl} below the 50-day average \u2014 early signs of weakness.`
-      : `Trading ${lbl} below the 50-day average \u2014 clear short-term downtrend.`,
-    longTrend: () => v.raw > 0
-      ? `Price ${lbl} above the 200-day average \u2014 the long-term uptrend is intact.`
-      : v.raw > -10
-      ? `Price ${lbl} below the 200-day average \u2014 long-term trend weakening.`
-      : `Price ${lbl} below the 200-day average \u2014 extended long-term downtrend.`,
-    maCross: () => v.color === 'green'
-      ? `Golden Cross \u2014 50-day average above 200-day. Bullish trend direction.`
-      : `Death Cross \u2014 50-day average below 200-day. Bearish trend direction.`,
-    return1M: () => v.raw >= 0
-      ? `Up ${lbl} over the past 30 days \u2014 short-term direction positive.`
-      : v.raw > -10
-      ? `Down ${lbl} over the past 30 days \u2014 modest short-term decline.`
-      : `Down ${lbl} over the past 30 days \u2014 sharp selling pressure.`,
-    return1Y: () => v.raw > 0
-      ? `Up ${lbl} over the past 12 months \u2014 gained value over the longer term.`
-      : v.raw > -20
-      ? `Down ${lbl} over the past 12 months \u2014 moderate annual decline.`
-      : `Down ${lbl} over the past 12 months \u2014 sustained period of weakness.`,
-    range52W: () => v.raw > 45
-      ? `In the upper half of its 52-week range (${lbl}) \u2014 closer to yearly high.`
-      : v.raw > 25
-      ? `Mid-range within its 52-week band (${lbl}) \u2014 neither near top nor bottom.`
-      : `Near the bottom of its 52-week range (${lbl}) \u2014 most yearly gains given back.`,
-    cagr5Y: () => v.raw > 0
-      ? `${lbl} annualised compound growth over 5 years \u2014 building long-term value.`
-      : `${lbl} annualised over 5 years \u2014 destroyed long-term value.`,
-  };
-  return defs[key] ? defs[key]() : '';
+  const meta = IND_META[key];
+  if (!meta) return '';
+  const desc = meta.desc || '';
+  const colorWord = v.color === 'green' ? 'healthy' : v.color === 'amber' ? 'borderline' : 'stressed';
+  return `${desc.split('.')[0]} \u2014 currently ${lbl} (${colorWord}).`;
 }
 
 // Build the 3 indicator groups (Going well / Concerning / Critical) for Performance body
 // Returns-style indicators (signed % values) → coloured by sign
-const RETURN_KEYS = new Set(['shortTrend', 'longTrend', 'return1M', 'return1Y', 'cagr5Y']);
-// Volatility-style indicators (magnitudes) → no colour
-const NEUTRAL_KEYS = new Set(['volatility', 'volSpike', 'vsPeak', 'range52W']);
+const RETURN_KEYS = new Set(['shortTrend', 'longTrend', 'perf3M', 'perf6M', 'perfYTD', 'nearLow3M', 'momDiv', 'volChg1W', 'volChg1M']);
+// Magnitude / ratio indicators → no colour
+const NEUTRAL_KEYS = new Set(['volDaily', 'volWeekly', 'volMonthly', 'volAccel', 'vsPeak', 'nearHigh1M', 'range52W', 'rangeWidth', 'gapRisk', 'beta', 'betaDrawdown', 'debtEquity', 'debtRevenue', 'ebitdaMargin', 'earningsQuality', 'fcfYield', 'profitValuation', 'epsDilution', 'sharpe1M', 'sharpe1Y', 'relVolIntra', 'relVol1M']);
 
 // Decide the colour for an indicator's data cell
 function adValueColor(key, v, dotColor) {
@@ -1218,48 +1176,50 @@ function buildAdFitSection(coin) {
     ? `Based on your ${riskLevelParts.join(' \u00b7 ')} profile`
     : 'Based on your risk profile';
 
-  const SCORE_MATRIX    = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 0 }, C: { green: 1, amber: 1, red: 1 } };
-  const SCORE_MATRIX_Q9 = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 1 }, C: { green: 0, amber: 0.5, red: 1 } };
+  const SCORE_MATRIX = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 0 }, C: { green: 1, amber: 1, red: 1 } };
 
   let strong = 0, partial = 0, low = 0;
   const sensitiveChanges = [];
 
-  // Iterate over the 10 risk questions — each question maps 1:1 to one indicator
-  const rowsHTML = FIT_QUESTIONS.map(q => {
-    const ind = coin.indicators[q.key];
+  // Iterate over the 16 risk questions — each maps to one or more indicators
+  const rowsHTML = FIT_QUESTIONS.flatMap(q => {
     const answer = profile[q.key];
-    if (!ind || !answer) return '';
-    const matrix = q.inverted ? SCORE_MATRIX_Q9 : SCORE_MATRIX;
-    const s = matrix[answer]?.[ind.color] ?? 0;
-    const fitLabel = s === 1 ? 'Strong' : s === 0.5 ? 'Partial' : 'Low';
-    const fitColor = s === 1 ? 'var(--ad-teal)' : s === 0.5 ? 'var(--ad-amber)' : 'var(--ad-red-muted)';
-    if (s === 1) strong++;
-    else if (s === 0.5) partial++;
-    else low++;
-
+    if (!answer) return [];
     const prefText = q[answer.toLowerCase()] || '';
-    const meta = IND_META[q.key] || {};
-    const desc = (meta.desc ? meta.desc.split('.')[0] : '').trim();
+    const scores = SCORE_MATRIX[answer];
+    if (!scores) return [];
+    return q.indicators.map(indKey => {
+      const ind = coin.indicators[indKey];
+      if (!ind) return '';
+      const s = scores[ind.color] ?? 0;
+      const fitLabel = s === 1 ? 'Strong' : s === 0.5 ? 'Partial' : 'Low';
+      const fitColor = s === 1 ? 'var(--ad-teal)' : s === 0.5 ? 'var(--ad-amber)' : 'var(--ad-red-muted)';
+      if (s === 1) strong++;
+      else if (s === 0.5) partial++;
+      else low++;
 
-    const indLbl = labelFor(q.key, ind.raw, ind.color);
-    // Flag currently Strong green indicators that would drop if the color slipped to amber
-    if (s === 1 && ind.color === 'green' && matrix[answer]?.amber != null && matrix[answer].amber < 1) {
-      sensitiveChanges.push({
-        label: meta.label || q.key,
-        current: indLbl,
-        wouldBecome: matrix[answer].amber === 0.5 ? 'Partial' : 'Low',
-      });
-    }
+      const meta = IND_META[indKey] || {};
+      const desc = (meta.desc ? meta.desc.split('.')[0] : '').trim();
+      const indLbl = labelFor(indKey, ind.raw, ind.color);
 
-    return `
-      <div class="ad-bt-row">
-        <div class="ad-bt-indicator"><div class="ad-bt-dot" style="background:${fitColor}"></div>${meta.label || q.key}</div>
-        <div class="ad-bt-desc">${desc}</div>
-        <div class="ad-bt-value" style="color:${fitColor}">${indLbl}</div>
-        <div class="ad-bt-pref">${prefText}</div>
-        <div class="ad-bt-fit" style="color:${fitColor}">${fitLabel}</div>
-      </div>
-    `;
+      if (s === 1 && ind.color === 'green' && scores.amber != null && scores.amber < 1) {
+        sensitiveChanges.push({
+          label: meta.label || indKey,
+          current: indLbl,
+          wouldBecome: scores.amber === 0.5 ? 'Partial' : 'Low',
+        });
+      }
+
+      return `
+        <div class="ad-bt-row">
+          <div class="ad-bt-indicator"><div class="ad-bt-dot" style="background:${fitColor}"></div>${meta.label || indKey}</div>
+          <div class="ad-bt-desc">${desc}</div>
+          <div class="ad-bt-value" style="color:${fitColor}">${indLbl}</div>
+          <div class="ad-bt-pref">${prefText}</div>
+          <div class="ad-bt-fit" style="color:${fitColor}">${fitLabel}</div>
+        </div>
+      `;
+    });
   }).join('');
 
   // Fit dots row — highlight current band
@@ -2346,91 +2306,15 @@ function buildFullAnalysis(coin) {
   // Build all indicator cards with their explanations
   const allCards = [];
 
-  const indDefs = {
-    volatility: v => ({
-      title: 'Daily Volatility',
-      text: v.raw < 30
-        ? `${ticker} has relatively calm daily price movements. An annualised volatility of ${v.label} means day-to-day price swings are modest and more predictable.`
-        : v.raw < 60
-        ? `${ticker} shows moderate price swings at ${v.label} annualised. The price can move meaningfully from day to day, which is typical for this type of asset.`
-        : `${ticker} has high volatility at ${v.label} annualised. The price swings significantly from day to day, making it harder to predict short-term moves.`,
-    }),
-    volSpike: v => ({
-      title: 'Volatility Spike',
-      text: v.raw < 1.0
-        ? `Recent volatility is lower than the historical average (${v.label}). Price behaviour has been calmer than usual lately \u2014 a stable sign.`
-        : v.raw < 2.0
-        ? `Recent volatility is slightly above the historical average at ${v.label}. Something may be shifting, but it\u2019s not extreme.`
-        : `Recent volatility is ${v.label} the historical average \u2014 a significant spike. This often precedes larger price moves and indicates heightened uncertainty.`,
-    }),
-    shortTrend: v => ({
-      title: '50-Day Trend',
-      text: v.raw > 0
-        ? `The price is ${v.label} above its 50-day average. The short-term direction is upward \u2014 buyers have been in control recently.`
-        : v.raw > -6
-        ? `The price is ${v.label} below its 50-day average. It has slipped slightly below the short-term trend, which could signal early weakness.`
-        : `The price is ${v.label} below its 50-day average. This is a clear downtrend signal \u2014 the asset has fallen well below where it was trading recently.`,
-    }),
-    longTrend: v => ({
-      title: '200-Day Trend',
-      text: v.raw > 0
-        ? `The price sits ${v.label} above its 200-day average \u2014 the long-term trend is intact and pointing upward.`
-        : v.raw > -10
-        ? `The price is ${v.label} below its 200-day average. The long-term trend is starting to weaken but hasn\u2019t broken down completely.`
-        : `The price is ${v.label} below its 200-day average. This is a significant long-term downtrend \u2014 the asset has been losing value over an extended period.`,
-    }),
-    maCross: v => ({
-      title: 'Trend Direction',
-      text: v.color === 'green'
-        ? `The 50-day average is above the 200-day average \u2014 known as a "Golden Cross." This is a widely-watched bullish signal that suggests the overall trend direction is upward.`
-        : `The 50-day average has fallen below the 200-day average \u2014 known as a "Death Cross." This is a bearish signal that suggests the overall trend direction is downward.`,
-    }),
-    vsPeak: v => ({
-      title: 'Distance from Peak',
-      text: v.raw < 20
-        ? `The price is only ${v.label} below its 3-year high. It has held up well and remains close to its peak value.`
-        : v.raw < 30
-        ? `The price is ${v.label} below its 3-year high. A noticeable pullback from the peak, though not extreme.`
-        : `The price is ${v.label} below its 3-year high. This is a deep drawdown \u2014 the asset has lost a significant portion of its peak value and hasn\u2019t recovered.`,
-    }),
-    return1M: v => ({
-      title: '30-Day Return',
-      text: v.raw >= 0
-        ? `Over the past 30 days, the price has risen ${v.label}. Short-term direction is positive.`
-        : v.raw > -10
-        ? `Over the past 30 days, the price has fallen ${v.label}. A modest short-term decline.`
-        : `Over the past 30 days, the price has dropped ${v.label}. This is a sharp decline that signals significant selling pressure.`,
-    }),
-    return1Y: v => ({
-      title: '12-Month Return',
-      text: v.raw > 0
-        ? `Over the past 12 months, the price is up ${v.label}. The asset has gained value over the longer term.`
-        : v.raw > -20
-        ? `Over the past 12 months, the price is down ${v.label}. A moderate decline over the year.`
-        : `Over the past 12 months, the price has fallen ${v.label}. This sustained decline indicates a prolonged period of weakness.`,
-    }),
-    range52W: v => ({
-      title: 'Position in Range',
-      text: v.raw > 45
-        ? `The price is in the upper half of its 52-week range (${v.label}). It\u2019s closer to its yearly high than its low \u2014 a sign of strength.`
-        : v.raw > 25
-        ? `The price sits in the middle of its 52-week range (${v.label}). It\u2019s neither near the top nor the bottom of its recent trading band.`
-        : `The price is near the bottom of its 52-week range (${v.label}). It has given back most of its gains from the past year.`,
-    }),
-    cagr5Y: v => ({
-      title: '5-Year Growth',
-      text: v.raw > 0
-        ? `The 5-year annual growth rate is ${v.label}. Over five years, the asset has grown in value on an annualised basis \u2014 a positive long-term sign.`
-        : `The 5-year annual growth rate is ${v.label}. Over five years, the asset has lost value on an annualised basis \u2014 meaning it has destroyed long-term value.`,
-    }),
-  };
-
   for (const key of IND_ORDER) {
     const v = ind[key];
-    const def = indDefs[key];
-    if (!v || !def) continue;
-    const { title, text } = def(v);
-    allCards.push({ color: v.color, title, label: v.label, text });
+    if (!v) continue;
+    const meta = IND_META[key] || {};
+    const title = meta.label || key;
+    const lbl = labelFor(key, v.raw, v.color);
+    const colorWord = v.color === 'green' ? 'healthy' : v.color === 'amber' ? 'borderline' : 'stressed';
+    const text = `${meta.desc || ''} Currently ${lbl} (${colorWord}).`;
+    allCards.push({ color: v.color, title, label: lbl, text });
   }
 
   // Group by severity: red → amber → green
@@ -3082,11 +2966,7 @@ function generateSummary(coin) {
   }
 
   // Month-on-month indicator changes
-  const indNames = {
-    volatility: 'Daily Volatility', volSpike: 'Volatility Spike', vsPeak: 'Distance from Peak',
-    shortTrend: '50-Day Trend', longTrend: '200-Day Trend', maCross: 'Trend Direction',
-    return1M: '30-Day Return', return1Y: '12-Month Return', range52W: 'Position in Range', cagr5Y: '5-Year Growth',
-  };
+  const indNames = Object.fromEntries(IND_ORDER.map(k => [k, IND_META[k]?.label || k]));
   const improvedList = [], deterioratedList = [];
   if (prev) {
     const colorRank = { green: 0, amber: 1, red: 2 };
