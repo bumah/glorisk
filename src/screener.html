@@ -440,7 +440,7 @@ html,body{overflow-y:auto !important;}
 
 <script type="module">
 import { loadData } from '/js/data.js';
-import { IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, saveProfile, FIT_QUESTIONS, getProfileSummary, isAssetInScope } from '/js/riskEngine.js';
+import { IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, saveProfile, FIT_QUESTIONS, getProfileSummary, isAssetInScope, labelFor } from '/js/riskEngine.js';
 import { getUser, signOut } from '/js/supabase.js';
 import { isWatched, addToWatchlistWithPrompt, removeFromWatchlist, showToast } from '/js/lists.js';
 
@@ -757,7 +757,7 @@ function showResults(allCoins, profile) {
       return `<tr>
         <td style="font-weight:500;color:var(--text)">${meta.label}</td>
         <td style="color:var(--muted);font-weight:300">${meta.desc}</td>
-        <td style="font-family:var(--font-mono);font-size:0.78rem">${ind.label}</td>
+        <td style="font-family:var(--font-mono);font-size:0.78rem">${labelFor(q.key, ind.raw, ind.color)}</td>
         <td style="font-size:0.72rem;color:var(--muted)">${prefMap[answer]}</td>
         <td class="fit-bd-th-fit" style="color:${fitColor};font-weight:600">${fitLbl}</td>
       </tr>`;
@@ -860,11 +860,12 @@ function showResults(allCoins, profile) {
       const change = c.priceChange || 0;
 
       const ind = c.indicators || {};
-      const trend50 = ind.shortTrend?.label || '\u2014';
-      const trend200 = ind.longTrend?.label || '\u2014';
+      const label = (k) => ind[k] ? labelFor(k, ind[k].raw, ind[k].color) : '\u2014';
+      const trend50 = label('shortTrend');
+      const trend200 = label('longTrend');
       const trendDir = ind.maCross?.color === 'green' ? 'Golden' : ind.maCross?.color === 'red' ? 'Death' : '\u2014';
-      const range = ind.range52W?.label || '\u2014';
-      const growth5y = ind.cagr5Y?.label || '\u2014';
+      const range = label('range52W');
+      const growth5y = label('cagr5Y');
 
       // Indicator Health — count RAG across the 10 indicators, track measured
       let gCount = 0, aCount = 0, rCount = 0, measured = 0;
@@ -894,7 +895,7 @@ function showResults(allCoins, profile) {
         <div style="text-align:center"><span class="badge-d badge-${fitClass}">${fitLabel}</span></div>
         <div class="cell">${formatPrice(c.price, c.currency)}</div>
         <div class="${change >= 0 ? 'cell-pos' : 'cell-neg'}">${change >= 0 ? '+' : ''}${change.toFixed(1)}%</div>
-        <div class="${ret1YCls}">${ind.return1Y?.label || '\u2014'}</div>
+        <div class="${ret1YCls}">${label('return1Y')}</div>
         <div class="health-cell hide-m" ${isPartial ? `title="Partial data — ${measured} of 10 indicators measured"` : ''}><span class="hl-g">${gCount}</span><span class="hl-sep">/</span><span class="hl-a">${aCount}</span><span class="hl-sep">/</span><span class="hl-r">${rCount}</span>${isPartial ? `<span class="hl-partial">·${measured}/10</span>` : ''}</div>
         <div class="${trend50Cls} hide-m">${trend50}</div>
         <div class="${trend200Cls} hide-m">${trend200}</div>

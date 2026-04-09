@@ -6,7 +6,7 @@
 
 'use strict';
 
-import { IND_META, IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary, FIT_QUESTIONS, isAssetInScope } from './riskEngine.js';
+import { IND_META, IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary, FIT_QUESTIONS, isAssetInScope, labelFor } from './riskEngine.js';
 import { isWatched, addToWatchlistWithPrompt, removeFromWatchlist, showToast } from './lists.js';
 import { loadData, searchCoins } from './data.js';
 import html2canvas from 'html2canvas';
@@ -1064,53 +1064,54 @@ function buildAdHeader(coin) {
 
 // One-line description for an indicator when scored against a user preference
 function adIndicatorExplain(key, v, ticker) {
+  const lbl = labelFor(key, v.raw, v.color);
   const defs = {
     volatility: () => v.raw < 30
-      ? `Low annualised volatility (${v.label}) \u2014 calm, predictable day-to-day price movement.`
+      ? `Low annualised volatility (${lbl}) \u2014 calm, predictable day-to-day price movement.`
       : v.raw < 60
-      ? `Moderate annualised volatility (${v.label}) \u2014 the price can move meaningfully from day to day.`
-      : `High annualised volatility (${v.label}) \u2014 the price swings significantly from day to day.`,
+      ? `Moderate annualised volatility (${lbl}) \u2014 the price can move meaningfully from day to day.`
+      : `High annualised volatility (${lbl}) \u2014 the price swings significantly from day to day.`,
     volSpike: () => v.raw < 1.0
-      ? `Recent volatility lower than historical average (${v.label}) \u2014 price behaviour calmer than usual.`
+      ? `Recent volatility lower than historical average (${lbl}) \u2014 price behaviour calmer than usual.`
       : v.raw < 2.0
-      ? `Recent volatility slightly above average (${v.label}) \u2014 something may be shifting.`
-      : `Recent volatility well above average (${v.label}) \u2014 heightened uncertainty.`,
+      ? `Recent volatility slightly above average (${lbl}) \u2014 something may be shifting.`
+      : `Recent volatility well above average (${lbl}) \u2014 heightened uncertainty.`,
     vsPeak: () => v.raw < 20
-      ? `Only ${v.label} below the 3-year high \u2014 holding up close to peak value.`
+      ? `Only ${lbl} below the all-time high \u2014 holding up close to peak value.`
       : v.raw < 30
-      ? `A noticeable ${v.label} pullback from the 3-year high.`
-      : `A deep ${v.label} drawdown from the 3-year high \u2014 significant peak loss.`,
+      ? `A noticeable ${lbl} pullback from the all-time high.`
+      : `A deep ${lbl} drawdown from the all-time high \u2014 significant peak loss.`,
     shortTrend: () => v.raw > 0
-      ? `Trading ${v.label} above the 50-day average \u2014 short-term trend upward.`
+      ? `Trading ${lbl} above the 50-day average \u2014 short-term trend upward.`
       : v.raw > -6
-      ? `Trading ${v.label} below the 50-day average \u2014 early signs of weakness.`
-      : `Trading ${v.label} below the 50-day average \u2014 clear short-term downtrend.`,
+      ? `Trading ${lbl} below the 50-day average \u2014 early signs of weakness.`
+      : `Trading ${lbl} below the 50-day average \u2014 clear short-term downtrend.`,
     longTrend: () => v.raw > 0
-      ? `Price ${v.label} above the 200-day average \u2014 the long-term uptrend is intact.`
+      ? `Price ${lbl} above the 200-day average \u2014 the long-term uptrend is intact.`
       : v.raw > -10
-      ? `Price ${v.label} below the 200-day average \u2014 long-term trend weakening.`
-      : `Price ${v.label} below the 200-day average \u2014 extended long-term downtrend.`,
+      ? `Price ${lbl} below the 200-day average \u2014 long-term trend weakening.`
+      : `Price ${lbl} below the 200-day average \u2014 extended long-term downtrend.`,
     maCross: () => v.color === 'green'
       ? `Golden Cross \u2014 50-day average above 200-day. Bullish trend direction.`
       : `Death Cross \u2014 50-day average below 200-day. Bearish trend direction.`,
     return1M: () => v.raw >= 0
-      ? `Up ${v.label} over the past 30 days \u2014 short-term direction positive.`
+      ? `Up ${lbl} over the past 30 days \u2014 short-term direction positive.`
       : v.raw > -10
-      ? `Down ${v.label} over the past 30 days \u2014 modest short-term decline.`
-      : `Down ${v.label} over the past 30 days \u2014 sharp selling pressure.`,
+      ? `Down ${lbl} over the past 30 days \u2014 modest short-term decline.`
+      : `Down ${lbl} over the past 30 days \u2014 sharp selling pressure.`,
     return1Y: () => v.raw > 0
-      ? `Up ${v.label} over the past 12 months \u2014 gained value over the longer term.`
+      ? `Up ${lbl} over the past 12 months \u2014 gained value over the longer term.`
       : v.raw > -20
-      ? `Down ${v.label} over the past 12 months \u2014 moderate annual decline.`
-      : `Down ${v.label} over the past 12 months \u2014 sustained period of weakness.`,
+      ? `Down ${lbl} over the past 12 months \u2014 moderate annual decline.`
+      : `Down ${lbl} over the past 12 months \u2014 sustained period of weakness.`,
     range52W: () => v.raw > 45
-      ? `In the upper half of its 52-week range (${v.label}) \u2014 closer to yearly high.`
+      ? `In the upper half of its 52-week range (${lbl}) \u2014 closer to yearly high.`
       : v.raw > 25
-      ? `Mid-range within its 52-week band (${v.label}) \u2014 neither near top nor bottom.`
-      : `Near the bottom of its 52-week range (${v.label}) \u2014 most yearly gains given back.`,
+      ? `Mid-range within its 52-week band (${lbl}) \u2014 neither near top nor bottom.`
+      : `Near the bottom of its 52-week range (${lbl}) \u2014 most yearly gains given back.`,
     cagr5Y: () => v.raw > 0
-      ? `${v.label} annualised compound growth over 5 years \u2014 building long-term value.`
-      : `${v.label} annualised over 5 years \u2014 destroyed long-term value.`,
+      ? `${lbl} annualised compound growth over 5 years \u2014 building long-term value.`
+      : `${lbl} annualised over 5 years \u2014 destroyed long-term value.`,
   };
   return defs[key] ? defs[key]() : '';
 }
@@ -1145,7 +1146,7 @@ function buildAdIndGroups(coin) {
     allCards.push({
       color: v.color, key, raw: v.raw,
       title: meta.label || key,
-      label: v.label,
+      label: labelFor(key, v.raw, v.color),
       text: adIndicatorExplain(key, v, ticker),
     });
   }
@@ -1240,11 +1241,12 @@ function buildAdFitSection(coin) {
     const meta = IND_META[q.key] || {};
     const desc = (meta.desc ? meta.desc.split('.')[0] : '').trim();
 
+    const indLbl = labelFor(q.key, ind.raw, ind.color);
     // Flag currently Strong green indicators that would drop if the color slipped to amber
     if (s === 1 && ind.color === 'green' && matrix[answer]?.amber != null && matrix[answer].amber < 1) {
       sensitiveChanges.push({
         label: meta.label || q.key,
-        current: ind.label,
+        current: indLbl,
         wouldBecome: matrix[answer].amber === 0.5 ? 'Partial' : 'Low',
       });
     }
@@ -1253,7 +1255,7 @@ function buildAdFitSection(coin) {
       <div class="ad-bt-row">
         <div class="ad-bt-indicator"><div class="ad-bt-dot" style="background:${fitColor}"></div>${meta.label || q.key}</div>
         <div class="ad-bt-desc">${desc}</div>
-        <div class="ad-bt-value" style="color:${fitColor}">${ind.label}</div>
+        <div class="ad-bt-value" style="color:${fitColor}">${indLbl}</div>
         <div class="ad-bt-pref">${prefText}</div>
         <div class="ad-bt-fit" style="color:${fitColor}">${fitLabel}</div>
       </div>

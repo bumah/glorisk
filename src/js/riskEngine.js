@@ -94,6 +94,44 @@ export function scoreLowBadInclusive(value, greenAbove, amberAbove) {
   return { color: 'red', pts: 2 };
 }
 
+/* ── Label reconstruction ────────────────────────────────────────────────
+ *
+ * coins.json only stores { color, raw } per indicator to cut the file size
+ * in half. The display label is rebuilt on demand — signed percentages for
+ * return-style indicators, magnitudes for volatility, text labels for
+ * categorical indicators like maCross.
+ */
+
+function fmtSignedPct(v, d = 1) {
+  if (v == null || !isFinite(v)) return '—';
+  return (v >= 0 ? '+' : '') + v.toFixed(d) + '%';
+}
+
+export function labelFor(key, raw, color) {
+  if (raw == null || !isFinite(raw)) return '—';
+  switch (key) {
+    case 'volatility': return raw.toFixed(1) + '%';
+    case 'volSpike':   return raw.toFixed(2) + '\u00d7';
+    case 'vsPeak':     return '-' + raw.toFixed(1) + '%';
+    case 'shortTrend':
+    case 'longTrend':
+    case 'return1M':
+    case 'return1Y':
+    case 'cagr5Y':
+      return fmtSignedPct(raw);
+    case 'range52W':   return raw.toFixed(0) + '%';
+    case 'maCross':    return color === 'green' ? 'Golden Cross' : 'Death Cross';
+    default:           return String(raw);
+  }
+}
+
+// Convenience: resolve a label from a coin's indicator object (or return fallback).
+export function indLabel(ind, key) {
+  if (!ind) return '—';
+  if (ind.label) return ind.label;  // legacy format
+  return labelFor(key, ind.raw, ind.color);
+}
+
 /* ── GloRisk Fit Score — personalised scoring engine ───────────────────── */
 
 // Scoring matrices per answer type

@@ -276,7 +276,7 @@ body{background:#0D1B3E;}
 </footer>
 
 <script type="module">
-import { IND_META, IND_ORDER, FIT_QUESTIONS, computeFitScore, getFitLabel, getFitClass, getProfile, getProfileSummary } from '/js/riskEngine.js';
+import { IND_META, IND_ORDER, FIT_QUESTIONS, computeFitScore, getFitLabel, getFitClass, getProfile, getProfileSummary, labelFor } from '/js/riskEngine.js';
 import { getUser, signOut } from '/js/supabase.js';
 
 let allCoins = [];
@@ -673,11 +673,13 @@ async function renderComparison() {
     const iA = a.indicators[k], iB = b.indicators[k];
     if (!iA || !iB) return '';
     const meta = IND_META[k] || {};
+    const lblA = labelFor(k, iA.raw, iA.color);
+    const lblB = labelFor(k, iB.raw, iB.color);
     return `
       <div class="cmp-ind-row">
         <div class="cmp-ind-name">${meta.label || k}</div>
-        <div class="cmp-ind-val"><div class="cmp-ind-dot" style="background:${indColorVar(iA.color)}"></div><span style="color:${indTextColorVar(iA.color)}">${iA.label}</span></div>
-        <div class="cmp-ind-val"><div class="cmp-ind-dot" style="background:${indColorVar(iB.color)}"></div><span style="color:${indTextColorVar(iB.color)}">${iB.label}</span></div>
+        <div class="cmp-ind-val"><div class="cmp-ind-dot" style="background:${indColorVar(iA.color)}"></div><span style="color:${indTextColorVar(iA.color)}">${lblA}</span></div>
+        <div class="cmp-ind-val"><div class="cmp-ind-dot" style="background:${indColorVar(iB.color)}"></div><span style="color:${indTextColorVar(iB.color)}">${lblB}</span></div>
       </div>
     `;
   }).join('');

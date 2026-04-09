@@ -118,6 +118,39 @@ function countryToRegion(country) {
   return COUNTRY_REGION[country] || 'Other';
 }
 
+// Only these indices are ever used for filtering in the frontend. Everything
+// else gets dropped to save ~1.7 MB in coins.json.
+const MAJOR_INDICES = new Set([
+  'S&P 500',
+  'NASDAQ 100',
+  'Dow Jones Industrial Average',
+  'Russell 2000',
+  'Russell 1000',
+  'Russell 3000',
+  'FTSE 100',
+  'Nikkei 225',
+  'Hang Seng Index',
+  'DAX',
+  'CAC 40',
+  'S&P/ASX 200',
+  'S&P/TSX Composite',
+  'KOSPI',
+  'KOSDAQ Composite',
+  'Sensex',
+  'NIFTY 50',
+  'Tadawul All Shares',
+]);
+
+// Strip a derived indicator object down to the minimum the frontend needs.
+// label is rebuilt from raw at display time; pts is unused in frontend.
+function compactInd(inds) {
+  const out = {};
+  for (const [k, v] of Object.entries(inds)) {
+    out[k] = { color: v.color, raw: +v.raw.toFixed(2) };
+  }
+  return out;
+}
+
 /* ── Formatters ──────────────────────────────────────────────────────────── */
 
 function fmtPctLabel(v, d = 1) {
@@ -346,17 +379,17 @@ function main() {
       country: f.country,
       region: countryToRegion(f.country),
       currency: f.currency,
-      price: +f.price.toFixed(6),
+      price: +f.price.toFixed(4),
       priceChange: f.priceChange1D != null ? +f.priceChange1D.toFixed(2) : 0,
-      marketCap: f.marketCap,
-      beta: f.beta,
+      marketCap: f.marketCap != null ? +f.marketCap.toFixed(0) : null,
+      beta: f.beta != null ? +f.beta.toFixed(2) : null,
       analystRating: f.analystRating,
-      indices: f.indicesList,
-      high52w: f.high52w,
-      low52w: f.low52w,
-      highAllTime: f.highAllTime,
-      lowAllTime: f.lowAllTime,
-      indicators,
+      indices: (f.indicesList || []).filter(i => MAJOR_INDICES.has(i)),
+      high52w: f.high52w != null ? +f.high52w.toFixed(4) : null,
+      low52w:  f.low52w  != null ? +f.low52w.toFixed(4)  : null,
+      highAllTime: f.highAllTime != null ? +f.highAllTime.toFixed(4) : null,
+      lowAllTime:  f.lowAllTime  != null ? +f.lowAllTime.toFixed(4)  : null,
+      indicators: compactInd(indicators),
     });
   }
 
