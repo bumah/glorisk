@@ -291,11 +291,19 @@ let currentTab = 'watchlist';
 let currentFilter = 'all';
 let pendingAddCoin = null;
 
-const CURRENCY_MAP = { FTSE100: 'p', Nikkei225: '\u00a5', HSI: 'HK$' };
-function formatPrice(p, group) {
-  const sym = CURRENCY_MAP[group] || '$';
+const CURRENCY_SYMBOLS = {
+  USD: '$', CAD: 'C$', GBP: '£', EUR: '€', CHF: 'CHF ',
+  JPY: '¥', CNY: '¥', HKD: 'HK$', TWD: 'NT$', KRW: '₩',
+  INR: '₹', SGD: 'S$', AUD: 'A$', NZD: 'NZ$',
+  BRL: 'R$', MXN: 'MX$', ZAR: 'R', SAR: 'SR ', AED: 'AED ',
+  ILS: '₪', TRY: '₺', THB: '฿', IDR: 'Rp', MYR: 'RM', PHP: '₱', VND: '₫',
+};
+function formatPrice(p, currency) {
+  const sym = CURRENCY_SYMBOLS[currency] || (currency ? currency + ' ' : '$');
   if (p == null) return '—';
-  if (group === 'FTSE100') return p.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + 'p';
+  if (currency === 'JPY' || currency === 'KRW' || currency === 'IDR' || currency === 'VND') {
+    return sym + Math.round(p).toLocaleString();
+  }
   if (p < 1) return sym + p.toFixed(4);
   return sym + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -506,7 +514,7 @@ function renderTable() {
         <div class="wl-aname"><a href="/browse.html?asset=${encodeURIComponent(ticker)}">${ticker}</a></div>
         <div class="wl-asub">${coin.company}</div>
       </div>
-      <div class="wl-cell wl-cell-price" style="color:var(--warm-white)">${formatPrice(coin.price, coin.group)}</div>
+      <div class="wl-cell wl-cell-price" style="color:var(--warm-white)">${formatPrice(coin.price, coin.currency)}</div>
       <div class="wl-cell wl-cell-30d" style="color:${changeColor}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</div>
       <div>
         <div class="wl-cell" style="color:${fitNumColor}">${fitNum}</div>
@@ -748,25 +756,6 @@ async function init() {
   const res = await fetch('/data/coins.json');
   const data = await res.json();
   allCoins = data.coins;
-
-  // If any watched / portfolio tickers aren't in core, lazy-load the universe
-  // so the rows render correctly with their partial indicators.
-  const allWatched = Array.from(new Set([...getWatchlist(), ...getPortfolio()]));
-  const coreSet = new Set(allCoins.map(c => c.ticker));
-  const missing = allWatched.filter(t => !coreSet.has(t));
-  if (missing.length) {
-    try {
-      const uRes = await fetch('/data/universe.json');
-      if (uRes.ok) {
-        const uData = await uRes.json();
-        // Append just the matches — we don't need all 28k in memory
-        const missingSet = new Set(missing);
-        allCoins = [...allCoins, ...uData.coins.filter(c => missingSet.has(c.ticker))];
-      }
-    } catch (e) {
-      console.warn('Failed to load universe for watchlist:', e);
-    }
-  }
 
   // Wire tabs
   document.querySelectorAll('.wl-tab').forEach(tab => {

@@ -158,8 +158,16 @@ body { background: var(--bg); color: var(--text); }
 </footer>
 
 <script type="module">
-import { getMoodBand, IND_ORDER, MAX_SCORE } from '/js/riskEngine.js';
+import { IND_ORDER } from '/js/riskEngine.js';
 import { getUser, signOut } from '/js/supabase.js';
+
+// Legacy stubs — stress-test UI depends on pre-retirement mood data.
+// Kept as a non-functional placeholder until the page is rebuilt against
+// the new fundamentals catalog.
+const MAX_SCORE = 20;
+function getMoodBand(label) {
+  return { label, displayLabel: label, cls: 'mood-healthy', color: '#22c55e', colorKey: 'calm', key: 'calm' };
+}
 
 let allCoins = [];
 let portfolio = []; // [{ticker, value, shock}]

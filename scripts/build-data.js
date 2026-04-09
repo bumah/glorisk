@@ -1,9 +1,12 @@
 /**
  * GloRisk — Data Build Script
  * ─────────────────────────────────────────────────────────────────────────────
- * Reads all closing price CSVs + ticker metadata and produces:
- *   public/data/coins.json          — lightweight catalog (no price arrays)
- *   public/data/assets/{TICKER}.json — per-asset price history + MAs
+ * Reads data/raw/fundamentals.csv (a 30k-stock snapshot from TradingView-style
+ * providers) and produces a single public/data/coins.json catalog with all
+ * 10 risk indicators derived from the snapshot.
+ *
+ * Assets without closing-price history (crypto, ETFs, indices) will be added
+ * back via their own input files in future commits — they're not in scope now.
  *
  * Usage:  node scripts/build-data.js
  */
@@ -14,110 +17,23 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import {
-  computeCategoryA,
-  computeIndicatorsFromPrices,
-  computeMood,
-  sma,
-  IND_ORDER,
-  IND_META,
-  MOOD_BANDS,
   THRESHOLDS,
   scoreHighBad,
   scoreLowBad,
   scoreLowBadInclusive,
+  IND_ORDER,
 } from '../src/js/riskEngine.js';
 
-const __dirname  = path.dirname(fileURLToPath(import.meta.url));
-const RAW_DIR    = path.join(__dirname, '../data/raw');
+const __dirname   = path.dirname(fileURLToPath(import.meta.url));
+const RAW_DIR     = path.join(__dirname, '../data/raw');
 const PUBLIC_DATA = path.join(__dirname, '../public/data');
-const ASSETS_DIR  = path.join(PUBLIC_DATA, 'assets');
-
-/* ── Crypto name lookup ──────────────────────────────────────────────────── */
-
-const CRYPTO_NAMES = {
-  AAVE:'Aave', ADA:'Cardano', ALGO:'Algorand', APT:'Aptos', AR:'Arweave',
-  ARB:'Arbitrum', ATOM:'Cosmos', AVAX:'Avalanche', BCH:'Bitcoin Cash',
-  BNB:'BNB', BONK:'Bonk', BTC:'Bitcoin', CFX:'Conflux', DOGE:'Dogecoin',
-  DOT:'Polkadot', EGLD:'MultiversX', ETH:'Ethereum', FET:'Fetch.ai',
-  FIL:'Filecoin', FLOKI:'Floki', FTM:'Fantom', GRT:'The Graph',
-  HBAR:'Hedera', ICP:'Internet Computer', IMX:'Immutable X', INJ:'Injective',
-  KAVA:'Kava', LINK:'Chainlink', LTC:'Litecoin', MKR:'Maker', NEAR:'NEAR Protocol',
-  OP:'Optimism', PEPE:'Pepe', QNT:'Quant', RNDR:'Render', RUNE:'THORChain',
-  SEI:'Sei', SHIB:'Shiba Inu', SOL:'Solana', STX:'Stacks', SUI:'Sui',
-  TAO:'Bittensor', THETA:'Theta Network', TON:'Toncoin', TRX:'TRON',
-  UNI:'Uniswap', VET:'VeChain', WIF:'dogwifhat', WLD:'Worldcoin',
-  XLM:'Stellar', XMR:'Monero', XRP:'XRP', ZEC:'Zcash',
-  '1INCH':'1inch', ANKR:'Ankr', APE:'ApeCoin', AXS:'Axie Infinity',
-  BAL:'Balancer', BAND:'Band Protocol', BAT:'Basic Attention Token',
-  BLUR:'Blur', CELO:'Celo', CELR:'Celer Network', CHZ:'Chiliz',
-  COMP:'Compound', CRV:'Curve DAO', CVX:'Convex Finance', DASH:'Dash',
-  DYDX:'dYdX', ENJ:'Enjin Coin', ETC:'Ethereum Classic', FLOW:'Flow',
-  GALA:'Gala', GMT:'STEPN', GMX:'GMX', ID:'SPACE ID', IOTA:'IOTA',
-  JASMY:'JasmyCoin', KSM:'Kusama', LDO:'Lido DAO', LQTY:'Liquity',
-  LRC:'Loopring', MAGIC:'Magic', MANA:'Decentraland', MASK:'Mask Network',
-  MINA:'Mina Protocol', NEO:'NEO', OCEAN:'Ocean Protocol', ROSE:'Oasis Network',
-  RPL:'Rocket Pool', SAND:'The Sandbox', SKL:'SKALE', SNX:'Synthetix',
-  STORJ:'Storj', SUSHI:'SushiSwap', UMA:'UMA', WAVES:'Waves', WOO:'WOO Network',
-  YFI:'yearn.finance', ZIL:'Zilliqa', ZRX:'0x Protocol',
-  ACH:'Alchemy Pay', AGIX:'SingularityNET', AKT:'Akash Network', ALT:'AltLayer',
-  AUDIO:'Audius', BEAM:'Beam', BNT:'Bancor', BOME:'Book of Meme', CHR:'Chromia',
-  CKB:'Nervos Network', CTSI:'Cartesi', DCR:'Decred', DYM:'Dymension',
-  EOS:'EOS', FXS:'Frax Share', GLMR:'Moonbeam', GNO:'Gnosis', HIGH:'Highstreet',
-  HIVE:'Hive', HOOK:'Hooked Protocol', ICX:'ICON', JTO:'Jito', JUP:'Jupiter',
-  KNC:'Kyber Network', MANTA:'Manta Network', MOVR:'Moonriver', NMR:'Numeraire',
-  NTRN:'Neutron', ONT:'Ontology', ORDI:'ORDI', PENDLE:'Pendle', PIXEL:'Pixels',
-  PORTAL:'Portal', POWR:'Power Ledger', PRIME:'Echelon Prime', PUNDIX:'Pundi X',
-  PYTH:'Pyth Network', QTUM:'Qtum', REN:'Ren', SC:'Siacoin', SSV:'SSV Network',
-  STEEM:'Steem', STRK:'Stark', SUPER:'SuperVerse', TIA:'Celestia',
-  XDC:'XDC Network', XTZ:'Tezos', AION:'Aion', ALCX:'Alchemix',
-  ALPACA:'Alpaca Finance', ARPA:'ARPA', BADGER:'Badger DAO', BEL:'Bella Protocol',
-  BETA:'Beta Finance', BICO:'Biconomy', BOND:'BarnBridge', BTRST:'Braintrust',
-  BURGER:'BurgerCities', CHESS:'Tranchess', COCOS:'Cocos-BCX', CYBER:'CyberConnect',
-  DODO:'DODO', DUSK:'Dusk Network', ERN:'Ethernity Chain', FARM:'Harvest Finance',
-  FIO:'FIO Protocol', FOR:'ForTube', FORTH:'Ampleforth Governance', IDEX:'IDEX',
-  IRIS:'IRISnet', KLAY:'Klaytn', LSK:'Lisk', LTO:'LTO Network', MDT:'Measurable Data',
-  MDX:'Mdex', MIR:'Mirror Protocol', NKN:'NKN', NULS:'NULS', OGN:'Origin Protocol',
-  ORN:'Orion Protocol', PERP:'Perpetual Protocol', PLA:'PlayDapp', POLS:'Polkastarter',
-  RLY:'Rally', SCRT:'Secret', SLP:'Smooth Love Potion', SPELL:'Spell Token',
-  STPT:'STP', SXP:'Solar', TOMO:'TomoChain', TORN:'Tornado Cash',
-  VELO:'Velo', VRA:'Verasity', WAXP:'WAX', XCN:'Chain',
-  NEXO:'Nexo', ENA:'Ethena', ONDO:'Ondo Finance', GT:'Gate Token', MNT:'Mantle',
-  KAS:'Kaspa', RENDER:'Render', POL:'Polygon',
-};
-
-/* ── Index name lookup ───────────────────────────────────────────────────── */
-
-const INDEX_NAMES = {
-  SP500:     'S&P 500 Index',
-  FTSE100:   'FTSE 100 Index',
-  HSI:       'Hang Seng Index',
-  Nikkei225: 'Nikkei 225 Index',
-};
-
-/* ── Group/exchange detection from filename ──────────────────────────────── */
-
-const FILE_OVERRIDES = {
-  '00_INDEX': { group: 'Index',      exchange: 'Global' },
-  'Crypto':   { group: 'Crypto',     exchange: 'Crypto' },
-  'SP500':    { group: 'SP500',      exchange: 'US' },
-  'FTSE100':  { group: 'FTSE100',    exchange: 'UK' },
-  'Nikkei225':{ group: 'Nikkei225',  exchange: 'JP' },
-  'HSI':      { group: 'HSI',        exchange: 'HK' },
-  'ETFs':     { group: 'SectorETFs', exchange: 'US' },
-};
-
-function detectGroupAndExchange(filename) {
-  const base = filename.replace('_closing_prices.csv', '');
-  return FILE_OVERRIDES[base] || { group: base, exchange: 'Unknown' };
-}
 
 /* ── CSV parser ──────────────────────────────────────────────────────────── */
 
 function parseCSV(filepath) {
-  const text    = fs.readFileSync(filepath, 'utf8');
-  const lines   = text.split('\n').filter(l => l.trim());
+  const text  = fs.readFileSync(filepath, 'utf8');
+  const lines = text.split('\n').filter(l => l.trim());
   const headers = parseCSVLine(lines[0]);
-
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
     const vals = parseCSVLine(lines[i]);
@@ -140,187 +56,8 @@ function parseCSVLine(line) {
   return result;
 }
 
-/* ── Extract one ticker's price series from a parsed CSV ─────────────────── */
+/* ── Country → region mapping ────────────────────────────────────────────── */
 
-function extractSeries(parsed, ticker) {
-  const colIdx = parsed.headers.indexOf(ticker);
-  if (colIdx === -1) return null;
-
-  const prices = [];
-  for (const row of parsed.rows) {
-    const date = row[0];
-    const val  = parseFloat(row[colIdx]);
-    if (!date) continue;
-    if (!isNaN(val) && val > 0) {
-      prices.push({ d: date, p: val });
-    }
-  }
-  return prices.length > 0 ? prices : null;
-}
-
-/* ── 30D price change ────────────────────────────────────────────────────── */
-
-function compute30DChange(prices) {
-  const n = prices.length;
-  if (n < 32) return 0;
-  const last = prices[n - 1].p;
-  const prev = prices[n - 31].p;
-  return prev > 0 ? +((last / prev - 1) * 100).toFixed(2) : 0;
-}
-
-/* ── Name resolver factory ───────────────────────────────────────────────── */
-
-function makeNameResolver(group, tickerNames) {
-  if (group === 'Crypto') {
-    return (rawTicker) => {
-      const clean = rawTicker.replace('-USD', '');
-      return {
-        ticker: clean,
-        name: CRYPTO_NAMES[clean] || clean,
-        sector: 'Cryptocurrency',
-      };
-    };
-  }
-  if (group === 'Index') {
-    return (rawTicker) => {
-      const named = tickerNames[rawTicker];
-      return {
-        ticker: rawTicker,
-        name: INDEX_NAMES[rawTicker] || named?.name || rawTicker,
-        sector: named?.sector || 'Broad Market Index',
-      };
-    };
-  }
-  // Default: stock/ETF resolver
-  return (rawTicker) => {
-    const entry = tickerNames[rawTicker];
-    return {
-      ticker: rawTicker,
-      name: entry?.name || rawTicker,
-      sector: entry?.sector || 'Unknown',
-    };
-  };
-}
-
-/* ── Process one CSV file ────────────────────────────────────────────────── */
-
-function processFile(csvFile, group, exchange, nameResolver, usedTickers) {
-  console.log(`  Processing ${csvFile}...`);
-  const parsed  = parseCSV(path.join(RAW_DIR, csvFile));
-  const tickers = parsed.headers.slice(1); // skip Date column
-  const coins   = [];
-  let skipped   = 0;
-
-  for (const rawTicker of tickers) {
-    const prices = extractSeries(parsed, rawTicker);
-    if (!prices || prices.length < 252) { skipped++; continue; }
-
-    const { ticker, name, sector } = nameResolver(rawTicker);
-
-    // Handle ticker collision for asset filenames
-    let assetFile = `${ticker}.json`;
-    if (usedTickers.has(ticker)) {
-      assetFile = `${ticker}_${group}.json`;
-      console.log(`    ⚠ Ticker collision: ${ticker} — using ${assetFile}`);
-    }
-    usedTickers.add(ticker);
-
-    // Category A from full history
-    const catA = computeCategoryA(prices);
-
-    // Category B from last 252 days
-    const prices252 = prices.slice(-252);
-    const { indicators, ma50History, ma200History } = computeIndicatorsFromPrices(prices252, catA);
-    const mood = computeMood(indicators);
-
-    // Historical scores — 1 month ago (T-30) and 1 year ago (T-252)
-    const scoreHistory = {};
-
-    // Score 30 days ago — include indicator colors for month-on-month comparison
-    if (prices.length >= 252 + 30) {
-      const pricesT30 = prices.slice(-(252 + 30), -30);
-      const catAT30   = computeCategoryA(prices.slice(0, -30));
-      const { indicators: indT30 } = computeIndicatorsFromPrices(pricesT30, catAT30);
-      const moodT30 = computeMood(indT30);
-      // Store compact indicator snapshot: { key: { color, label } }
-      const indSnap = {};
-      for (const key of IND_ORDER) {
-        if (indT30[key]) indSnap[key] = { color: indT30[key].color, label: indT30[key].label };
-      }
-      scoreHistory['1m'] = { score: moodT30.score, pct: moodT30.pct, label: moodT30.label, indicators: indSnap };
-    }
-
-    // Score 252 days ago (1 year)
-    if (prices.length >= 252 + 252) {
-      const pricesT252 = prices.slice(-(252 + 252), -252);
-      const catAT252   = computeCategoryA(prices.slice(0, -252));
-      const { indicators: indT252 } = computeIndicatorsFromPrices(pricesT252, catAT252);
-      const moodT252 = computeMood(indT252);
-      scoreHistory['1y'] = { score: moodT252.score, pct: moodT252.pct, label: moodT252.label };
-    }
-
-    // Weekly score timeline — compute score every 5 trading days going back
-    const scoreTimeline = [];
-    const maxWeeks = Math.min(52, Math.floor((prices.length - 252) / 5));
-    for (let w = 0; w <= maxWeeks; w++) {
-      const offset = w * 5; // 5 trading days per week
-      if (prices.length < 252 + offset) break;
-      const sliceEnd = prices.length - offset;
-      const slicePrices = prices.slice(sliceEnd - 252, sliceEnd);
-      const sliceCatA   = computeCategoryA(prices.slice(0, sliceEnd));
-      const { indicators: sliceInd } = computeIndicatorsFromPrices(slicePrices, sliceCatA);
-      const sliceMood = computeMood(sliceInd);
-      const gs = Math.min(95, Math.max(10, 100 - sliceMood.score * 5));
-      scoreTimeline.unshift({
-        d: slicePrices.at(-1).d,
-        s: gs,
-      });
-    }
-
-    // 12-month average score
-    const avgScore = scoreTimeline.length > 0
-      ? Math.round(scoreTimeline.reduce((sum, p) => sum + p.s, 0) / scoreTimeline.length)
-      : Math.min(95, Math.max(10, 100 - mood.score * 5));
-    const price       = prices.at(-1).p;
-    const priceChange = compute30DChange(prices);
-    const lastDate    = prices.at(-1).d;
-
-    // Write per-asset JSON
-    const assetData = {
-      ticker,
-      priceHistory: prices252,
-      ma50History,
-      ma200History,
-      scoreTimeline,
-    };
-    fs.writeFileSync(path.join(ASSETS_DIR, assetFile), JSON.stringify(assetData));
-
-    // Catalog entry (no price arrays)
-    coins.push({
-      ticker,
-      company: name,
-      exchange,
-      group,
-      tier: 'core',
-      sector,
-      price: +price.toFixed(6),
-      priceChange,
-      lastDate,
-      mood,
-      indicators,
-      scoreHistory,
-      avgScore,
-      assetFile,
-    });
-  }
-
-  console.log(`    → ${coins.length} assets processed, ${skipped} skipped (insufficient data)`);
-  return coins;
-}
-
-/* ── Fundamentals universe (30k stocks from snapshot CSV) ─────────────────── */
-
-// Country → region bucket used by the screener universe filter
 const COUNTRY_REGION = {
   'United States': 'US',
   'Canada': 'CA',
@@ -342,6 +79,8 @@ const COUNTRY_REGION = {
   'Portugal': 'EU',
   'Poland': 'EU',
   'Greece': 'EU',
+  'Czech Republic': 'EU',
+  'Hungary': 'EU',
   'Japan': 'JP',
   'South Korea': 'KR',
   'Korea': 'KR',
@@ -356,67 +95,111 @@ const COUNTRY_REGION = {
   'Mexico': 'LATAM',
   'Argentina': 'LATAM',
   'Chile': 'LATAM',
+  'Colombia': 'LATAM',
+  'Peru': 'LATAM',
   'South Africa': 'AF',
+  'Nigeria': 'AF',
+  'Kenya': 'AF',
+  'Egypt': 'AF',
   'Saudi Arabia': 'ME',
   'United Arab Emirates': 'ME',
   'Israel': 'ME',
   'Turkey': 'ME',
+  'Qatar': 'ME',
+  'Kuwait': 'ME',
+  'Indonesia': 'SEA',
+  'Thailand': 'SEA',
+  'Malaysia': 'SEA',
+  'Philippines': 'SEA',
+  'Vietnam': 'SEA',
 };
 
 function countryToRegion(country) {
   return COUNTRY_REGION[country] || 'Other';
 }
 
+/* ── Formatters ──────────────────────────────────────────────────────────── */
+
 function fmtPctLabel(v, d = 1) {
-  if (!isFinite(v)) return '\u2014';
+  if (!isFinite(v)) return '—';
   return (v >= 0 ? '+' : '') + v.toFixed(d) + '%';
 }
 
-// Parse one fundamentals.csv row into a typed object. Returns null if price is missing.
-function parseFundamentalsRow(headers, vals) {
-  const get = (key) => {
+/* ── Fundamentals row parser ─────────────────────────────────────────────── */
+
+// Pick the first (lowest-index) column matching a header name — some exported
+// CSVs have duplicate column names; we always use the first occurrence.
+function makeFieldGetters(headers) {
+  const get = (row, key) => {
     const idx = headers.indexOf(key);
     if (idx === -1) return '';
-    return (vals[idx] || '').trim();
+    return (row[idx] || '').trim();
   };
-  const num = (key) => {
-    const s = get(key);
+  const num = (row, key) => {
+    const s = get(row, key);
     if (s === '' || s === 'N/A') return null;
     const n = parseFloat(s);
     return isNaN(n) ? null : n;
   };
-  const ticker = get('Symbol');
-  const price = num('Price');
+  return { get, num };
+}
+
+function parseFundamentalsRow(row, headers) {
+  const { get, num } = makeFieldGetters(headers);
+  const ticker = get(row, 'Symbol');
+  const price  = num(row, 'Price');
   if (!ticker || price == null || price <= 0) return null;
 
   return {
     ticker,
-    company: get('Description') || ticker,
-    sector: get('Sector') || 'Unknown',
-    industry: get('Industry') || null,
-    country: get('Country or region of registration') || null,
+    company:  get(row, 'Description') || ticker,
+    sector:   get(row, 'Sector')   || 'Unknown',
+    industry: get(row, 'Industry') || null,
+    country:  get(row, 'Country or region of registration') || null,
+    currency: get(row, 'Price - Currency') || 'USD',
     price,
-    priceChange: num('Price Change % 1 day'),   // 1-day %, not 30-day like core
-    volatility1M: num('Volatility 1 month'),    // daily vol in %, annualise with ×√252
-    sma50: num('Simple Moving Average (50) 1 day'),
-    sma200: num('Simple Moving Average (200) 1 day'),
-    perf1M: num('Performance % 1 month'),
-    perf1Y: num('Performance % 1 year'),
-    perf5Y: num('Performance % 5 years'),
-    marketCap: num('Market capitalization'),
-    beta: num('Beta 5 years'),
-    analystRating: get('Analyst Rating') || null,
-    indicesList: (get('Index') || '').split(',').map(s => s.trim()).filter(Boolean),
+    priceChange1D: num(row, 'Price Change % 1 day'),
+    // Volatility fields — prefer the daily one for our main vol indicator
+    volatility1D: num(row, 'Volatility 1 day'),
+    volatility1W: num(row, 'Volatility 1 week'),
+    volatility1M: num(row, 'Volatility 1 month'),
+    // Moving averages
+    sma50:  num(row, 'Simple Moving Average (50) 1 day'),
+    sma200: num(row, 'Simple Moving Average (200) 1 day'),
+    // Performance horizons
+    perf1M: num(row, 'Performance % 1 month'),
+    perf3M: num(row, 'Performance % 3 months'),
+    perf6M: num(row, 'Performance % 6 months'),
+    perf1Y: num(row, 'Performance % 1 year'),
+    perf5Y: num(row, 'Performance % 5 years'),
+    perfAT: num(row, 'Performance % All Time'),
+    // 52-week + all-time highs and lows
+    high52w:   num(row, 'High 52 weeks'),
+    low52w:    num(row, 'Low 52 weeks'),
+    highAllTime: num(row, 'High All Time'),
+    lowAllTime:  num(row, 'Low All Time'),
+    high3M:    num(row, 'High 3 months'),
+    low3M:     num(row, 'Low 3 months'),
+    high6M:    num(row, 'High 6 months'),
+    low6M:     num(row, 'Low 6 months'),
+    // Fundamentals strip
+    marketCap:     num(row, 'Market capitalization'),
+    beta:          num(row, 'Beta 5 years'),
+    analystRating: get(row, 'Analyst Rating') || null,
+    // Index membership
+    indicesList: (get(row, 'Index') || '').split(',').map(s => s.trim()).filter(Boolean),
   };
 }
 
-// Derive the 6 indicators we can compute from a snapshot. Each returns { raw, label, color, pts } or undefined.
-function deriveUniverseIndicators(f) {
+/* ── Indicator derivation — all 10 from snapshot fields ──────────────────── */
+
+function deriveIndicators(f) {
   const inds = {};
 
-  // 1. volatility — annualise 1-month daily vol
-  if (f.volatility1M != null) {
-    const annual = f.volatility1M * Math.sqrt(252);
+  // 1. volatility — annualise daily vol (more accurate than 1-month)
+  const volDaily = f.volatility1D ?? f.volatility1M;  // fallback to monthly if daily missing
+  if (volDaily != null && volDaily >= 0) {
+    const annual = volDaily * Math.sqrt(252);
     inds.volatility = {
       raw: +annual.toFixed(4),
       label: annual.toFixed(1) + '%',
@@ -424,7 +207,27 @@ function deriveUniverseIndicators(f) {
     };
   }
 
-  // 2. shortTrend — price vs 50-day MA
+  // 2. volSpike — recent (1-week) vol vs baseline (1-month)
+  if (f.volatility1W != null && f.volatility1M != null && f.volatility1M > 0) {
+    const ratio = f.volatility1W / f.volatility1M;
+    inds.volSpike = {
+      raw: +ratio.toFixed(4),
+      label: ratio.toFixed(2) + '×',
+      ...scoreHighBad(ratio, THRESHOLDS.volSpike.greenBelow, THRESHOLDS.volSpike.amberBelow),
+    };
+  }
+
+  // 3. vsPeak — distance from all-time high (was "3-year peak", now uses AT high)
+  if (f.highAllTime != null && f.highAllTime > 0) {
+    const drawdown = Math.max(0, (1 - f.price / f.highAllTime) * 100);
+    inds.vsPeak = {
+      raw: +drawdown.toFixed(4),
+      label: '-' + drawdown.toFixed(1) + '%',
+      ...scoreHighBad(drawdown, THRESHOLDS.vsPeak.greenBelow, THRESHOLDS.vsPeak.amberBelow),
+    };
+  }
+
+  // 4. shortTrend — price vs 50-day MA
   if (f.sma50 != null && f.sma50 > 0) {
     const st = (f.price / f.sma50 - 1) * 100;
     inds.shortTrend = {
@@ -434,7 +237,7 @@ function deriveUniverseIndicators(f) {
     };
   }
 
-  // 3. longTrend — price vs 200-day MA
+  // 5. longTrend — price vs 200-day MA
   if (f.sma200 != null && f.sma200 > 0) {
     const lt = (f.price / f.sma200 - 1) * 100;
     inds.longTrend = {
@@ -444,7 +247,7 @@ function deriveUniverseIndicators(f) {
     };
   }
 
-  // 4. maCross — SMA50 vs SMA200
+  // 6. maCross — SMA50 vs SMA200
   if (f.sma50 != null && f.sma200 != null && f.sma200 > 0) {
     const ratio = f.sma50 / f.sma200;
     const isGolden = ratio >= THRESHOLDS.maCross.goldenCrossAt;
@@ -456,7 +259,7 @@ function deriveUniverseIndicators(f) {
     };
   }
 
-  // 5. return1M — Performance % 1 month
+  // 7. return1M — Performance % 1 month
   if (f.perf1M != null) {
     inds.return1M = {
       raw: +f.perf1M.toFixed(4),
@@ -465,7 +268,7 @@ function deriveUniverseIndicators(f) {
     };
   }
 
-  // 6. return1Y — Performance % 1 year
+  // 8. return1Y — Performance % 1 year
   if (f.perf1Y != null) {
     inds.return1Y = {
       raw: +f.perf1Y.toFixed(4),
@@ -474,31 +277,66 @@ function deriveUniverseIndicators(f) {
     };
   }
 
+  // 9. range52W — position in 52-week high/low band
+  if (f.high52w != null && f.low52w != null && f.high52w > f.low52w) {
+    const rng = (f.price - f.low52w) / (f.high52w - f.low52w) * 100;
+    const clamped = Math.max(0, Math.min(100, rng));
+    inds.range52W = {
+      raw: +clamped.toFixed(4),
+      label: clamped.toFixed(0) + '%',
+      ...scoreLowBad(clamped, THRESHOLDS.range52W.greenAbove, THRESHOLDS.range52W.amberAbove),
+    };
+  }
+
+  // 10. cagr5Y — annualise Performance % 5 years (was cagr3Y, renamed)
+  if (f.perf5Y != null) {
+    // total return over 5 years → CAGR: (1 + r)^(1/5) - 1
+    const totalRet = f.perf5Y / 100;
+    let cagr;
+    if (totalRet <= -1) {
+      // Catastrophic loss: can't take a real root, flag as -100%
+      cagr = -100;
+    } else {
+      cagr = (Math.pow(1 + totalRet, 1 / 5) - 1) * 100;
+    }
+    inds.cagr5Y = {
+      raw: +cagr.toFixed(4),
+      label: fmtPctLabel(cagr),
+      color: cagr > THRESHOLDS.cagr5Y.greenAbove ? 'green' : 'red',
+      pts: cagr > THRESHOLDS.cagr5Y.greenAbove ? 0 : 2,
+    };
+  }
+
   return inds;
 }
 
-function processFundamentals(coreTickers) {
+/* ── Main build ──────────────────────────────────────────────────────────── */
+
+function main() {
+  console.log('GloRisk build — reading fundamentals.csv…\n');
+
+  // Ensure output directory exists
+  fs.mkdirSync(PUBLIC_DATA, { recursive: true });
+
   const filepath = path.join(RAW_DIR, 'fundamentals.csv');
   if (!fs.existsSync(filepath)) {
-    console.log('  fundamentals.csv not found — skipping universe build');
-    return [];
+    console.error('  fundamentals.csv not found — aborting build');
+    process.exit(1);
   }
-  console.log(`  Processing fundamentals.csv...`);
-  const parsed = parseCSV(filepath);
-  const { headers, rows } = parsed;
+
+  const { headers, rows } = parseCSV(filepath);
+  console.log(`  Loaded ${rows.length} rows, ${headers.length} columns`);
 
   const coins = [];
-  let skippedDedup = 0;
-  let skippedBad = 0;
+  let skipped = 0;
 
-  for (const vals of rows) {
-    const f = parseFundamentalsRow(headers, vals);
-    if (!f) { skippedBad++; continue; }
-    if (coreTickers.has(f.ticker)) { skippedDedup++; continue; }
+  for (const row of rows) {
+    const f = parseFundamentalsRow(row, headers);
+    if (!f) { skipped++; continue; }
 
-    const indicators = deriveUniverseIndicators(f);
-    // Require at least 3 derived indicators — otherwise the row is too thin to rank
-    if (Object.keys(indicators).length < 3) { skippedBad++; continue; }
+    const indicators = deriveIndicators(f);
+    // Require at least 6 of 10 indicators — otherwise the row is too thin
+    if (Object.keys(indicators).length < 6) { skipped++; continue; }
 
     coins.push({
       ticker: f.ticker,
@@ -507,242 +345,69 @@ function processFundamentals(coreTickers) {
       industry: f.industry,
       country: f.country,
       region: countryToRegion(f.country),
+      currency: f.currency,
       price: +f.price.toFixed(6),
-      priceChange: f.priceChange != null ? +f.priceChange.toFixed(2) : 0,
+      priceChange: f.priceChange1D != null ? +f.priceChange1D.toFixed(2) : 0,
       marketCap: f.marketCap,
       beta: f.beta,
       analystRating: f.analystRating,
       indices: f.indicesList,
-      group: 'Universe',
-      tier: 'universe',
+      high52w: f.high52w,
+      low52w: f.low52w,
+      highAllTime: f.highAllTime,
+      lowAllTime: f.lowAllTime,
       indicators,
     });
   }
 
-  console.log(`    → ${coins.length} universe assets, ${skippedDedup} dedup, ${skippedBad} skipped (missing data)`);
-  return coins;
-}
-
-/* ── Change detection — compare current vs previous build ────────────── */
-
-function detectChanges(newCoins, previousCatalog) {
-  if (!previousCatalog?.coins?.length) return null;
-
-  const prevMap = {};
-  for (const c of previousCatalog.coins) {
-    prevMap[c.ticker] = c;
-  }
-
-  const changes = {};
-  let changeCount = 0;
-
-  for (const curr of newCoins) {
-    const prev = prevMap[curr.ticker];
-    if (!prev) continue; // new asset, skip
-
-    const assetChanges = {};
-
-    // 1. Status (mood label) change
-    if (prev.mood?.label && curr.mood?.label && prev.mood.label !== curr.mood.label) {
-      const prevBand = MOOD_BANDS.find(b => b.label === prev.mood.label) || MOOD_BANDS[2];
-      const currBand = MOOD_BANDS.find(b => b.label === curr.mood.label) || MOOD_BANDS[2];
-      assetChanges.statusChange = {
-        from: prevBand.displayLabel,
-        to:   currBand.displayLabel,
-      };
-    }
-
-    // 2. GloRisk score change (only if >= 5 point shift)
-    const prevScore = Math.min(95, Math.max(10, 100 - (prev.mood?.score ?? 0) * 5));
-    const currScore = Math.min(95, Math.max(10, 100 - (curr.mood?.score ?? 0) * 5));
-    if (Math.abs(currScore - prevScore) >= 5) {
-      assetChanges.scoreChange = { from: prevScore, to: currScore };
-    }
-
-    // 3. Indicator color changes (green->red, red->green, etc.)
-    const indChanges = [];
-    for (const key of IND_ORDER) {
-      const prevInd = prev.indicators?.[key];
-      const currInd = curr.indicators?.[key];
-      if (prevInd?.color && currInd?.color && prevInd.color !== currInd.color) {
-        indChanges.push({
-          key,
-          name: IND_META[key]?.label || key,
-          fromColor: prevInd.color,
-          toColor:   currInd.color,
-          fromLabel: prevInd.label || '',
-          toLabel:   currInd.label || '',
-        });
-      }
-    }
-    if (indChanges.length) assetChanges.indicatorChanges = indChanges;
-
-    // Only record if something actually changed
-    if (Object.keys(assetChanges).length > 0) {
-      changes[curr.ticker] = {
-        company: curr.company,
-        group:   curr.group,
-        ...assetChanges,
-      };
-      changeCount++;
-    }
-  }
-
-  return changeCount > 0 ? changes : null;
-}
-
-/* ── Main ─────────────────────────────────────────────────────────────────── */
-
-function main() {
-  console.log('GloRisk build — reading data...\n');
-
-  // Ensure output directories exist
-  fs.mkdirSync(ASSETS_DIR, { recursive: true });
-
-  // Load previous catalog for change detection
-  const catalogPath = path.join(PUBLIC_DATA, 'coins.json');
-  let previousCatalog = null;
-  if (fs.existsSync(catalogPath)) {
-    try {
-      previousCatalog = JSON.parse(fs.readFileSync(catalogPath, 'utf8'));
-      console.log(`  Loaded previous build (${previousCatalog.total} assets, as of ${previousCatalog.asOf})`);
-    } catch { previousCatalog = null; }
-  }
-
-  // Clean previous asset files
-  const existingAssets = fs.readdirSync(ASSETS_DIR).filter(f => f.endsWith('.json'));
-  for (const f of existingAssets) {
-    fs.unlinkSync(path.join(ASSETS_DIR, f));
-  }
-
-  // Load ticker name lookup
-  const tickerNamesPath = path.join(RAW_DIR, 'ticker_names.json');
-  let tickerNames = {};
-  if (fs.existsSync(tickerNamesPath)) {
-    tickerNames = JSON.parse(fs.readFileSync(tickerNamesPath, 'utf8'));
-    console.log(`  Loaded ${Object.keys(tickerNames).length} ticker names`);
-  }
-
-  // Auto-discover CSV files
-  const csvFiles = fs.readdirSync(RAW_DIR)
-    .filter(f => f.endsWith('_closing_prices.csv'))
-    .sort();
-
-  console.log(`  Found ${csvFiles.length} CSV files: ${csvFiles.join(', ')}\n`);
-
-  const allCoins    = [];
-  const usedTickers = new Set();
-  let latestDate    = '';
-
-  for (const csvFile of csvFiles) {
-    const { group, exchange } = detectGroupAndExchange(csvFile);
-    const nameResolver = makeNameResolver(group, tickerNames);
-    const coins = processFile(csvFile, group, exchange, nameResolver, usedTickers);
-    allCoins.push(...coins);
-
-    // Track latest date across all files
-    for (const c of coins) {
-      if (c.lastDate > latestDate) latestDate = c.lastDate;
-    }
-  }
-
-  // Write catalog
-  // Enrich coins with position scores from AI reports (if available)
-  const REPORTS_DIR = path.join(PUBLIC_DATA, 'reports');
-  if (fs.existsSync(REPORTS_DIR)) {
-    let enriched = 0;
-    for (const coin of allCoins) {
-      const reportPath = path.join(REPORTS_DIR, `${coin.ticker}.json`);
-      if (!fs.existsSync(reportPath)) continue;
-      try {
-        const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
-        const scores = [];
-        for (const line of report.report.split('\n')) {
-          const m = line.match(/\|\s*\*?\*?\d+\.\s*.+?\*?\*?\s*\|\s*(\d+)(?:\/10)?\s*\|/);
-          if (m) scores.push(parseInt(m[1]));
-        }
-        if (scores.length >= 10) {
-          const intAvg = +(scores.slice(0, 5).reduce((a, b) => a + b, 0) / 5).toFixed(1);
-          const extAvg = +(scores.slice(5, 10).reduce((a, b) => a + b, 0) / 5).toFixed(1);
-          const overall = +((intAvg + extAvg) / 2).toFixed(1);
-          const posScore = Math.round(overall * 10);
-          // Detect tier label
-          const tierMatch = report.report.match(/([\u{1F7E2}\u{1F7E1}\u{1F535}\u{1F534}])\s*\*?\*?(?:Tier\s+\d\s+)?([^*()\n]+)/u);
-          const tierLabelMap = { 'momentum': 'Momentum', 'pack leader': 'Momentum', 'resilient': 'Resilient', 'momentum stock': 'Resilient', 'fragile': 'Fragile', 'defensive holding': 'Fragile', 'trouble': 'Trouble', 'decliner': 'Trouble', 'weak/speculative': 'Trouble' };
-          const rawLabel = tierMatch ? tierMatch[2].trim().replace(/\*\*/g, '') : '';
-          const tierLabel = tierLabelMap[rawLabel.toLowerCase()] || rawLabel || null;
-          coin.positionScore = posScore;
-          coin.positionLabel = tierLabel;
-          coin.positionScores = scores;
-          enriched++;
-        }
-      } catch { /* skip bad reports */ }
-    }
-    if (enriched) console.log(`\n✓ Enriched ${enriched} asset(s) with position scores from AI reports`);
-  }
+  console.log(`  Built ${coins.length} stocks, ${skipped} skipped (bad price / insufficient indicators)\n`);
 
   const output = {
-    asOf:  latestDate ? `${latestDate}T00:00:00Z` : new Date().toISOString(),
+    asOf:  new Date().toISOString().split('T')[0] + 'T00:00:00Z',
     built: new Date().toISOString(),
-    total: allCoins.length,
-    coins: allCoins,
+    total: coins.length,
+    coins,
   };
 
+  const catalogPath = path.join(PUBLIC_DATA, 'coins.json');
   fs.writeFileSync(catalogPath, JSON.stringify(output));
+  const sizeKB = (fs.statSync(catalogPath).size / 1024).toFixed(0);
+  console.log(`✓ Built ${coins.length} assets → public/data/coins.json (${sizeKB} KB)\n`);
 
-  // Detect and write changes
-  const changes = detectChanges(allCoins, previousCatalog);
-  const changesPath = path.join(PUBLIC_DATA, 'changes.json');
-  const changesOutput = {
-    asOf:         output.asOf,
-    previousAsOf: previousCatalog?.asOf || null,
-    built:        output.built,
-    changes:      changes || {},
-  };
-  fs.writeFileSync(changesPath, JSON.stringify(changesOutput));
-  const numChanges = changes ? Object.keys(changes).length : 0;
-  console.log(`\n✓ Change detection: ${numChanges} asset(s) with changes → public/data/changes.json`);
-
-  const sizeKB     = (fs.statSync(catalogPath).size / 1024).toFixed(0);
-  const assetCount = fs.readdirSync(ASSETS_DIR).filter(f => f.endsWith('.json')).length;
-
-  console.log(`✓ Built ${allCoins.length} assets → public/data/coins.json (${sizeKB} KB)`);
-  console.log(`✓ ${assetCount} per-asset JSON files → public/data/assets/`);
-
-  // Summary by group
-  const groups = {};
-  for (const c of allCoins) {
-    groups[c.group] = (groups[c.group] || 0) + 1;
+  // Summary by region
+  const regions = {};
+  for (const c of coins) {
+    regions[c.region] = (regions[c.region] || 0) + 1;
   }
-  console.log('\nBreakdown:');
-  for (const [g, n] of Object.entries(groups)) {
-    console.log(`  ${g.padEnd(14)} ${n}`);
+  console.log('Region breakdown:');
+  for (const [r, n] of Object.entries(regions).sort((a, b) => b[1] - a[1])) {
+    console.log(`  ${r.padEnd(8)} ${n}`);
   }
 
-  // ── Universe build (fundamentals.csv snapshot, lazy-loaded) ─────────────
-  const coreTickers = new Set(allCoins.map(c => c.ticker));
-  const universeCoins = processFundamentals(coreTickers);
-  if (universeCoins.length > 0) {
-    const universePath = path.join(PUBLIC_DATA, 'universe.json');
-    const universeOutput = {
-      asOf:  output.asOf,
-      built: output.built,
-      total: universeCoins.length,
-      coins: universeCoins,
-    };
-    fs.writeFileSync(universePath, JSON.stringify(universeOutput));
-    const uniSizeKB = (fs.statSync(universePath).size / 1024).toFixed(0);
-    console.log(`\n\u2713 Built ${universeCoins.length} universe assets \u2192 public/data/universe.json (${uniSizeKB} KB)`);
+  // Indicator completeness — how many stocks have all 10 indicators
+  const completeCount = coins.filter(c => {
+    return IND_ORDER.every(k => k === 'momentum' ? true : c.indicators[k]);
+  }).length;
+  console.log(`\nIndicator coverage:`);
+  console.log(`  Complete (10/10): ${completeCount}/${coins.length} (${((completeCount/coins.length)*100).toFixed(0)}%)`);
 
-    // Summary by region
-    const regions = {};
-    for (const c of universeCoins) {
-      regions[c.region] = (regions[c.region] || 0) + 1;
+  // Clean up stale build artefacts from the retired core pipeline
+  const stalePaths = [
+    path.join(PUBLIC_DATA, 'universe.json'),
+    path.join(PUBLIC_DATA, 'changes.json'),
+  ];
+  for (const p of stalePaths) {
+    if (fs.existsSync(p)) {
+      fs.unlinkSync(p);
+      console.log(`  Removed stale ${path.basename(p)}`);
     }
-    console.log('\nUniverse breakdown:');
-    for (const [r, n] of Object.entries(regions).sort((a, b) => b[1] - a[1])) {
-      console.log(`  ${r.padEnd(10)} ${n}`);
-    }
+  }
+  const assetsDir = path.join(PUBLIC_DATA, 'assets');
+  if (fs.existsSync(assetsDir)) {
+    const files = fs.readdirSync(assetsDir);
+    for (const f of files) fs.unlinkSync(path.join(assetsDir, f));
+    fs.rmdirSync(assetsDir);
+    console.log(`  Removed stale assets/ (${files.length} files)`);
   }
 }
 

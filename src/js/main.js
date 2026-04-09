@@ -6,23 +6,28 @@
 
 'use strict';
 
-import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary, FIT_QUESTIONS, isAssetInScope } from './riskEngine.js';
+import { IND_META, IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary, FIT_QUESTIONS, isAssetInScope } from './riskEngine.js';
 import { isWatched, addToWatchlistWithPrompt, removeFromWatchlist, showToast } from './lists.js';
-import { loadData, searchCoins, fetchAssetData, loadUniverse, getCoinAnyTier } from './data.js';
+import { loadData, searchCoins } from './data.js';
 import html2canvas from 'html2canvas';
 import { getUser, signOut } from './supabase.js';
 
 /* ── Formatting ────────────────────────────────────────────────────── */
 
-const CURRENCY_MAP = { FTSE100: 'p', Nikkei225: '¥', HSI: 'HK$' };
-function getCurrencySymbol(group) { return CURRENCY_MAP[group] || '$'; }
+const CURRENCY_SYMBOLS = {
+  USD: '$', CAD: 'C$', GBP: '£', EUR: '€', CHF: 'CHF ',
+  JPY: '¥', CNY: '¥', HKD: 'HK$', TWD: 'NT$', KRW: '₩',
+  INR: '₹', SGD: 'S$', AUD: 'A$', NZD: 'NZ$',
+  BRL: 'R$', MXN: 'MX$', ZAR: 'R', SAR: 'SR ', AED: 'AED ',
+  ILS: '₪', TRY: '₺', THB: '฿', IDR: 'Rp', MYR: 'RM', PHP: '₱', VND: '₫',
+};
+function getCurrencySymbol(currency) { return CURRENCY_SYMBOLS[currency] || (currency ? currency + ' ' : '$'); }
 
-function formatPrice(p, group) {
-  const sym = getCurrencySymbol(group);
+function formatPrice(p, currency) {
+  const sym = getCurrencySymbol(currency);
   if (p == null) return '—';
-  const suffix = group === 'FTSE100';
-  if (suffix) {
-    return p.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + 'p';
+  if (currency === 'JPY' || currency === 'KRW' || currency === 'IDR' || currency === 'VND') {
+    return sym + Math.round(p).toLocaleString();
   }
   if (p < 0.0001) return sym + p.toFixed(8);
   if (p < 0.01)   return sym + p.toFixed(6);
@@ -30,34 +35,28 @@ function formatPrice(p, group) {
   return sym + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function moodPill(label) {
-  const b = getMoodBand(label);
-  return `<span class="mood-pill ${b.cls}">${b.displayLabel ?? label}</span>`;
-}
-
-function moodRsbClass(label) {
-  const map = {
-    'Very Healthy': 'rsb-blue', Healthy: 'rsb-green',
-    Unsettled: 'rsb-amber', Stressed: 'rsb-orange', Critical: 'rsb-red',
-  };
-  return map[label] ?? 'rsb-amber';
-}
-
 // Map data group to user-friendly asset type
 function assetTypeLabel(group) {
-  const STOCK_GROUPS = ['SP500', 'FTSE100', 'Nikkei225', 'HSI', 'NASDAQ100'];
   if (group === 'Crypto') return 'Crypto';
-  if (STOCK_GROUPS.includes(group)) return 'Stock';
   if (group === 'SectorETFs') return 'ETF';
   if (group === 'Index') return 'Index';
-  return group;
+  return 'Stock';
 }
 
-// GloRisk Score: inverted so high = stable, low = risky
-// Raw risk = score * 5 (0-100), then invert. Floor at 10.
-function gloriskScore(mood) {
-  const raw = mood.score * 5;
-  return Math.min(95, Math.max(10, 100 - raw));
+/* ── Legacy stubs — kept so the __legacyRenderReport_unused code still
+      parses. These are dead code paths that are no longer executed. ───── */
+const MAX_SCORE = 20;
+function gloriskScore() { return 50; }
+function getMoodBand(label) {
+  return { label, displayLabel: label, cls: 'mood-healthy', color: '#22c55e', colorKey: 'calm', key: 'calm' };
+}
+function moodPill() { return ''; }
+function moodRsbClass() { return 'rsb-green'; }
+async function fetchAssetData() { return null; }
+// Backward-compat: return any coin from the loaded catalog
+async function getCoinAnyTier(ticker) {
+  const data = await loadData();
+  return data.coins.find(c => c.ticker === ticker.toUpperCase()) ?? null;
 }
 
 
@@ -125,7 +124,7 @@ async function init() {
   }
   initSearch('navInput', 'navDropdown', 'navBtn');
 
-  document.getElementById('sortSelect').addEventListener('change', renderCards);
+  document.getElementById('sortSelect')?.addEventListener('change', renderCards);
 
   // Browse text filter with dropdown suggestions
   const browseFilterEl = document.getElementById('browseFilter');
@@ -469,6 +468,10 @@ function getSortedCoins() {
 }
 
 function renderCards() {
+  // Legacy browse grid is retired. The screener page owns the rankings table
+  // now, and browse.html just renders the asset detail on deep-link.
+  return;
+  // eslint-disable-next-line no-unreachable
   const grid        = document.getElementById('cardsGrid');
   const countEl     = document.getElementById('cardsCount');
   const q = browseQuery.toLowerCase();
@@ -970,24 +973,22 @@ function buildPerfCard(coin) {
 /* ── Asset detail (navy redesign) helpers ───────────────────────────── */
 
 function adAssetType(coin) {
-  const g = coin.group;
-  if (g === 'Crypto') return 'Crypto';
-  if (g === 'SectorETFs') return 'ETF';
-  if (g === 'Index') return 'Index';
-  if (g === 'SP500') return 'Stock \u00b7 S&P 500';
-  if (g === 'NASDAQ100') return 'Stock \u00b7 NASDAQ 100';
-  if (g === 'FTSE100') return 'Stock \u00b7 FTSE 100';
-  if (g === 'Nikkei225') return 'Stock \u00b7 Nikkei 225';
-  if (g === 'HSI') return 'Stock \u00b7 Hang Seng';
-  if (coin.tier === 'universe') {
-    const country = coin.country || 'Global';
-    return `Stock \u00b7 ${country}`;
-  }
+  // Prefer a well-known index membership for the label, else country, else generic
+  const indices = coin.indices || [];
+  if (indices.includes('S&P 500'))                       return 'Stock \u00b7 S&P 500';
+  if (indices.includes('NASDAQ 100'))                    return 'Stock \u00b7 NASDAQ 100';
+  if (indices.includes('Dow Jones Industrial Average'))  return 'Stock \u00b7 Dow Jones';
+  if (indices.includes('FTSE 100'))                      return 'Stock \u00b7 FTSE 100';
+  if (indices.includes('Nikkei 225'))                    return 'Stock \u00b7 Nikkei 225';
+  if (indices.includes('Hang Seng Index'))               return 'Stock \u00b7 Hang Seng';
+  if (coin.country) return `Stock \u00b7 ${coin.country}`;
   return 'Stock';
 }
 
-function adIsStock(coin) {
-  return ['SP500','NASDAQ100','FTSE100','Nikkei225','HSI'].includes(coin.group);
+function adIsStock() {
+  // Catalog is stocks-only for now. Crypto / ETFs / indices return via
+  // follow-up input files and will be detected then.
+  return true;
 }
 
 // Fit score → badge info
@@ -1052,9 +1053,9 @@ function buildAdHeader(coin) {
           <div class="ad-type">${adAssetType(coin)}</div>
         </div>
         <div style="text-align:right">
-          <div class="ad-price">${formatPrice(coin.price, coin.group)}</div>
-          <div class="ad-change ${changeCls}">${change >= 0 ? '+' : ''}${change.toFixed(2)}% \u00b7 30D</div>
-          <div class="ad-date">As of ${asOf}</div>
+          <div class="ad-price">${formatPrice(coin.price, coin.currency)}</div>
+          <div class="ad-change ${changeCls}">${change >= 0 ? '+' : ''}${change.toFixed(2)}% \u00b7 1D</div>
+          <div class="ad-date">${asOf ? `As of ${asOf}` : ''}</div>
         </div>
       </div>
     </div>
@@ -1107,16 +1108,16 @@ function adIndicatorExplain(key, v, ticker) {
       : v.raw > 25
       ? `Mid-range within its 52-week band (${v.label}) \u2014 neither near top nor bottom.`
       : `Near the bottom of its 52-week range (${v.label}) \u2014 most yearly gains given back.`,
-    cagr3Y: () => v.raw > 0
-      ? `${v.label} annualised compound growth over 3 years \u2014 building long-term value.`
-      : `${v.label} annualised over 3 years \u2014 destroyed long-term value.`,
+    cagr5Y: () => v.raw > 0
+      ? `${v.label} annualised compound growth over 5 years \u2014 building long-term value.`
+      : `${v.label} annualised over 5 years \u2014 destroyed long-term value.`,
   };
   return defs[key] ? defs[key]() : '';
 }
 
 // Build the 3 indicator groups (Going well / Concerning / Critical) for Performance body
 // Returns-style indicators (signed % values) → coloured by sign
-const RETURN_KEYS = new Set(['shortTrend', 'longTrend', 'return1M', 'return1Y', 'cagr3Y']);
+const RETURN_KEYS = new Set(['shortTrend', 'longTrend', 'return1M', 'return1Y', 'cagr5Y']);
 // Volatility-style indicators (magnitudes) → no colour
 const NEUTRAL_KEYS = new Set(['volatility', 'volSpike', 'vsPeak', 'range52W']);
 
@@ -1569,7 +1570,7 @@ function buildAdIndicatorHealthRow(coin) {
     : 'RAG count across our 10 risk indicators';
 
   const partialNote = isPartial
-    ? `<div class="ad-coverage-note">This is a universe asset built from snapshot fundamentals data. ${MAX_INDICATORS - total} indicator${MAX_INDICATORS - total > 1 ? 's' : ''} (volatility spike, distance from peak, position in range, 3-year growth) require historical price series we don't have for this ticker.</div>`
+    ? `<div class="ad-coverage-note">Some indicators couldn't be measured from the snapshot for this ticker — ${MAX_INDICATORS - total} of ${MAX_INDICATORS} are missing (likely because a moving-average or historical peak value wasn't available).</div>`
     : '';
 
   return `
@@ -1597,8 +1598,8 @@ function buildAdIndicatorHealthRow(coin) {
   `;
 }
 
-// Universe-only strip: shows country, industry, market cap, beta, analyst rating
-function buildAdUniverseStrip(coin) {
+// Company strip shown under the asset header — country, industry, market cap, beta, analyst rating
+function buildAdCompanyStrip(coin) {
   const fmtCap = (v) => {
     if (!v || !isFinite(v)) return '\u2014';
     if (v >= 1e12) return '$' + (v / 1e12).toFixed(2) + 'T';
@@ -1667,13 +1668,10 @@ function renderReport(coin) {
   if (chartInst) { chartInst.destroy(); chartInst = null; }
   if (scoreChartInst) { scoreChartInst.destroy(); scoreChartInst = null; }
 
-  // Universe assets have no mood / chart / price history
-  const isUniverse = coin.tier === 'universe';
-
   body.innerHTML = `
     ${buildAdTopbar(coin)}
     ${buildAdHeader(coin)}
-    ${isUniverse ? buildAdUniverseStrip(coin) : ''}
+    ${buildAdCompanyStrip(coin)}
     ${buildAdFitSection(coin)}
     ${buildAdScoresSection(coin)}
   `;
@@ -1711,9 +1709,6 @@ function renderReport(coin) {
   if (rtbCompare) rtbCompare.href = `/compare.html?a=${encodeURIComponent(coin.ticker)}`;
   const rtbStress = document.getElementById('rtbStress');
   if (rtbStress) rtbStress.href = '/stress-test.html';
-
-  // Unused legacy variable reference to keep shareText/shareUrl live
-  void shareText; void shareUrl;
 }
 
 // Legacy renderReport body continued as dead code below (never executed):
@@ -2420,11 +2415,11 @@ function buildFullAnalysis(coin) {
         ? `The price sits in the middle of its 52-week range (${v.label}). It\u2019s neither near the top nor the bottom of its recent trading band.`
         : `The price is near the bottom of its 52-week range (${v.label}). It has given back most of its gains from the past year.`,
     }),
-    cagr3Y: v => ({
-      title: '3-Year Growth',
+    cagr5Y: v => ({
+      title: '5-Year Growth',
       text: v.raw > 0
-        ? `The 3-year annual growth rate is ${v.label}. Over three years, the asset has grown in value on an annualised basis \u2014 a positive long-term sign.`
-        : `The 3-year annual growth rate is ${v.label}. Over three years, the asset has lost value on an annualised basis \u2014 meaning it has destroyed long-term value.`,
+        ? `The 5-year annual growth rate is ${v.label}. Over five years, the asset has grown in value on an annualised basis \u2014 a positive long-term sign.`
+        : `The 5-year annual growth rate is ${v.label}. Over five years, the asset has lost value on an annualised basis \u2014 meaning it has destroyed long-term value.`,
     }),
   };
 
@@ -3088,7 +3083,7 @@ function generateSummary(coin) {
   const indNames = {
     volatility: 'Daily Volatility', volSpike: 'Volatility Spike', vsPeak: 'Distance from Peak',
     shortTrend: '50-Day Trend', longTrend: '200-Day Trend', maCross: 'Trend Direction',
-    return1M: '30-Day Return', return1Y: '12-Month Return', range52W: 'Position in Range', cagr3Y: '3-Year Growth',
+    return1M: '30-Day Return', return1Y: '12-Month Return', range52W: 'Position in Range', cagr5Y: '5-Year Growth',
   };
   const improvedList = [], deterioratedList = [];
   if (prev) {

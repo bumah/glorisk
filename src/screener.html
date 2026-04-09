@@ -71,7 +71,6 @@ html,body{overflow-y:auto !important;}
 .health-cell .hl-partial{color:rgba(255,255,255,0.32);font-weight:500;margin-left:5px;}
 .t-row-banner{padding:18px 16px;text-align:center;font-size:11px;color:rgba(255,255,255,0.4);border-top:0.5px solid var(--border-dark);background:rgba(79,70,229,0.04);}
 .t-row-banner strong{color:var(--indigo-mid);font-weight:700;}
-.tier-tag-uni{display:inline-flex;padding:2px 6px;border-radius:8px;background:rgba(79,70,229,0.14);color:#A5B4FC;font-size:8px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;margin-left:6px;}
 .score-cell{text-align:right;}
 .score-val{font-size:13px;font-weight:700;font-family:monospace;}
 .bar-mini{width:56px;height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;margin-left:auto;margin-top:4px;}
@@ -309,14 +308,14 @@ html,body{overflow-y:auto !important;}
       </div>
     </div>
 
-    <!-- Q14: cagr3Y → 3-Year Growth -->
-    <div class="pf-q" data-key="cagr3Y" data-kind="single">
-      <div class="pf-num">14 / 14 <span class="pf-ind-tag">3-Year Growth</span></div>
+    <!-- Q14: cagr5Y → 5-Year Growth -->
+    <div class="pf-q" data-key="cagr5Y" data-kind="single">
+      <div class="pf-num">14 / 14 <span class="pf-ind-tag">5-Year Growth</span></div>
       <div class="pf-text">What matters more to you?</div>
       <div class="pf-opts">
-        <label class="pf-opt"><input type="radio" name="cagr3Y" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Protecting my money</span></label>
-        <label class="pf-opt"><input type="radio" name="cagr3Y" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>A balance of safety and growth</span></label>
-        <label class="pf-opt"><input type="radio" name="cagr3Y" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Maximising growth</span></label>
+        <label class="pf-opt"><input type="radio" name="cagr5Y" value="A"><span class="pf-dot" style="background:#1D9E75"></span><span>Protecting my money</span></label>
+        <label class="pf-opt"><input type="radio" name="cagr5Y" value="B"><span class="pf-dot" style="background:#EF9F27"></span><span>A balance of safety and growth</span></label>
+        <label class="pf-opt"><input type="radio" name="cagr5Y" value="C"><span class="pf-dot" style="background:#E24B4A"></span><span>Maximising growth</span></label>
       </div>
     </div>
 
@@ -354,57 +353,42 @@ html,body{overflow-y:auto !important;}
 
   <div id="screenerWizPanel" style="display:none;margin:0 32px 12px;background:var(--navy-light);border:0.5px solid var(--border-dark);border-radius:10px;padding:20px;">
     <div>
-      <span class="bub-label">Exchange</span>
+      <span class="bub-label">Major index</span>
       <div class="bub-grp">
-        <button class="bub" data-exch="SP500">S&amp;P 500</button>
-        <button class="bub" data-exch="NASDAQ100">NASDAQ 100</button>
-        <button class="bub" data-exch="FTSE100">FTSE 100</button>
-        <button class="bub" data-exch="Nikkei225">Nikkei 225</button>
-        <button class="bub" data-exch="HSI">Hang Seng</button>
-        <button class="bub" data-exch="SectorETFs">Sector ETFs</button>
+        <button class="bub" data-idx="S&amp;P 500">S&amp;P 500</button>
+        <button class="bub" data-idx="NASDAQ 100">NASDAQ 100</button>
+        <button class="bub" data-idx="Dow Jones Industrial Average">Dow Jones</button>
+        <button class="bub" data-idx="Russell 2000">Russell 2000</button>
+        <button class="bub" data-idx="FTSE 100">FTSE 100</button>
+        <button class="bub" data-idx="Nikkei 225">Nikkei 225</button>
+        <button class="bub" data-idx="Hang Seng Index">Hang Seng</button>
       </div>
     </div>
     <div>
       <span class="bub-label">Region</span>
       <div class="bub-grp">
-        <button class="bub" data-region="Global">Global</button>
         <button class="bub" data-region="US">US</button>
+        <button class="bub" data-region="CA">Canada</button>
         <button class="bub" data-region="UK">UK</button>
-        <button class="bub" data-region="Asia">Asia</button>
-      </div>
-    </div>
-    <div>
-      <span class="bub-label">Universe <span style="text-transform:none;letter-spacing:0;font-weight:500;color:rgba(255,255,255,0.3);margin-left:4px">Expand beyond major indices</span></span>
-      <div class="bub-grp">
-        <button class="bub" id="includeUniverseBtn">+ Include global stocks (~29k)</button>
-      </div>
-    </div>
-    <div id="uniRegionWrap" style="display:none">
-      <span class="bub-label">Universe region</span>
-      <div class="bub-grp">
-        <button class="bub" data-uniregion="US">US</button>
-        <button class="bub" data-uniregion="UK">UK</button>
-        <button class="bub" data-uniregion="EU">Europe</button>
-        <button class="bub" data-uniregion="JP">Japan</button>
-        <button class="bub" data-uniregion="KR">S. Korea</button>
-        <button class="bub" data-uniregion="CN">China</button>
-        <button class="bub" data-uniregion="HK">Hong Kong</button>
-        <button class="bub" data-uniregion="TW">Taiwan</button>
-        <button class="bub" data-uniregion="IN">India</button>
-        <button class="bub" data-uniregion="CA">Canada</button>
-        <button class="bub" data-uniregion="AU">Australia</button>
-        <button class="bub" data-uniregion="ME">Middle East</button>
-        <button class="bub" data-uniregion="LATAM">LatAm</button>
-        <button class="bub" data-uniregion="SG">Singapore</button>
-        <button class="bub" data-uniregion="AF">Africa</button>
-        <button class="bub" data-uniregion="Other">Other</button>
+        <button class="bub" data-region="EU">Europe</button>
+        <button class="bub" data-region="JP">Japan</button>
+        <button class="bub" data-region="KR">S. Korea</button>
+        <button class="bub" data-region="CN">China</button>
+        <button class="bub" data-region="HK">Hong Kong</button>
+        <button class="bub" data-region="TW">Taiwan</button>
+        <button class="bub" data-region="IN">India</button>
+        <button class="bub" data-region="SEA">Southeast Asia</button>
+        <button class="bub" data-region="AU">Australia</button>
+        <button class="bub" data-region="ME">Middle East</button>
+        <button class="bub" data-region="LATAM">LatAm</button>
+        <button class="bub" data-region="AF">Africa</button>
+        <button class="bub" data-region="Other">Other</button>
       </div>
     </div>
     <div>
       <span class="bub-label">Category</span>
       <div class="bub-grp">
         <button class="bub" data-cat="Mag7">Magnificent 7</button>
-        <button class="bub" data-cat="MajorCrypto">Major Cryptos</button>
         <button class="bub" data-cat="Gainers">Best Gainers (1M &gt; 20%)</button>
         <button class="bub" data-cat="Losers">Worst Losers (1M &lt; -20%)</button>
       </div>
@@ -426,9 +410,6 @@ html,body{overflow-y:auto !important;}
 
   <div class="tabs-d" id="assetTabs">
     <button class="tab-d active" data-tab="all">All assets</button>
-    <button class="tab-d" data-tab="SectorETFs">ETFs</button>
-    <button class="tab-d" data-tab="stocks">Stocks</button>
-    <button class="tab-d" data-tab="Crypto">Crypto</button>
     <button class="tab-d tab-outside" data-tab="outside" id="outsideTab" style="display:none;margin-left:auto;color:rgba(255,255,255,0.4);">Outside scope</button>
   </div>
 
@@ -445,7 +426,7 @@ html,body{overflow-y:auto !important;}
       <div class="th th-tip hide-m" data-tip="Price relative to the 200-day moving average. Positive means the long-term uptrend is intact.">200D</div>
       <div class="th th-tip hide-m" data-tip="Golden Cross (50D above 200D, bullish) or Death Cross (50D below 200D, bearish).">Trend</div>
       <div class="th th-tip hide-m" data-tip="Where the current price sits in its 52-week high–low range. Higher = closer to yearly high.">Range</div>
-      <div class="th th-tip hide-m" data-tip="3-year compound annual growth rate. Negative means value lost over 3 years.">3Y</div>
+      <div class="th th-tip hide-m" data-tip="5-year compound annual growth rate. Negative means value lost over 5 years.">5Y</div>
       <div class="th th-tip th-tip--right" data-tip="Add to watchlist, compare with another asset, or open the full scorecard.">Actions</div>
     </div>
     <div id="screenerBody"></div>
@@ -458,35 +439,37 @@ html,body{overflow-y:auto !important;}
 </footer>
 
 <script type="module">
-import { loadData, loadUniverse } from '/js/data.js';
+import { loadData } from '/js/data.js';
 import { IND_ORDER, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, saveProfile, FIT_QUESTIONS, getProfileSummary, isAssetInScope } from '/js/riskEngine.js';
 import { getUser, signOut } from '/js/supabase.js';
 import { isWatched, addToWatchlistWithPrompt, removeFromWatchlist, showToast } from '/js/lists.js';
 
-const CURRENCY_MAP = { FTSE100: 'p', Nikkei225: '\u00a5', HSI: 'HK$' };
-function formatPrice(p, group) {
-  const sym = CURRENCY_MAP[group] || '$';
+const CURRENCY_SYMBOLS = {
+  USD: '$', CAD: 'C$', GBP: '£', EUR: '€', CHF: 'CHF ',
+  JPY: '¥', CNY: '¥', HKD: 'HK$', TWD: 'NT$', KRW: '₩',
+  INR: '₹', SGD: 'S$', AUD: 'A$', NZD: 'NZ$',
+  BRL: 'R$', MXN: 'MX$', ZAR: 'R', SAR: 'SR ', AED: 'AED ',
+  ILS: '₪', TRY: '₺', THB: '฿', IDR: 'Rp', MYR: 'RM', PHP: '₱', VND: '₫',
+};
+function formatPrice(p, currency) {
+  const sym = CURRENCY_SYMBOLS[currency] || (currency ? currency + ' ' : '$');
   if (p == null) return '\u2014';
-  if (group === 'FTSE100') return p.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + 'p';
+  // Zero-decimal currencies
+  if (currency === 'JPY' || currency === 'KRW' || currency === 'IDR' || currency === 'VND') {
+    return sym + Math.round(p).toLocaleString();
+  }
   if (p < 1) return sym + p.toFixed(4);
   return sym + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-const STOCK_GROUPS = ['SP500', 'NASDAQ100', 'FTSE100', 'Nikkei225', 'HSI'];
-
-// Short exchange/group label for the screener table
-function exchangeShort(group) {
+// Short regional label for the screener table badge
+function regionShort(region) {
   const map = {
-    SP500: 'S&P 500',
-    NASDAQ100: 'NASDAQ',
-    FTSE100: 'FTSE',
-    Nikkei225: 'Nikkei',
-    HSI: 'Hang Seng',
-    Crypto: 'Crypto',
-    SectorETFs: 'ETF',
-    Index: 'Index',
+    US: 'US', CA: 'CA', UK: 'UK', EU: 'EU', JP: 'JP', KR: 'KR',
+    CN: 'CN', HK: 'HK', TW: 'TW', IN: 'IN', SG: 'SG', AU: 'AU',
+    ME: 'ME', LATAM: 'LATAM', AF: 'AF', SEA: 'SEA', Other: '',
   };
-  return map[group] || '';
+  return map[region] || '';
 }
 
 // Watchlist helpers + toast are imported from /js/lists.js (see top of script)
@@ -593,9 +576,7 @@ function showResults(allCoins, profile) {
   document.getElementById('screenerResults').style.display = '';
 
   // Score every asset (including out-of-scope ones so the Outside Scope tab has data).
-  // Indices are always excluded — they don't belong in personal rankings.
   const allScored = allCoins
-    .filter(c => c.group !== 'Index')
     .map(c => ({
       ...c,
       fitScore: computeFitScore(c.indicators, profile),
@@ -647,42 +628,10 @@ function showResults(allCoins, profile) {
   const wizPanel = document.getElementById('screenerWizPanel');
 
   // Filter state
-  let filters = { query: '', tab: 'all', tiers: [], exchanges: [], regions: [], cats: [], fitMin: null, fitMax: null, includeUniverse: false, uniRegions: [] };
-  const REGION_MAP = { US: ['SP500','NASDAQ100'], UK: ['FTSE100'], Asia: ['Nikkei225','HSI'], Global: [] };
+  let filters = { query: '', tab: 'all', tiers: [], indices: [], regions: [], cats: [], fitMin: null, fitMax: null };
   const MAG7 = ['MSFT','META','TSLA','GOOGL','GOOG','NVDA','AMZN','AAPL'];
-  const CRYPTO_MAJORS = ['BTC','ETH','BNB','XRP','SOL'];
+  // Cap rendered rows at 500 — the catalog is 30k and the browser can't render that many at once.
   const MAX_RENDERED_ROWS = 500;
-
-  // Universe state — lazy loaded on first "Include universe" click
-  let universeScored = [];
-  let universeLoadPromise = null;
-
-  async function loadAndScoreUniverse() {
-    if (universeLoadPromise) return universeLoadPromise;
-    universeLoadPromise = (async () => {
-      const uni = await loadUniverse();
-      universeScored = uni.coins
-        .map(c => ({
-          ...c,
-          fitScore: computeFitScore(c.indicators, profile),
-          inScope: isAssetInScope(c, profile),
-        }))
-        .filter(c => c.fitScore !== null);
-      return universeScored;
-    })();
-    return universeLoadPromise;
-  }
-
-  function combinedScored() {
-    if (!filters.includeUniverse || !universeScored.length) return scored;
-    return [...scored, ...universeScored.filter(c => c.inScope)]
-      .sort((a, b) => b.fitScore - a.fitScore);
-  }
-  function combinedOutOfScope() {
-    if (!filters.includeUniverse || !universeScored.length) return outOfScope;
-    return [...outOfScope, ...universeScored.filter(c => !c.inScope)]
-      .sort((a, b) => b.fitScore - a.fitScore);
-  }
 
   // Summary card click → toggle tier filter
   document.querySelectorAll('.sum-card').forEach(card => {
@@ -711,7 +660,7 @@ function showResults(allCoins, profile) {
     wizPanel?.querySelectorAll(selector).forEach(btn => {
       btn.addEventListener('click', () => {
         const val = btn.dataset[key];
-        const fieldMap = { exch: 'exchanges', region: 'regions', cat: 'cats', uniregion: 'uniRegions' };
+        const fieldMap = { idx: 'indices', region: 'regions', cat: 'cats' };
         const fieldName = fieldMap[key] || 'cats';
         const arr = filters[fieldName];
         if (arr.includes(val)) {
@@ -725,29 +674,9 @@ function showResults(allCoins, profile) {
       });
     });
   }
-  setupBubMulti('[data-exch]', 'exch');
+  setupBubMulti('[data-idx]', 'idx');
   setupBubMulti('[data-region]', 'region');
   setupBubMulti('[data-cat]', 'cat');
-  setupBubMulti('[data-uniregion]', 'uniregion');
-
-  // Include Universe toggle — lazy-loads universe.json on first click
-  const includeUniverseBtn = document.getElementById('includeUniverseBtn');
-  const uniRegionWrap = document.getElementById('uniRegionWrap');
-  includeUniverseBtn?.addEventListener('click', async () => {
-    filters.includeUniverse = !filters.includeUniverse;
-    includeUniverseBtn.classList.toggle('active', filters.includeUniverse);
-    if (uniRegionWrap) uniRegionWrap.style.display = filters.includeUniverse ? '' : 'none';
-    if (filters.includeUniverse && !universeScored.length) {
-      includeUniverseBtn.textContent = 'Loading…';
-      await loadAndScoreUniverse();
-      includeUniverseBtn.textContent = '\u2715 Hide global stocks (~29k)';
-    } else if (filters.includeUniverse) {
-      includeUniverseBtn.textContent = '\u2715 Hide global stocks (~29k)';
-    } else {
-      includeUniverseBtn.textContent = '+ Include global stocks (~29k)';
-    }
-    renderTable();
-  });
 
   // Fit range inputs
   document.getElementById('fitMin')?.addEventListener('input', (e) => {
@@ -761,11 +690,9 @@ function showResults(allCoins, profile) {
 
   // Reset
   document.getElementById('screenerWizReset')?.addEventListener('click', () => {
-    filters = { query: filters.query, tab: filters.tab, tiers: [], exchanges: [], regions: [], cats: [], fitMin: null, fitMax: null, includeUniverse: false, uniRegions: [] };
+    filters = { query: filters.query, tab: filters.tab, tiers: [], indices: [], regions: [], cats: [], fitMin: null, fitMax: null };
     wizPanel?.querySelectorAll('.bub.active').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.sum-card.active').forEach(c => c.classList.remove('active'));
-    if (includeUniverseBtn) includeUniverseBtn.textContent = '+ Include global stocks (~29k)';
-    if (uniRegionWrap) uniRegionWrap.style.display = 'none';
     const fmin = document.getElementById('fitMin'); if (fmin) fmin.value = '';
     const fmax = document.getElementById('fitMax'); if (fmax) fmax.value = '';
     renderTable();
@@ -805,14 +732,14 @@ function showResults(allCoins, profile) {
     const indMeta = {
       volatility: { label: 'Daily Volatility', desc: 'Day-to-day price swings' },
       volSpike: { label: 'Volatility Spike', desc: 'Recent vs average volatility' },
-      vsPeak: { label: 'Distance from Peak', desc: 'Drop from 3-year high' },
+      vsPeak: { label: 'Distance from Peak', desc: 'Drop from all-time high' },
       shortTrend: { label: '50-Day Trend', desc: 'Price vs 50-day average' },
       longTrend: { label: '200-Day Trend', desc: 'Price vs 200-day average' },
       maCross: { label: 'Trend Direction', desc: 'Golden or Death Cross' },
       return1M: { label: '30-Day Return', desc: 'Past month return' },
       return1Y: { label: '12-Month Return', desc: 'Past year return' },
       range52W: { label: 'Position in Range', desc: 'Where in 52-week range' },
-      cagr3Y: { label: '3-Year Growth', desc: 'Compound annual growth' },
+      cagr5Y: { label: '5-Year Growth', desc: 'Annualised 5-year growth' },
     };
 
     let strong = 0, partial = 0, low = 0;
@@ -863,19 +790,12 @@ function showResults(allCoins, profile) {
 
   function renderTable() {
     // Choose source array based on tab: in-scope for normal tabs, out-of-scope for the Outside tab
-    // Merge universe into the source when the user has enabled it
-    let filtered = filters.tab === 'outside' ? combinedOutOfScope() : combinedScored();
+    let filtered = filters.tab === 'outside' ? outOfScope : scored;
 
-    // Tab filtering — 'stocks' now includes universe tier too
-    if (filters.tab === 'stocks') {
-      filtered = filtered.filter(c => STOCK_GROUPS.includes(c.group) || c.tier === 'universe');
-    } else if (filters.tab !== 'all' && filters.tab !== 'outside') {
-      filtered = filtered.filter(c => c.group === filters.tab);
-    }
-
-    // Universe region filter (multi, OR'd) — only applies to universe rows, core rows pass through
-    if (filters.uniRegions.length) {
-      filtered = filtered.filter(c => c.tier !== 'universe' || filters.uniRegions.includes(c.region));
+    // Tab filtering — everything is a stock now, so only 'all' and 'outside' make sense
+    if (filters.tab !== 'all' && filters.tab !== 'outside' && filters.tab !== 'stocks') {
+      // Legacy tab keys (Crypto, SectorETFs) — no matches until those categories return
+      filtered = [];
     }
 
     // Search query
@@ -891,20 +811,17 @@ function showResults(allCoins, profile) {
       });
     }
 
-    // Exchange filter
-    if (filters.exchanges.length) {
-      filtered = filtered.filter(c => filters.exchanges.includes(c.group));
+    // Major index filter (multi-index OR'd) — matches coin.indices array
+    if (filters.indices.length) {
+      filtered = filtered.filter(c => {
+        const list = c.indices || [];
+        return filters.indices.some(idx => list.includes(idx));
+      });
     }
 
-    // Region filter (multi-region OR'd)
+    // Region filter (multi-region OR'd) — uses coin.region
     if (filters.regions.length) {
-      const allowedExchanges = new Set();
-      let global = false;
-      filters.regions.forEach(r => {
-        if (r === 'Global') global = true;
-        else (REGION_MAP[r] || []).forEach(g => allowedExchanges.add(g));
-      });
-      if (!global) filtered = filtered.filter(c => allowedExchanges.has(c.group));
+      filtered = filtered.filter(c => filters.regions.includes(c.region));
     }
 
     // Category filter (OR within categories)
@@ -912,7 +829,6 @@ function showResults(allCoins, profile) {
       filtered = filtered.filter(c => {
         return filters.cats.some(cat => {
           if (cat === 'Mag7') return MAG7.includes(c.ticker);
-          if (cat === 'MajorCrypto') return CRYPTO_MAJORS.includes(c.ticker);
           if (cat === 'Gainers') {
             const r1m = c.indicators?.return1M?.raw;
             return r1m != null && r1m > 20;
@@ -932,9 +848,9 @@ function showResults(allCoins, profile) {
 
     if (countEl) countEl.textContent = filtered.length;
 
-    // Cap rendered rows for performance — only when universe is active (can be 28k+)
+    // Cap rendered rows for performance — catalog is 30k
     const total = filtered.length;
-    const shouldCap = filters.includeUniverse && total > MAX_RENDERED_ROWS;
+    const shouldCap = total > MAX_RENDERED_ROWS;
     const rendered = shouldCap ? filtered.slice(0, MAX_RENDERED_ROWS) : filtered;
 
     body.innerHTML = rendered.map(c => {
@@ -948,7 +864,7 @@ function showResults(allCoins, profile) {
       const trend200 = ind.longTrend?.label || '\u2014';
       const trendDir = ind.maCross?.color === 'green' ? 'Golden' : ind.maCross?.color === 'red' ? 'Death' : '\u2014';
       const range = ind.range52W?.label || '\u2014';
-      const growth3y = ind.cagr3Y?.label || '\u2014';
+      const growth5y = ind.cagr5Y?.label || '\u2014';
 
       // Indicator Health — count RAG across the 10 indicators, track measured
       let gCount = 0, aCount = 0, rCount = 0, measured = 0;
@@ -960,7 +876,7 @@ function showResults(allCoins, profile) {
       });
       const isPartial = measured < 10;
 
-      const exchLabel = c.tier === 'universe' ? (c.region || 'Universe') : exchangeShort(c.group);
+      const regionLabel = regionShort(c.region);
       const watched = isWatched(c.ticker);
 
       // Returns coloured by sign (green positive / red negative)
@@ -968,15 +884,15 @@ function showResults(allCoins, profile) {
       const ret1YCls = signClass(ind.return1Y?.raw);
       const trend50Cls = signClass(ind.shortTrend?.raw);
       const trend200Cls = signClass(ind.longTrend?.raw);
-      const growth3yCls = signClass(ind.cagr3Y?.raw);
+      const growth5yCls = signClass(ind.cagr5Y?.raw);
       // Trend direction (Golden / Death) coloured by classification
       const trendDirCls = ind.maCross?.color === 'green' ? 'cell-pos' : ind.maCross?.color === 'red' ? 'cell-neg' : 'cell';
 
       return `<div class="t-row" data-ticker="${c.ticker}">
-        <div><div class="aname">${c.ticker}${exchLabel ? `<span class="exch-tag">${exchLabel}</span>` : ''}${c.tier === 'universe' ? '<span class="tier-tag-uni" title="Global universe asset — partial indicators">Uni</span>' : ''}</div><div class="asub">${c.company}</div></div>
+        <div><div class="aname">${c.ticker}${regionLabel ? `<span class="exch-tag">${regionLabel}</span>` : ''}</div><div class="asub">${c.company}</div></div>
         <div class="score-cell"><span class="score-val" style="color:${fitColor}">${c.fitScore}</span><div class="bar-mini"><div class="bar-fill-d" style="width:${c.fitScore}%;background:${fitColor}"></div></div></div>
         <div style="text-align:center"><span class="badge-d badge-${fitClass}">${fitLabel}</span></div>
-        <div class="cell">${formatPrice(c.price, c.group)}</div>
+        <div class="cell">${formatPrice(c.price, c.currency)}</div>
         <div class="${change >= 0 ? 'cell-pos' : 'cell-neg'}">${change >= 0 ? '+' : ''}${change.toFixed(1)}%</div>
         <div class="${ret1YCls}">${ind.return1Y?.label || '\u2014'}</div>
         <div class="health-cell hide-m" ${isPartial ? `title="Partial data — ${measured} of 10 indicators measured"` : ''}><span class="hl-g">${gCount}</span><span class="hl-sep">/</span><span class="hl-a">${aCount}</span><span class="hl-sep">/</span><span class="hl-r">${rCount}</span>${isPartial ? `<span class="hl-partial">·${measured}/10</span>` : ''}</div>
@@ -984,7 +900,7 @@ function showResults(allCoins, profile) {
         <div class="${trend200Cls} hide-m">${trend200}</div>
         <div class="${trendDirCls} hide-m">${trendDir}</div>
         <div class="cell hide-m">${range}</div>
-        <div class="${growth3yCls} hide-m">${growth3y}</div>
+        <div class="${growth5yCls} hide-m">${growth5y}</div>
         <div class="actions-d">
           <button class="act-icon ${watched ? 'is-active' : ''}" data-watch="${c.ticker}" title="${watched ? 'Remove from watchlist' : 'Add to watchlist'}">${ICON_BOOKMARK}</button>
           <a class="act-icon" href="/compare.html?a=${encodeURIComponent(c.ticker)}" title="Compare with another asset" data-compare>${ICON_COMPARE}</a>

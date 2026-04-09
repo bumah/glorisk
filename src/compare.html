@@ -283,11 +283,19 @@ let allCoins = [];
 let coinA = null, coinB = null;
 let chartInstance = null;
 
-const CURRENCY_MAP = { FTSE100: 'p', Nikkei225: '¥', HSI: 'HK$' };
-function formatPrice(p, group) {
-  const sym = CURRENCY_MAP[group] || '$';
+const CURRENCY_SYMBOLS = {
+  USD: '$', CAD: 'C$', GBP: '£', EUR: '€', CHF: 'CHF ',
+  JPY: '¥', CNY: '¥', HKD: 'HK$', TWD: 'NT$', KRW: '₩',
+  INR: '₹', SGD: 'S$', AUD: 'A$', NZD: 'NZ$',
+  BRL: 'R$', MXN: 'MX$', ZAR: 'R', SAR: 'SR ', AED: 'AED ',
+  ILS: '₪', TRY: '₺', THB: '฿', IDR: 'Rp', MYR: 'RM', PHP: '₱', VND: '₫',
+};
+function formatPrice(p, currency) {
+  const sym = CURRENCY_SYMBOLS[currency] || (currency ? currency + ' ' : '$');
   if (p == null) return '—';
-  if (group === 'FTSE100') return p.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + 'p';
+  if (currency === 'JPY' || currency === 'KRW' || currency === 'IDR' || currency === 'VND') {
+    return sym + Math.round(p).toLocaleString();
+  }
   if (p < 1) return sym + p.toFixed(4);
   return sym + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -462,7 +470,7 @@ function buildFitCard(coin, profile) {
     const isCurrent = b.cls === fitClass;
     return `<span class="cmp-fbl"${isCurrent ? ` style="color:${b.c};font-weight:700"` : ''}>${b.label}${isCurrent ? ' \u2190' : ''}</span>`;
   }).join('');
-  const assetType = coin.group === 'Crypto' ? 'Crypto' : coin.group === 'SectorETFs' ? 'ETF' : coin.group === 'Index' ? 'Index' : 'Stock';
+  const assetType = 'Stock';
   return `
     <div class="cmp-fit-card">
       <div class="cmp-fit-card-header">
@@ -634,8 +642,8 @@ async function renderComparison() {
   rowsHTML.push(`
     <div class="cmp-sc-row">
       <div><div class="cmp-sc-metric">Price</div></div>
-      <div class="cmp-sc-val"><div class="cmp-sc-num" style="color:var(--warm-white);font-size:13px">${formatPrice(a.price, a.group)}</div></div>
-      <div class="cmp-sc-val"><div class="cmp-sc-num" style="color:var(--warm-white);font-size:13px">${formatPrice(b.price, b.group)}</div></div>
+      <div class="cmp-sc-val"><div class="cmp-sc-num" style="color:var(--warm-white);font-size:13px">${formatPrice(a.price, a.currency)}</div></div>
+      <div class="cmp-sc-val"><div class="cmp-sc-num" style="color:var(--warm-white);font-size:13px">${formatPrice(b.price, b.currency)}</div></div>
     </div>
   `);
 

@@ -212,7 +212,6 @@
 
 <script type="module">
 import { loadData, searchCoins } from '/js/data.js';
-import { getMoodBand } from '/js/riskEngine.js';
 import { getUser, signOut } from '/js/supabase.js';
 
 // Backward compat: redirect /?asset=BTC to /browse.html?asset=BTC
@@ -317,11 +316,10 @@ async function init() {
   function buildDropdownHTML(coins) {
     if (!coins.length) return '<div class="dd-empty">No assets found</div>';
     return coins.map((c, i) => {
-      const b = getMoodBand(c.mood.label);
       return `<div class="dd-item" data-idx="${i}">
         <div class="dd-ticker">${c.ticker}</div>
         <div class="dd-name">${c.company}</div>
-        <div class="dd-mood"><span class="mood-pill ${b.cls}">${b.displayLabel ?? c.mood.label}</span></div>
+        <div class="dd-mood"><span style="font-size:10px;color:var(--text-muted)">${c.region || c.country || ''}</span></div>
       </div>`;
     }).join('');
   }
