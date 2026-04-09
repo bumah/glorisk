@@ -749,6 +749,25 @@ async function init() {
   const data = await res.json();
   allCoins = data.coins;
 
+  // If any watched / portfolio tickers aren't in core, lazy-load the universe
+  // so the rows render correctly with their partial indicators.
+  const allWatched = Array.from(new Set([...getWatchlist(), ...getPortfolio()]));
+  const coreSet = new Set(allCoins.map(c => c.ticker));
+  const missing = allWatched.filter(t => !coreSet.has(t));
+  if (missing.length) {
+    try {
+      const uRes = await fetch('/data/universe.json');
+      if (uRes.ok) {
+        const uData = await uRes.json();
+        // Append just the matches — we don't need all 28k in memory
+        const missingSet = new Set(missing);
+        allCoins = [...allCoins, ...uData.coins.filter(c => missingSet.has(c.ticker))];
+      }
+    } catch (e) {
+      console.warn('Failed to load universe for watchlist:', e);
+    }
+  }
+
   // Wire tabs
   document.querySelectorAll('.wl-tab').forEach(tab => {
     tab.addEventListener('click', () => setTab(tab.dataset.tab));

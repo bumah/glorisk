@@ -21,6 +21,10 @@ import {
   IND_ORDER,
   IND_META,
   MOOD_BANDS,
+  THRESHOLDS,
+  scoreHighBad,
+  scoreLowBad,
+  scoreLowBadInclusive,
 } from '../src/js/riskEngine.js';
 
 const __dirname  = path.dirname(fileURLToPath(import.meta.url));
@@ -297,6 +301,7 @@ function processFile(csvFile, group, exchange, nameResolver, usedTickers) {
       company: name,
       exchange,
       group,
+      tier: 'core',
       sector,
       price: +price.toFixed(6),
       priceChange,
@@ -310,6 +315,211 @@ function processFile(csvFile, group, exchange, nameResolver, usedTickers) {
   }
 
   console.log(`    → ${coins.length} assets processed, ${skipped} skipped (insufficient data)`);
+  return coins;
+}
+
+/* ── Fundamentals universe (30k stocks from snapshot CSV) ─────────────────── */
+
+// Country → region bucket used by the screener universe filter
+const COUNTRY_REGION = {
+  'United States': 'US',
+  'Canada': 'CA',
+  'United Kingdom': 'UK',
+  'Ireland': 'UK',
+  'Germany': 'EU',
+  'France': 'EU',
+  'Netherlands': 'EU',
+  'Switzerland': 'EU',
+  'Italy': 'EU',
+  'Spain': 'EU',
+  'Sweden': 'EU',
+  'Norway': 'EU',
+  'Finland': 'EU',
+  'Denmark': 'EU',
+  'Belgium': 'EU',
+  'Austria': 'EU',
+  'Luxembourg': 'EU',
+  'Portugal': 'EU',
+  'Poland': 'EU',
+  'Greece': 'EU',
+  'Japan': 'JP',
+  'South Korea': 'KR',
+  'Korea': 'KR',
+  'China': 'CN',
+  'Hong Kong': 'HK',
+  'Taiwan': 'TW',
+  'India': 'IN',
+  'Singapore': 'SG',
+  'Australia': 'AU',
+  'New Zealand': 'AU',
+  'Brazil': 'LATAM',
+  'Mexico': 'LATAM',
+  'Argentina': 'LATAM',
+  'Chile': 'LATAM',
+  'South Africa': 'AF',
+  'Saudi Arabia': 'ME',
+  'United Arab Emirates': 'ME',
+  'Israel': 'ME',
+  'Turkey': 'ME',
+};
+
+function countryToRegion(country) {
+  return COUNTRY_REGION[country] || 'Other';
+}
+
+function fmtPctLabel(v, d = 1) {
+  if (!isFinite(v)) return '\u2014';
+  return (v >= 0 ? '+' : '') + v.toFixed(d) + '%';
+}
+
+// Parse one fundamentals.csv row into a typed object. Returns null if price is missing.
+function parseFundamentalsRow(headers, vals) {
+  const get = (key) => {
+    const idx = headers.indexOf(key);
+    if (idx === -1) return '';
+    return (vals[idx] || '').trim();
+  };
+  const num = (key) => {
+    const s = get(key);
+    if (s === '' || s === 'N/A') return null;
+    const n = parseFloat(s);
+    return isNaN(n) ? null : n;
+  };
+  const ticker = get('Symbol');
+  const price = num('Price');
+  if (!ticker || price == null || price <= 0) return null;
+
+  return {
+    ticker,
+    company: get('Description') || ticker,
+    sector: get('Sector') || 'Unknown',
+    industry: get('Industry') || null,
+    country: get('Country or region of registration') || null,
+    price,
+    priceChange: num('Price Change % 1 day'),   // 1-day %, not 30-day like core
+    volatility1M: num('Volatility 1 month'),    // daily vol in %, annualise with ×√252
+    sma50: num('Simple Moving Average (50) 1 day'),
+    sma200: num('Simple Moving Average (200) 1 day'),
+    perf1M: num('Performance % 1 month'),
+    perf1Y: num('Performance % 1 year'),
+    perf5Y: num('Performance % 5 years'),
+    marketCap: num('Market capitalization'),
+    beta: num('Beta 5 years'),
+    analystRating: get('Analyst Rating') || null,
+    indicesList: (get('Index') || '').split(',').map(s => s.trim()).filter(Boolean),
+  };
+}
+
+// Derive the 6 indicators we can compute from a snapshot. Each returns { raw, label, color, pts } or undefined.
+function deriveUniverseIndicators(f) {
+  const inds = {};
+
+  // 1. volatility — annualise 1-month daily vol
+  if (f.volatility1M != null) {
+    const annual = f.volatility1M * Math.sqrt(252);
+    inds.volatility = {
+      raw: +annual.toFixed(4),
+      label: annual.toFixed(1) + '%',
+      ...scoreHighBad(annual, THRESHOLDS.volatility.greenBelow, THRESHOLDS.volatility.amberBelow),
+    };
+  }
+
+  // 2. shortTrend — price vs 50-day MA
+  if (f.sma50 != null && f.sma50 > 0) {
+    const st = (f.price / f.sma50 - 1) * 100;
+    inds.shortTrend = {
+      raw: +st.toFixed(4),
+      label: fmtPctLabel(st),
+      ...scoreLowBad(st, THRESHOLDS.shortTrend.greenAbove, THRESHOLDS.shortTrend.amberAbove),
+    };
+  }
+
+  // 3. longTrend — price vs 200-day MA
+  if (f.sma200 != null && f.sma200 > 0) {
+    const lt = (f.price / f.sma200 - 1) * 100;
+    inds.longTrend = {
+      raw: +lt.toFixed(4),
+      label: fmtPctLabel(lt),
+      ...scoreLowBad(lt, THRESHOLDS.longTrend.greenAbove, THRESHOLDS.longTrend.amberAbove),
+    };
+  }
+
+  // 4. maCross — SMA50 vs SMA200
+  if (f.sma50 != null && f.sma200 != null && f.sma200 > 0) {
+    const ratio = f.sma50 / f.sma200;
+    const isGolden = ratio >= THRESHOLDS.maCross.goldenCrossAt;
+    inds.maCross = {
+      raw: +ratio.toFixed(4),
+      label: isGolden ? 'Golden Cross' : 'Death Cross',
+      color: isGolden ? 'green' : 'red',
+      pts: isGolden ? 0 : 2,
+    };
+  }
+
+  // 5. return1M — Performance % 1 month
+  if (f.perf1M != null) {
+    inds.return1M = {
+      raw: +f.perf1M.toFixed(4),
+      label: fmtPctLabel(f.perf1M),
+      ...scoreLowBadInclusive(f.perf1M, THRESHOLDS.return1M.greenAbove, THRESHOLDS.return1M.amberAbove),
+    };
+  }
+
+  // 6. return1Y — Performance % 1 year
+  if (f.perf1Y != null) {
+    inds.return1Y = {
+      raw: +f.perf1Y.toFixed(4),
+      label: fmtPctLabel(f.perf1Y),
+      ...scoreLowBad(f.perf1Y, THRESHOLDS.return1Y.greenAbove, THRESHOLDS.return1Y.amberAbove),
+    };
+  }
+
+  return inds;
+}
+
+function processFundamentals(coreTickers) {
+  const filepath = path.join(RAW_DIR, 'fundamentals.csv');
+  if (!fs.existsSync(filepath)) {
+    console.log('  fundamentals.csv not found — skipping universe build');
+    return [];
+  }
+  console.log(`  Processing fundamentals.csv...`);
+  const parsed = parseCSV(filepath);
+  const { headers, rows } = parsed;
+
+  const coins = [];
+  let skippedDedup = 0;
+  let skippedBad = 0;
+
+  for (const vals of rows) {
+    const f = parseFundamentalsRow(headers, vals);
+    if (!f) { skippedBad++; continue; }
+    if (coreTickers.has(f.ticker)) { skippedDedup++; continue; }
+
+    const indicators = deriveUniverseIndicators(f);
+    // Require at least 3 derived indicators — otherwise the row is too thin to rank
+    if (Object.keys(indicators).length < 3) { skippedBad++; continue; }
+
+    coins.push({
+      ticker: f.ticker,
+      company: f.company,
+      sector: f.sector,
+      industry: f.industry,
+      country: f.country,
+      region: countryToRegion(f.country),
+      price: +f.price.toFixed(6),
+      priceChange: f.priceChange != null ? +f.priceChange.toFixed(2) : 0,
+      marketCap: f.marketCap,
+      beta: f.beta,
+      analystRating: f.analystRating,
+      indices: f.indicesList,
+      group: 'Universe',
+      tier: 'universe',
+      indicators,
+    });
+  }
+
+  console.log(`    → ${coins.length} universe assets, ${skippedDedup} dedup, ${skippedBad} skipped (missing data)`);
   return coins;
 }
 
@@ -507,6 +717,32 @@ function main() {
   console.log('\nBreakdown:');
   for (const [g, n] of Object.entries(groups)) {
     console.log(`  ${g.padEnd(14)} ${n}`);
+  }
+
+  // ── Universe build (fundamentals.csv snapshot, lazy-loaded) ─────────────
+  const coreTickers = new Set(allCoins.map(c => c.ticker));
+  const universeCoins = processFundamentals(coreTickers);
+  if (universeCoins.length > 0) {
+    const universePath = path.join(PUBLIC_DATA, 'universe.json');
+    const universeOutput = {
+      asOf:  output.asOf,
+      built: output.built,
+      total: universeCoins.length,
+      coins: universeCoins,
+    };
+    fs.writeFileSync(universePath, JSON.stringify(universeOutput));
+    const uniSizeKB = (fs.statSync(universePath).size / 1024).toFixed(0);
+    console.log(`\n\u2713 Built ${universeCoins.length} universe assets \u2192 public/data/universe.json (${uniSizeKB} KB)`);
+
+    // Summary by region
+    const regions = {};
+    for (const c of universeCoins) {
+      regions[c.region] = (regions[c.region] || 0) + 1;
+    }
+    console.log('\nUniverse breakdown:');
+    for (const [r, n] of Object.entries(regions).sort((a, b) => b[1] - a[1])) {
+      console.log(`  ${r.padEnd(10)} ${n}`);
+    }
   }
 }
 

@@ -1,6 +1,7 @@
 node_modules/
 dist/
 public/data/coins.json
+public/data/universe.json
 public/data/changes.json
 public/data/assets/
 .DS_Store

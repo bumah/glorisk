@@ -8,7 +8,7 @@
 
 import { getMoodBand, IND_META, IND_ORDER, MAX_SCORE, computeFitScore, getFitLabel, getFitColor, getFitClass, getProfile, getProfileSummary, FIT_QUESTIONS, isAssetInScope } from './riskEngine.js';
 import { isWatched, addToWatchlistWithPrompt, removeFromWatchlist, showToast } from './lists.js';
-import { loadData, searchCoins, fetchAssetData } from './data.js';
+import { loadData, searchCoins, fetchAssetData, loadUniverse, getCoinAnyTier } from './data.js';
 import html2canvas from 'html2canvas';
 import { getUser, signOut } from './supabase.js';
 
@@ -111,11 +111,12 @@ async function init() {
 
   renderCards();
 
-  // Handle ?asset= URL parameter (deep link from market summary)
+  // Handle ?asset= URL parameter (deep link from market summary or screener)
+  // Try core first; if not found, fall back to universe (lazy-loaded)
   const params = new URLSearchParams(window.location.search);
   const assetParam = params.get('asset');
   if (assetParam) {
-    const coin = allCoins.find(c => c.ticker === assetParam.toUpperCase());
+    const coin = await getCoinAnyTier(assetParam);
     if (coin) showReport(coin);
   }
 
@@ -978,6 +979,10 @@ function adAssetType(coin) {
   if (g === 'FTSE100') return 'Stock \u00b7 FTSE 100';
   if (g === 'Nikkei225') return 'Stock \u00b7 Nikkei 225';
   if (g === 'HSI') return 'Stock \u00b7 Hang Seng';
+  if (coin.tier === 'universe') {
+    const country = coin.country || 'Global';
+    return `Stock \u00b7 ${country}`;
+  }
   return 'Stock';
 }
 
@@ -1531,6 +1536,8 @@ function buildAdIndicatorHealthRow(coin) {
   const a = IND_ORDER.filter(k => k !== 'momentum' && coin.indicators[k]?.color === 'amber').length;
   const r = IND_ORDER.filter(k => k !== 'momentum' && coin.indicators[k]?.color === 'red').length;
   const total = g + a + r;
+  const MAX_INDICATORS = 10;
+  const isPartial = total < MAX_INDICATORS;
 
   // Pick the dominant colour for the headline number
   const headColor = r >= 3 ? 'var(--ad-red-muted)'
@@ -1545,7 +1552,7 @@ function buildAdIndicatorHealthRow(coin) {
               : a >= 2 ? { cls: 's',  label: 'Mostly healthy' }
               : { cls: 'vs', label: 'Healthy' };
 
-  const summary = r === 0 && a === 0
+  let summary = r === 0 && a === 0
     ? `All ${total} indicators green against our thresholds.`
     : r >= 2
     ? `${r} critical indicator${r > 1 ? 's' : ''} flagging stress.`
@@ -1553,13 +1560,25 @@ function buildAdIndicatorHealthRow(coin) {
     ? `${a} indicators in the caution zone \u2014 worth monitoring.`
     : `${g} healthy, ${a} caution, ${r} stressed.`;
 
+  if (isPartial) {
+    summary += ` <span style="color:var(--ad-text-dim);font-weight:500">(${total} of ${MAX_INDICATORS} measured)</span>`;
+  }
+
+  const subLabel = isPartial
+    ? `${total} of ${MAX_INDICATORS} indicators measured from snapshot data`
+    : 'RAG count across our 10 risk indicators';
+
+  const partialNote = isPartial
+    ? `<div class="ad-coverage-note">This is a universe asset built from snapshot fundamentals data. ${MAX_INDICATORS - total} indicator${MAX_INDICATORS - total > 1 ? 's' : ''} (volatility spike, distance from peak, position in range, 3-year growth) require historical price series we don't have for this ticker.</div>`
+    : '';
+
   return `
     <div class="ad-row">
       <div class="ad-row-head" data-row="health">
         <div class="ad-chev">\u25B6</div>
         <div>
           <div class="ad-rh-name">Indicator Health</div>
-          <div class="ad-rh-sub">RAG count across our 10 risk indicators</div>
+          <div class="ad-rh-sub">${subLabel}</div>
         </div>
         <div>
           <div class="ad-rh-num" style="color:${headColor}">${g}<span style="font-size:0.45em;color:var(--ad-text-dim)">/${total}</span></div>
@@ -1570,9 +1589,34 @@ function buildAdIndicatorHealthRow(coin) {
         <div></div>
       </div>
       <div class="ad-row-body" data-row-body="health">
+        ${partialNote}
         <div class="ad-body-label">Indicators</div>
         ${buildAdIndGroups(coin)}
       </div>
+    </div>
+  `;
+}
+
+// Universe-only strip: shows country, industry, market cap, beta, analyst rating
+function buildAdUniverseStrip(coin) {
+  const fmtCap = (v) => {
+    if (!v || !isFinite(v)) return '\u2014';
+    if (v >= 1e12) return '$' + (v / 1e12).toFixed(2) + 'T';
+    if (v >= 1e9)  return '$' + (v / 1e9).toFixed(2) + 'B';
+    if (v >= 1e6)  return '$' + (v / 1e6).toFixed(2) + 'M';
+    return '$' + v.toLocaleString();
+  };
+  const cells = [
+    { label: 'Country',   value: coin.country || '\u2014' },
+    { label: 'Industry',  value: coin.industry || '\u2014' },
+    { label: 'Sector',    value: coin.sector || '\u2014' },
+    { label: 'Market Cap', value: fmtCap(coin.marketCap) },
+    { label: 'Beta 5Y',   value: coin.beta != null ? coin.beta.toFixed(2) : '\u2014' },
+    { label: 'Analyst',   value: coin.analystRating || '\u2014' },
+  ];
+  return `
+    <div class="ad-uni-strip">
+      ${cells.map(c => `<div class="ad-uni-cell"><div class="ad-uni-lbl">${c.label}</div><div class="ad-uni-val">${c.value}</div></div>`).join('')}
     </div>
   `;
 }
@@ -1623,17 +1667,13 @@ function renderReport(coin) {
   if (chartInst) { chartInst.destroy(); chartInst = null; }
   if (scoreChartInst) { scoreChartInst.destroy(); scoreChartInst = null; }
 
-  const mood       = coin.mood;
-  const band       = getMoodBand(mood.label);
-  const change     = coin.priceChange || 0;
-  const ps = gloriskScore(mood);
-  const displayLabel = band.displayLabel ?? mood.label;
-  const shareText = `${coin.ticker} (${coin.company}) is rated ${displayLabel} with a GloRisk Score of ${ps} on GloRisk.`;
-  const shareUrl = window.location.origin + '/browse.html?asset=' + encodeURIComponent(coin.ticker);
+  // Universe assets have no mood / chart / price history
+  const isUniverse = coin.tier === 'universe';
 
   body.innerHTML = `
     ${buildAdTopbar(coin)}
     ${buildAdHeader(coin)}
+    ${isUniverse ? buildAdUniverseStrip(coin) : ''}
     ${buildAdFitSection(coin)}
     ${buildAdScoresSection(coin)}
   `;

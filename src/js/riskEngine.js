@@ -537,7 +537,13 @@ export function isAssetInScope(coin, profile) {
   if (g === 'SectorETFs') return hasTypes ? types.includes('etfs')    : true;
   if (g === 'Index')      return hasTypes ? types.includes('indices') : true;
 
-  // Stock: check both asset type and specific market
+  // Universe stocks are global — only check the stocks type flag.
+  // The per-market whitelist doesn't apply (they're not in MARKET_GROUP_MAP).
+  if (coin.tier === 'universe') {
+    return hasTypes ? types.includes('stocks') : true;
+  }
+
+  // Core stock: check both asset type and specific market
   if (hasTypes && !types.includes('stocks')) return false;
   if (hasMarkets) {
     const allowedGroups = markets.map(m => MARKET_GROUP_MAP[m]).filter(Boolean);
