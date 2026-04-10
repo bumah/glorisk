@@ -496,27 +496,27 @@ export function computeFitScore(indicators, profile) {
 /* ── Fit label / color / class ──────────────────────────────────────────── */
 
 export function getFitLabel(score) {
-  if (score >= 85) return 'Very Strong';
-  if (score >= 65) return 'Strong';
-  if (score >= 40) return 'Borderline';
-  if (score >= 20) return 'Poor';
-  return 'Very Poor';
+  if (score >= 85) return 'Very Low';
+  if (score >= 70) return 'Low';
+  if (score >= 55) return 'Moderate';
+  if (score >= 40) return 'High';
+  return 'Very High';
 }
 
 export function getFitColor(score) {
   if (score >= 85) return '#1D9E75';
-  if (score >= 65) return '#5DCAA5';
-  if (score >= 40) return '#EF9F27';
-  if (score >= 20) return '#F09595';
+  if (score >= 70) return '#5DCAA5';
+  if (score >= 55) return '#EF9F27';
+  if (score >= 40) return '#F09595';
   return '#E24B4A';
 }
 
 export function getFitClass(score) {
-  if (score >= 85) return 'vs';
-  if (score >= 65) return 's';
-  if (score >= 40) return 'b';
-  if (score >= 20) return 'p';
-  return 'vp';
+  if (score >= 85) return 'vl';
+  if (score >= 70) return 'l';
+  if (score >= 55) return 'm';
+  if (score >= 40) return 'h';
+  return 'vh';
 }
 
 /* ── Profile summary ──────────────────────────────────────────────────── */

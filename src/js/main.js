@@ -539,7 +539,7 @@ function renderCards() {
   grid.classList.add('grid-3col');
 
   if (!coins.length) {
-    grid.innerHTML = `<div class="no-results" style="grid-column:1/-1">No assets match your filters.</div>`;
+    grid.innerHTML = `<div class="no-results" style="grid-column:1/-1">No assets found for your filters.</div>`;
     return;
   }
 
@@ -996,11 +996,11 @@ function adIsStock() {
 // Fit score → badge info
 function adFitBadge(score) {
   if (score == null) return { cls: 'dim',        color: 'var(--ad-text-dim)',    label: '—' };
-  if (score >= 85)   return { cls: 'teal',       color: 'var(--ad-teal)',        label: 'Very Strong' };
-  if (score >= 65)   return { cls: 'teal-muted', color: 'var(--ad-teal-muted)',  label: 'Strong' };
-  if (score >= 40)   return { cls: 'amber',      color: 'var(--ad-amber)',       label: 'Borderline' };
-  if (score >= 20)   return { cls: 'red-muted',  color: 'var(--ad-red-muted)',   label: 'Poor' };
-  return                    { cls: 'red',        color: 'var(--ad-red)',         label: 'Very Poor' };
+  if (score >= 85)   return { cls: 'teal',       color: 'var(--ad-teal)',        label: 'Very Low' };
+  if (score >= 70)   return { cls: 'teal-muted', color: 'var(--ad-teal-muted)',  label: 'Low' };
+  if (score >= 55)   return { cls: 'amber',      color: 'var(--ad-amber)',       label: 'Moderate' };
+  if (score >= 40)   return { cls: 'red-muted',  color: 'var(--ad-red-muted)',   label: 'High' };
+  return                    { cls: 'red',        color: 'var(--ad-red)',         label: 'Very High' };
 }
 
 // Performance (mood) score → badge info
@@ -1142,21 +1142,21 @@ function buildAdFitSection(coin) {
   const profile = getProfile();
   if (!profile) {
     return `
-      <div class="ad-sec-label">Your scorecard match</div>
+      <div class="ad-sec-label">Your tolerance drift</div>
       <div class="ad-rows-wrap">
         <div class="ad-row">
           <div class="ad-row-head" data-row="fit" style="cursor:default">
             <div class="ad-chev" style="opacity:0.3">\u25B6</div>
             <div>
-              <div class="ad-rh-name">Scorecard Match</div>
-              <div class="ad-rh-sub">Build your scorecard to unlock personalised matching</div>
+              <div class="ad-rh-name">Tolerance Drift</div>
+              <div class="ad-rh-sub">Build your scorecard to unlock drift tracking</div>
             </div>
             <div>
               <div class="ad-rh-num" style="color:var(--ad-text-dim)">\u2014</div>
               <div class="ad-rh-numsub">/ 100</div>
             </div>
             <div><span class="ad-badge dim">Not set</span></div>
-            <div class="ad-rh-desc"><a href="/screener.html" style="color:var(--ad-indigo-mid);text-decoration:underline">Take the 2-minute questionnaire</a> to see how this asset matches your scorecard.</div>
+            <div class="ad-rh-desc"><a href="/screener.html" style="color:var(--ad-indigo-mid);text-decoration:underline">Take the 2-minute questionnaire</a> to see how this stock measures against your tolerance.</div>
             <div></div>
           </div>
         </div>
@@ -1166,8 +1166,8 @@ function buildAdFitSection(coin) {
 
   const fitScore = computeFitScore(coin.indicators, profile);
   if (fitScore == null) {
-    return `<div class="ad-sec-label">Your scorecard match</div>
-      <div class="ad-rows-wrap"><div class="ad-row"><div class="ad-row-head"><div></div><div><div class="ad-rh-name">Scorecard Match</div><div class="ad-rh-sub">Insufficient data</div></div><div></div><div></div><div></div><div></div></div></div></div>`;
+    return `<div class="ad-sec-label">Your tolerance drift</div>
+      <div class="ad-rows-wrap"><div class="ad-row"><div class="ad-row-head"><div></div><div><div class="ad-rh-name">Tolerance Drift</div><div class="ad-rh-sub">Insufficient data</div></div><div></div><div></div><div></div><div></div></div></div></div>`;
   }
 
   const fitBadge = adFitBadge(fitScore);
@@ -1234,11 +1234,11 @@ function buildAdFitSection(coin) {
   // Fit dots row — highlight current band
   const fitClass = getFitClass(fitScore);
   const dots = [
-    { c: 'var(--ad-red)',        label: 'Very Poor',  key: 'vp' },
-    { c: 'var(--ad-red-muted)',  label: 'Poor',       key: 'p'  },
-    { c: 'var(--ad-amber)',      label: 'Borderline', key: 'b'  },
-    { c: 'var(--ad-teal-muted)', label: 'Strong',     key: 's'  },
-    { c: 'var(--ad-teal)',       label: 'Very Strong',key: 'vs' },
+    { c: 'var(--ad-red)',        label: 'Very High',  key: 'vh' },
+    { c: 'var(--ad-red-muted)',  label: 'High',       key: 'h'  },
+    { c: 'var(--ad-amber)',      label: 'Moderate',    key: 'm'  },
+    { c: 'var(--ad-teal-muted)', label: 'Low',        key: 'l'  },
+    { c: 'var(--ad-teal)',       label: 'Very Low',   key: 'vl' },
   ];
   const dotsHTML = dots.map(d =>
     `<div class="ad-fit-dot-lg" style="background:${d.c};${d.key === fitClass ? 'border:2px solid rgba(255,255,255,0.3)' : 'opacity:0.4'}"></div>`
@@ -1266,20 +1266,20 @@ function buildAdFitSection(coin) {
   }
 
   const matchCount = strong + partial + low;
-  const align = fitBadge.label === 'Very Strong' ? 'This asset aligns closely with your scorecard.'
-             : fitBadge.label === 'Strong'       ? 'This asset aligns well with your scorecard.'
-             : fitBadge.label === 'Borderline'   ? 'This asset partially matches your scorecard.'
-             : fitBadge.label === 'Poor'         ? 'This asset mostly sits outside your scorecard.'
-             : 'This asset is outside your scorecard.';
+  const align = fitBadge.label === 'Very Low' ? 'This stock is within your tolerance zone.'
+             : fitBadge.label === 'Low'       ? 'This stock is mostly within your tolerance zone.'
+             : fitBadge.label === 'Moderate'  ? 'This stock drifts slightly from your tolerance.'
+             : fitBadge.label === 'High'      ? 'This stock drifts significantly from your tolerance.'
+             : 'This stock is outside your tolerance zone.';
 
   return `
-    <div class="ad-sec-label">Your scorecard match</div>
+    <div class="ad-sec-label">Your tolerance drift</div>
     <div class="ad-rows-wrap">
       <div class="ad-row">
         <div class="ad-row-head" data-row="fit">
           <div class="ad-chev">\u25B6</div>
           <div>
-            <div class="ad-rh-name">Scorecard Match</div>
+            <div class="ad-rh-name">Tolerance Drift</div>
             <div class="ad-rh-sub">${riskLevelText}</div>
           </div>
           <div>
@@ -1291,7 +1291,7 @@ function buildAdFitSection(coin) {
           <div></div>
         </div>
         <div class="ad-row-body" data-row-body="fit">
-          <div class="ad-body-label">Match level</div>
+          <div class="ad-body-label">Drift level</div>
           <div class="ad-fit-dots-row">${dotsHTML}</div>
           <div class="ad-fit-dot-labels">${labelsHTML}</div>
           <div class="ad-fit-sum-grid">
@@ -1299,14 +1299,14 @@ function buildAdFitSection(coin) {
             <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-amber)">${partial}</div><div class="ad-fit-sum-label">Warning</div></div>
             <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-red-muted)">${low}</div><div class="ad-fit-sum-label">Red Flags</div></div>
           </div>
-          <div class="ad-body-label">Breakdown \u2014 how it scored against your scorecard</div>
+          <div class="ad-body-label">Breakdown \u2014 how it measures against your tolerance</div>
           <div class="ad-bt-table">
             <div class="ad-bt-head">
               <div class="ad-bt-th">Indicator</div>
               <div class="ad-bt-th">Description</div>
               <div class="ad-bt-th">Value</div>
               <div class="ad-bt-th">Your preference</div>
-              <div class="ad-bt-th">Match</div>
+              <div class="ad-bt-th">Drift</div>
             </div>
             ${rowsHTML}
             <div class="ad-bt-total">
@@ -1646,7 +1646,7 @@ function renderReport(coin) {
     });
   }
 
-  // Auto-open the Scorecard Match row so users see the breakdown immediately
+  // Auto-open the Tolerance Drift row so users see the breakdown immediately
   const fitBody = body.querySelector('[data-row-body="fit"]');
   const fitChev = body.querySelector('[data-row="fit"] .ad-chev');
   if (fitBody && getProfile()) {

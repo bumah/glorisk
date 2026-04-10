@@ -233,18 +233,18 @@ body{background:#0D1B3E;}
     <div class="cmp-empty-sub">Use the selectors above to choose any two stocks, ETFs, crypto or index funds.</div>
   </div>
 
-  <!-- Scorecard match (only shown if user has scorecard + both assets selected) -->
+  <!-- Tolerance drift (only shown if user has scorecard + both assets selected) -->
   <div id="cmpFitSection" style="display:none">
-    <div class="cmp-sec-label">Scorecard match comparison</div>
+    <div class="cmp-sec-label">Tolerance drift comparison</div>
     <div class="cmp-profile-strip" id="cmpProfileStrip"></div>
     <div class="cmp-fit-compare" id="cmpFitCompare"></div>
   </div>
 
   <!-- No-scorecard CTA -->
   <div id="cmpProfileCta" style="display:none">
-    <div class="cmp-sec-label">Scorecard match comparison</div>
+    <div class="cmp-sec-label">Tolerance drift comparison</div>
     <div class="cmp-profile-cta">
-      <a href="/screener.html">Take the 2-minute questionnaire</a> to see how each asset matches your scorecard.
+      <a href="/screener.html">Take the 2-minute questionnaire</a> to see how each stock measures against your tolerance.
     </div>
   </div>
 
@@ -256,7 +256,7 @@ body{background:#0D1B3E;}
 
   <!-- Chart -->
   <div id="cmpChartSection" style="display:none">
-    <div class="cmp-sec-label">Match history</div>
+    <div class="cmp-sec-label">Drift history</div>
     <div class="cmp-chart-wrap">
       <div class="cmp-chart-legend" id="cmpChartLegend"></div>
       <div class="cmp-chart-canvas-wrap"><canvas id="cmpChart"></canvas></div>
@@ -457,11 +457,11 @@ function buildFitCard(coin, profile) {
   const breakdown = getFitBreakdown(coin, profile);
   const fitClass = getFitClass(fitScore);
   const bands = [
-    { c: 'var(--red)',        cls: 'vp', label: 'Very Poor'   },
-    { c: 'var(--red-muted)',  cls: 'p',  label: 'Poor'        },
-    { c: 'var(--amber)',      cls: 'b',  label: 'Borderline'  },
-    { c: 'var(--teal-muted)', cls: 's',  label: 'Strong'      },
-    { c: 'var(--teal)',       cls: 'vs', label: 'Very Strong' },
+    { c: 'var(--red)',        cls: 'vh', label: 'Very High'  },
+    { c: 'var(--red-muted)',  cls: 'h',  label: 'High'       },
+    { c: 'var(--amber)',      cls: 'm',  label: 'Moderate'   },
+    { c: 'var(--teal-muted)', cls: 'l',  label: 'Low'        },
+    { c: 'var(--teal)',       cls: 'vl', label: 'Very Low'   },
   ];
   const barsHTML = bands.map(b =>
     `<div class="cmp-fit-bar" style="background:${b.c};${b.cls === fitClass ? 'border:2px solid rgba(255,255,255,0.25)' : 'opacity:0.4'}"></div>`
@@ -480,16 +480,16 @@ function buildFitCard(coin, profile) {
         </div>
         <div class="cmp-fit-score-wrap">
           <div class="cmp-fit-score" style="color:${badge.color}">${fitScore}</div>
-          <div class="cmp-fit-score-label">/ 100 match score</div>
+          <div class="cmp-fit-score-label">/ 100 drift score</div>
           <div><span class="cmp-fit-badge" style="background:${badge.bg};color:${badge.color}">${getFitLabel(fitScore)}</span></div>
         </div>
       </div>
       <div class="cmp-fit-bars">${barsHTML}</div>
       <div class="cmp-fit-bar-labels">${labelsHTML}</div>
       <div class="cmp-fit-breakdown-grid">
-        <div class="cmp-fit-bd-card"><div class="cmp-fit-bd-num" style="color:var(--teal)">${breakdown.strong}</div><div class="cmp-fit-bd-label">Strong</div></div>
-        <div class="cmp-fit-bd-card"><div class="cmp-fit-bd-num" style="color:var(--amber)">${breakdown.partial}</div><div class="cmp-fit-bd-label">Partial</div></div>
-        <div class="cmp-fit-bd-card"><div class="cmp-fit-bd-num" style="color:var(--red-muted)">${breakdown.low}</div><div class="cmp-fit-bd-label">Low</div></div>
+        <div class="cmp-fit-bd-card"><div class="cmp-fit-bd-num" style="color:var(--teal)">${breakdown.strong}</div><div class="cmp-fit-bd-label">OK</div></div>
+        <div class="cmp-fit-bd-card"><div class="cmp-fit-bd-num" style="color:var(--amber)">${breakdown.partial}</div><div class="cmp-fit-bd-label">Warning</div></div>
+        <div class="cmp-fit-bd-card"><div class="cmp-fit-bd-num" style="color:var(--red-muted)">${breakdown.low}</div><div class="cmp-fit-bd-label">Red Flags</div></div>
       </div>
     </div>
   `;
@@ -507,7 +507,7 @@ function buildProfileStrip(profile) {
     ${summary.horizon ? `<div class="cmp-ppill"><span class="cmp-ppill-l">Horizon</span><span class="cmp-ppill-v">${summary.horizon}</span></div>` : ''}
     ${summary.philosophy ? `<div class="cmp-ppill"><span class="cmp-ppill-l">Style</span><span class="cmp-ppill-v">${summary.philosophy}</span></div>` : ''}
     <div class="cmp-ppill"><span class="cmp-ppill-l">Focus</span><span class="cmp-ppill-v">${focusText}</span></div>
-    <div class="cmp-profile-note">Match scores are calculated against this scorecard</div>
+    <div class="cmp-profile-note">Drift scores are calculated against this scorecard</div>
   `;
 }
 
@@ -600,13 +600,13 @@ async function renderComparison() {
 
   const rowsHTML = [];
 
-  // Scorecard Match row (only if profile)
+  // Tolerance Drift row (only if profile)
   if (profile && fitScoreA != null && fitScoreB != null) {
     rowsHTML.push(`
       <div class="cmp-sc-row">
         <div>
-          <div class="cmp-sc-metric">Scorecard Match</div>
-          <div class="cmp-sc-metric-sub">How closely each asset matches your scorecard</div>
+          <div class="cmp-sc-metric">Tolerance Drift</div>
+          <div class="cmp-sc-metric-sub">How far each stock drifts from your tolerance</div>
         </div>
         <div class="cmp-sc-val">
           <div class="cmp-sc-num" style="color:${fitBadgeA.color}">${fitScoreA}</div>

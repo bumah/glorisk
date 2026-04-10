@@ -77,11 +77,11 @@ html,body{overflow-y:auto !important;}
 .bar-mini{width:56px;height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;margin-left:auto;margin-top:4px;}
 .bar-fill-d{height:100%;border-radius:2px;}
 .badge-d{display:inline-flex;padding:3px 7px;border-radius:20px;font-size:8px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;}
-.badge-vs{background:var(--teal-bg);color:var(--teal);}
-.badge-s{background:var(--teal-muted-bg);color:var(--teal-muted);}
-.badge-b{background:var(--amber-bg);color:var(--amber-d);}
-.badge-p{background:var(--red-muted-bg);color:var(--red-muted);}
-.badge-vp{background:var(--red-bg);color:var(--red-d);}
+.badge-vl{background:var(--teal-bg);color:var(--teal);}
+.badge-l{background:var(--teal-muted-bg);color:var(--teal-muted);}
+.badge-m{background:var(--amber-bg);color:var(--amber-d);}
+.badge-h{background:var(--red-muted-bg);color:var(--red-muted);}
+.badge-vh{background:var(--red-bg);color:var(--red-d);}
 .actions-d{display:flex;gap:4px;justify-content:flex-end;align-items:center;flex-wrap:nowrap;}
 .act-d{font-size:9px;font-weight:700;letter-spacing:0.05em;padding:4px 9px;border-radius:5px;cursor:pointer;border:none;font-family:inherit;text-transform:uppercase;text-decoration:none;}
 .act-s{background:rgba(79,70,229,0.15);color:var(--indigo-mid);}
@@ -396,8 +396,8 @@ html,body{overflow-y:auto !important;}
 
 <div id="screenerResults" class="dash" style="display:none">
   <div class="page-head">
-    <div class="page-title">Your GloRisk Rankings</div>
-    <div class="page-sub">Global assets ranked by your personal risk appetite</div>
+    <div class="page-title">Your Tolerance Drift Rankings</div>
+    <div class="page-sub">Stocks ranked by how far they drift from your risk tolerance</div>
   </div>
 
   <div class="profile-bar">
@@ -409,12 +409,12 @@ html,body{overflow-y:auto !important;}
   <div class="summary-row" id="summaryRow"></div>
 
   <div class="legend">
-    <span class="legend-label">Rating scale</span>
-    <span class="l-chip" style="background:var(--teal-bg);color:var(--teal)"><div class="l-dot" style="background:var(--teal)"></div>Very Strong &middot; 85&ndash;100</span>
-    <span class="l-chip" style="background:var(--teal-muted-bg);color:var(--teal-muted)"><div class="l-dot" style="background:var(--teal-muted)"></div>Strong &middot; 65&ndash;84</span>
-    <span class="l-chip" style="background:var(--amber-bg);color:var(--amber-d)"><div class="l-dot" style="background:var(--amber-d)"></div>Borderline &middot; 40&ndash;64</span>
-    <span class="l-chip" style="background:var(--red-muted-bg);color:var(--red-muted)"><div class="l-dot" style="background:var(--red-muted)"></div>Poor &middot; 20&ndash;39</span>
-    <span class="l-chip" style="background:var(--red-bg);color:var(--red-d)"><div class="l-dot" style="background:var(--red-d)"></div>Very Poor &middot; 0&ndash;19</span>
+    <span class="legend-label">Drift scale</span>
+    <span class="l-chip" style="background:var(--teal-bg);color:var(--teal)"><div class="l-dot" style="background:var(--teal)"></div>Very Low &middot; 85&ndash;100</span>
+    <span class="l-chip" style="background:var(--teal-muted-bg);color:var(--teal-muted)"><div class="l-dot" style="background:var(--teal-muted)"></div>Low &middot; 70&ndash;84</span>
+    <span class="l-chip" style="background:var(--amber-bg);color:var(--amber-d)"><div class="l-dot" style="background:var(--amber-d)"></div>Moderate &middot; 55&ndash;69</span>
+    <span class="l-chip" style="background:var(--red-muted-bg);color:var(--red-muted)"><div class="l-dot" style="background:var(--red-muted)"></div>High &middot; 40&ndash;54</span>
+    <span class="l-chip" style="background:var(--red-bg);color:var(--red-d)"><div class="l-dot" style="background:var(--red-d)"></div>Very High &middot; 0&ndash;39</span>
   </div>
 
   <div class="search-row">
@@ -487,8 +487,8 @@ html,body{overflow-y:auto !important;}
   <div class="table-wrap-d">
     <div class="t-head">
       <div class="th th-tip" data-tip="Ticker and company name. Click any row to open the asset scorecard.">Asset</div>
-      <div class="th th-tip" data-tip="How closely this asset matches your personal scorecard — based on your answers to the 16 risk questions.">Match</div>
-      <div class="th th-tip" data-tip="Match strength: Very Strong, Strong, Borderline, Poor, or Very Poor." style="text-align:center">Rating</div>
+      <div class="th th-tip" data-tip="How far this stock drifts from your risk tolerance — based on your 16 risk answers.">Drift</div>
+      <div class="th th-tip" data-tip="Tolerance drift: Very Low, Low, Moderate, High, or Very High." style="text-align:center">Zone</div>
       <div class="th th-tip" data-tip="Current price. Refreshed weekly.">Price</div>
       <div class="th th-tip" data-tip="Price change over the past day.">1D</div>
       <div class="th th-tip" data-tip="6-month return.">6M</div>
@@ -678,17 +678,17 @@ function showResults(allCoins, profile) {
   }
 
   // Populate summary cards — based on in-scope only
-  const vs = scored.filter(c => c.fitScore >= 85).length;
-  const s = scored.filter(c => c.fitScore >= 65 && c.fitScore < 85).length;
-  const b = scored.filter(c => c.fitScore >= 40 && c.fitScore < 65).length;
-  const p = scored.filter(c => c.fitScore >= 20 && c.fitScore < 40).length;
-  const vp = scored.filter(c => c.fitScore < 20).length;
+  const vl = scored.filter(c => c.fitScore >= 85).length;
+  const lo = scored.filter(c => c.fitScore >= 70 && c.fitScore < 85).length;
+  const mo = scored.filter(c => c.fitScore >= 55 && c.fitScore < 70).length;
+  const hi = scored.filter(c => c.fitScore >= 40 && c.fitScore < 55).length;
+  const vh = scored.filter(c => c.fitScore < 40).length;
   document.getElementById('summaryRow').innerHTML = `
-    <div class="sum-card" data-tier="vs"><div class="sum-num" style="color:var(--teal)">${vs}</div><div class="sum-label">Very Strong</div></div>
-    <div class="sum-card" data-tier="s"><div class="sum-num" style="color:var(--teal-muted)">${s}</div><div class="sum-label">Strong</div></div>
-    <div class="sum-card" data-tier="b"><div class="sum-num" style="color:var(--amber-d)">${b}</div><div class="sum-label">Borderline</div></div>
-    <div class="sum-card" data-tier="p"><div class="sum-num" style="color:var(--red-muted)">${p}</div><div class="sum-label">Poor</div></div>
-    <div class="sum-card" data-tier="vp"><div class="sum-num" style="color:var(--red-d)">${vp}</div><div class="sum-label">Very Poor</div></div>
+    <div class="sum-card" data-tier="vl"><div class="sum-num" style="color:var(--teal)">${vl}</div><div class="sum-label">Very Low</div></div>
+    <div class="sum-card" data-tier="l"><div class="sum-num" style="color:var(--teal-muted)">${lo}</div><div class="sum-label">Low</div></div>
+    <div class="sum-card" data-tier="m"><div class="sum-num" style="color:var(--amber-d)">${mo}</div><div class="sum-label">Moderate</div></div>
+    <div class="sum-card" data-tier="h"><div class="sum-num" style="color:var(--red-muted)">${hi}</div><div class="sum-label">High</div></div>
+    <div class="sum-card" data-tier="vh"><div class="sum-num" style="color:var(--red-d)">${vh}</div><div class="sum-label">Very High</div></div>
   `;
 
   const body = document.getElementById('screenerBody');

@@ -182,31 +182,31 @@ body{background:#0D1B3E;}
 
   <div class="wl-profile-strip" id="wlProfileStrip">
     <span class="wl-profile-label">Your scorecard profile</span>
-    <span class="wl-profile-note" id="wlProfileNote">Set your scorecard to see match scores</span>
+    <span class="wl-profile-note" id="wlProfileNote">Set your scorecard to see drift scores</span>
   </div>
 
   <div class="wl-tab-row">
     <button class="wl-tab active" data-tab="watchlist">Watchlist</button>
-    <button class="wl-tab" data-tab="portfolio">Portfolio Match</button>
+    <button class="wl-tab" data-tab="portfolio">Portfolio Drift</button>
   </div>
 
   <!-- Hero card (only shown on Portfolio tab) -->
   <div id="wlHeroSection" style="display:none">
-    <div class="wl-sec-label wl-sec-gap">Portfolio match score</div>
+    <div class="wl-sec-label wl-sec-gap">Portfolio drift score</div>
     <div class="wl-hero-card">
       <div class="wl-hero-top">
         <div>
-          <div class="wl-score-label">Overall match</div>
+          <div class="wl-score-label">Overall drift</div>
           <div class="wl-score-giant" id="wlHeroScore">—</div>
           <div class="wl-score-sub" id="wlHeroCount">0 holdings</div>
           <div><span class="wl-score-badge" id="wlHeroBadge" style="background:rgba(255,255,255,0.04);color:var(--text-dim);">—</span></div>
         </div>
         <div class="wl-dist-grid" id="wlHeroDist">
-          <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--teal);">0</div><div class="wl-dist-lbl">Very Strong</div></div>
-          <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--teal-muted);">0</div><div class="wl-dist-lbl">Strong</div></div>
-          <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--amber);">0</div><div class="wl-dist-lbl">Borderline</div></div>
-          <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--red-muted);">0</div><div class="wl-dist-lbl">Poor</div></div>
-          <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--red);">0</div><div class="wl-dist-lbl">Very Poor</div></div>
+          <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--teal);">0</div><div class="wl-dist-lbl">Very Low</div></div>
+          <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--teal-muted);">0</div><div class="wl-dist-lbl">Low</div></div>
+          <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--amber);">0</div><div class="wl-dist-lbl">Moderate</div></div>
+          <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--red-muted);">0</div><div class="wl-dist-lbl">High</div></div>
+          <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--red);">0</div><div class="wl-dist-lbl">Very High</div></div>
         </div>
       </div>
       <div class="wl-fit-bars" id="wlHeroBars">
@@ -217,11 +217,11 @@ body{background:#0D1B3E;}
         <div class="wl-fit-bar" style="background:var(--teal);opacity:0.4;"></div>
       </div>
       <div class="wl-fbl-row" id="wlHeroLabels">
-        <span class="wl-fbl">Very Poor</span>
-        <span class="wl-fbl">Poor</span>
-        <span class="wl-fbl">Borderline</span>
-        <span class="wl-fbl">Strong</span>
-        <span class="wl-fbl">Very Strong</span>
+        <span class="wl-fbl">Very High</span>
+        <span class="wl-fbl">High</span>
+        <span class="wl-fbl">Moderate</span>
+        <span class="wl-fbl">Low</span>
+        <span class="wl-fbl">Very Low</span>
       </div>
     </div>
   </div>
@@ -249,11 +249,11 @@ body{background:#0D1B3E;}
 
   <div class="wl-filter-row" id="wlFilterRow">
     <button class="wl-filter-btn active" data-filter="all">All</button>
-    <button class="wl-filter-btn" data-filter="vs">Very Strong</button>
-    <button class="wl-filter-btn" data-filter="s">Strong</button>
-    <button class="wl-filter-btn" data-filter="b">Borderline</button>
-    <button class="wl-filter-btn" data-filter="p">Poor</button>
-    <button class="wl-filter-btn" data-filter="vp">Very Poor</button>
+    <button class="wl-filter-btn" data-filter="vl">Very Low</button>
+    <button class="wl-filter-btn" data-filter="l">Low</button>
+    <button class="wl-filter-btn" data-filter="m">Moderate</button>
+    <button class="wl-filter-btn" data-filter="h">High</button>
+    <button class="wl-filter-btn" data-filter="vh">Very High</button>
   </div>
 
   <div id="wlListArea"></div>
@@ -312,11 +312,11 @@ function getCoin(ticker) { return allCoins.find(c => c.ticker === ticker); }
 
 function fitBadgeStyle(score) {
   if (score == null) return { bg: 'rgba(255,255,255,0.04)', color: 'var(--text-dim)', label: '—' };
-  if (score >= 85)   return { bg: 'var(--teal-bg)',          color: 'var(--teal)',       label: 'Very Strong' };
-  if (score >= 65)   return { bg: 'rgba(93,202,165,0.15)',   color: 'var(--teal-muted)', label: 'Strong' };
-  if (score >= 40)   return { bg: 'var(--amber-bg)',         color: 'var(--amber)',      label: 'Borderline' };
-  if (score >= 20)   return { bg: 'rgba(240,149,149,0.15)',  color: 'var(--red-muted)',  label: 'Poor' };
-  return                    { bg: 'var(--red-bg)',           color: 'var(--red)',        label: 'Very Poor' };
+  if (score >= 85)   return { bg: 'var(--teal-bg)',          color: 'var(--teal)',       label: 'Very Low' };
+  if (score >= 70)   return { bg: 'rgba(93,202,165,0.15)',   color: 'var(--teal-muted)', label: 'Low' };
+  if (score >= 55)   return { bg: 'var(--amber-bg)',         color: 'var(--amber)',      label: 'Moderate' };
+  if (score >= 40)   return { bg: 'rgba(240,149,149,0.15)',  color: 'var(--red-muted)',  label: 'High' };
+  return                    { bg: 'var(--red-bg)',           color: 'var(--red)',        label: 'Very High' };
 }
 
 
@@ -334,7 +334,7 @@ function renderProfileStrip() {
   if (!profile) {
     strip.innerHTML = `
       <span class="wl-profile-label">Your scorecard profile</span>
-      <a href="/screener.html" class="wl-profile-cta">Set your scorecard to unlock match scores →</a>
+      <a href="/screener.html" class="wl-profile-cta">Set your scorecard to unlock drift scores →</a>
     `;
     return;
   }
@@ -348,7 +348,7 @@ function renderProfileStrip() {
     ${summary?.horizon ? `<div class="wl-ppill"><span class="wl-ppill-l">Horizon</span><span class="wl-ppill-v">${summary.horizon}</span></div>` : ''}
     ${summary?.philosophy ? `<div class="wl-ppill"><span class="wl-ppill-l">Style</span><span class="wl-ppill-v">${summary.philosophy}</span></div>` : ''}
     <div class="wl-ppill"><span class="wl-ppill-l">Focus</span><span class="wl-ppill-v">${focusText}</span></div>
-    <div class="wl-profile-note">All match scores calculated against this scorecard</div>
+    <div class="wl-profile-note">All drift scores calculated against this scorecard</div>
   `;
 }
 
@@ -379,11 +379,11 @@ function renderHero() {
     badgeEl.style.background = 'rgba(255,255,255,0.04)';
     badgeEl.style.color = 'var(--text-dim)';
     distEl.innerHTML = `
-      <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--teal);">0</div><div class="wl-dist-lbl">Very Strong</div></div>
-      <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--teal-muted);">0</div><div class="wl-dist-lbl">Strong</div></div>
-      <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--amber);">0</div><div class="wl-dist-lbl">Borderline</div></div>
-      <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--red-muted);">0</div><div class="wl-dist-lbl">Poor</div></div>
-      <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--red);">0</div><div class="wl-dist-lbl">Very Poor</div></div>
+      <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--teal);">0</div><div class="wl-dist-lbl">Very Low</div></div>
+      <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--teal-muted);">0</div><div class="wl-dist-lbl">Low</div></div>
+      <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--amber);">0</div><div class="wl-dist-lbl">Moderate</div></div>
+      <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--red-muted);">0</div><div class="wl-dist-lbl">High</div></div>
+      <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--red);">0</div><div class="wl-dist-lbl">Very High</div></div>
     `;
     barsEl.innerHTML = `
       <div class="wl-fit-bar" style="background:var(--red);opacity:0.4;"></div>
@@ -393,7 +393,7 @@ function renderHero() {
       <div class="wl-fit-bar" style="background:var(--teal);opacity:0.4;"></div>
     `;
     labelsEl.innerHTML = `
-      <span class="wl-fbl">Very Poor</span><span class="wl-fbl">Poor</span><span class="wl-fbl">Borderline</span><span class="wl-fbl">Strong</span><span class="wl-fbl">Very Strong</span>
+      <span class="wl-fbl">Very High</span><span class="wl-fbl">High</span><span class="wl-fbl">Moderate</span><span class="wl-fbl">Low</span><span class="wl-fbl">Very Low</span>
     `;
     return;
   }
@@ -421,27 +421,27 @@ function renderHero() {
   badgeEl.style.color = overallBadge.color;
 
   // Distribution
-  const dist = { vs: 0, s: 0, b: 0, p: 0, vp: 0 };
+  const dist = { vl: 0, l: 0, m: 0, h: 0, vh: 0 };
   scores.forEach(s => { dist[getFitClass(s)]++; });
   distEl.innerHTML = `
-    <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--teal);">${dist.vs}</div><div class="wl-dist-lbl">Very Strong</div></div>
-    <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--teal-muted);">${dist.s}</div><div class="wl-dist-lbl">Strong</div></div>
-    <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--amber);">${dist.b}</div><div class="wl-dist-lbl">Borderline</div></div>
-    <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--red-muted);">${dist.p}</div><div class="wl-dist-lbl">Poor</div></div>
-    <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--red);">${dist.vp}</div><div class="wl-dist-lbl">Very Poor</div></div>
+    <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--teal);">${dist.vl}</div><div class="wl-dist-lbl">Very Low</div></div>
+    <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--teal-muted);">${dist.l}</div><div class="wl-dist-lbl">Low</div></div>
+    <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--amber);">${dist.m}</div><div class="wl-dist-lbl">Moderate</div></div>
+    <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--red-muted);">${dist.h}</div><div class="wl-dist-lbl">High</div></div>
+    <div class="wl-dist-card"><div class="wl-dist-num" style="color:var(--red);">${dist.vh}</div><div class="wl-dist-lbl">Very High</div></div>
   `;
 
   // Highlight active band on the bars
   const cls = getFitClass(overall);
-  const bandOrder = ['vp', 'p', 'b', 's', 'vs'];
-  const bandColors = { vp: 'var(--red)', p: 'var(--red-muted)', b: 'var(--amber)', s: 'var(--teal-muted)', vs: 'var(--teal)' };
+  const bandOrder = ['vh', 'h', 'm', 'l', 'vl'];
+  const bandColors = { vh: 'var(--red)', h: 'var(--red-muted)', m: 'var(--amber)', l: 'var(--teal-muted)', vl: 'var(--teal)' };
   barsEl.innerHTML = bandOrder.map(k =>
     `<div class="wl-fit-bar" style="background:${bandColors[k]};${k === cls ? 'border:2px solid rgba(255,255,255,0.25);' : 'opacity:0.4;'}"></div>`
   ).join('');
-  const labels = ['Very Poor', 'Poor', 'Borderline', 'Strong', 'Very Strong'];
+  const labels = ['Very High', 'High', 'Moderate', 'Low', 'Very Low'];
   labelsEl.innerHTML = bandOrder.map((k, i) => {
     const isCurrent = k === cls;
-    return `<span class="wl-fbl"${isCurrent ? ` style="color:${bandColors[k]};font-weight:700"` : ''}>${labels[i]}${isCurrent ? ' \u2190' : ''}</span>`;
+    return `<span class="wl-fbl"${isCurrent ? ` style="color:${bandColors[k]};font-weight:700"` : ''}>${labels[i]}</span>`;
   }).join('');
 }
 
@@ -486,8 +486,8 @@ function renderTable() {
 
   if (!rows.length) {
     area.innerHTML = `<div class="wl-empty">
-      <div class="wl-empty-title">No assets match this filter</div>
-      <div class="wl-empty-sub">Try a different match tier or click <strong>All</strong> to see everything.</div>
+      <div class="wl-empty-title">No assets found for this filter</div>
+      <div class="wl-empty-sub">Try a different drift tier or click <strong>All</strong> to see everything.</div>
     </div>`;
     return;
   }
@@ -538,9 +538,9 @@ function renderTable() {
         <div class="wl-th th-tip" data-tip="Ticker and company name. Click any row to open the asset scorecard.">Asset</div>
         <div class="wl-th th-tip" data-tip="Current price. Refreshed weekly.">Price</div>
         <div class="wl-th th-tip" data-tip="Price change over the past 30 days.">30D</div>
-        <div class="wl-th th-tip" data-tip="How closely this asset matches your personal scorecard — based on your answers to the 10 risk questions.">Match</div>
+        <div class="wl-th th-tip" data-tip="How far this stock drifts from your risk tolerance — based on your 16 risk answers.">Drift</div>
         <div class="wl-th th-tip" data-tip="Indicator Health — count of green (healthy), amber (caution) and red (stressed) indicators out of 10.">Health</div>
-        <div class="wl-th th-tip" data-tip="Match strength: Very Strong, Strong, Borderline, Poor, or Very Poor." style="text-align:center">Rating</div>
+        <div class="wl-th th-tip" data-tip="Tolerance drift: Very Low, Low, Moderate, High, or Very High." style="text-align:center">Zone</div>
         <div class="wl-th"></div>
       </div>
       ${rowsHTML}
@@ -592,7 +592,7 @@ function setTab(tab) {
   document.querySelectorAll('.wl-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
   // Update copy
   const isPortfolio = tab === 'portfolio';
-  document.getElementById('wlPageTitle').textContent = isPortfolio ? 'Your portfolio match' : 'Your risk watchlist';
+  document.getElementById('wlPageTitle').textContent = isPortfolio ? 'Your portfolio drift' : 'Your risk watchlist';
   document.getElementById('wlPageSub').textContent = isPortfolio
     ? 'How aligned are your holdings with your risk scorecard.'
     : 'Track assets against your personal risk scorecard.';
