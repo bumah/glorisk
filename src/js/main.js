@@ -1581,6 +1581,204 @@ function buildAdScoresSection(coin) {
   `;
 }
 
+/* ── Category-based indicator grid (shared by Drift + Health tabs) ──── */
+
+function buildCategoryCards(coin, prefix) {
+  const ind = coin.indicators || {};
+  let cardsHTML = '';
+  let detailsHTML = '';
+
+  for (const cat of CATEGORIES) {
+    let gC = 0, aC = 0, rC = 0;
+    cat.keys.forEach(k => {
+      const c = ind[k]?.color;
+      if (c === 'green') gC++;
+      else if (c === 'amber') aC++;
+      else if (c === 'red') rC++;
+    });
+    const overallColor = rC > 0 ? 'var(--ad-red-muted)' : aC > 0 ? 'var(--ad-amber)' : 'var(--ad-teal)';
+    const catId = `${prefix}-${cat.id}`;
+
+    cardsHTML += `
+      <div class="ad-cat-card" data-catcard="${catId}">
+        <div class="ad-cat-label">${cat.label}</div>
+        <div class="ad-cat-dots">
+          <span style="color:var(--ad-teal)">\u25CF ${gC}</span> \u00a0
+          <span style="color:var(--ad-amber)">\u25CF ${aC}</span> \u00a0
+          <span style="color:var(--ad-red-muted)">\u25CF ${rC}</span>
+        </div>
+        <div class="ad-cat-overall"><div class="ad-cat-overall-dot" style="background:${overallColor}"></div>Overall</div>
+      </div>`;
+
+    // Build compact indicator rows for this category
+    let rows = '';
+    for (const k of cat.keys) {
+      const v = ind[k];
+      if (!v) continue;
+      const meta = IND_META[k] || {};
+      const lbl = labelFor(k, v.raw, v.color);
+      const dotColor = v.color === 'green' ? 'var(--ad-teal)' : v.color === 'amber' ? 'var(--ad-amber)' : 'var(--ad-red-muted)';
+      const desc = meta.desc ? meta.desc.split('.')[0] : '';
+      rows += `
+        <div class="ad-cpt-row" data-cptrow>
+          <div class="ad-cpt-name"><span class="ad-cpt-chev">\u25B6</span><span class="ad-ind-dot" style="background:${dotColor}"></span>${meta.label || k}</div>
+          <div class="ad-cpt-val" style="color:${dotColor}">${lbl}</div>
+          <div class="ad-cpt-exp">${desc} \u2014 currently ${lbl}.</div>
+        </div>`;
+    }
+
+    detailsHTML += `
+      <div class="ad-cat-detail" data-catdetail="${catId}">
+        <div class="ad-cat-detail-table">${rows}</div>
+      </div>`;
+  }
+
+  return `<div class="ad-cat-grid">${cardsHTML}</div>${detailsHTML}`;
+}
+
+function buildTabbedRiskSection(coin) {
+  const profile = getProfile();
+  const fitScore = profile ? computeFitScore(coin.indicators, profile) : null;
+
+  // ── Drift tab content ──
+  let driftContent;
+  if (!profile) {
+    driftContent = `
+      <div style="text-align:center;padding:24px 0;color:var(--ad-text-muted)">
+        <div style="font-size:14px;font-weight:600;color:var(--ad-warm-white);margin-bottom:8px">Tolerance Drift</div>
+        <div style="font-size:12px;margin-bottom:14px">Build your scorecard to see how this stock measures against your tolerance.</div>
+        <a href="/screener.html" style="color:var(--ad-indigo-mid);text-decoration:underline;font-size:12px">Take the 2-minute questionnaire \u2192</a>
+      </div>`;
+  } else if (fitScore == null) {
+    driftContent = `<div style="text-align:center;padding:24px 0;color:var(--ad-text-muted);font-size:12px">Insufficient data to calculate drift.</div>`;
+  } else {
+    const fitBadge = adFitBadge(fitScore);
+    const summary = getProfileSummary(profile);
+    const riskParts = [summary?.riskLevel, summary?.horizon, summary?.philosophy].filter(Boolean);
+
+    const SCORE_MATRIX = { A: { green: 1, amber: 0.5, red: 0 }, B: { green: 1, amber: 1, red: 0 }, C: { green: 1, amber: 1, red: 1 } };
+    let strong = 0, partial = 0, low = 0;
+    FIT_QUESTIONS.forEach(q => {
+      const answer = profile[q.key];
+      if (!answer) return;
+      const scores = SCORE_MATRIX[answer];
+      if (!scores) return;
+      q.indicators.forEach(indKey => {
+        const ind = coin.indicators[indKey];
+        if (!ind) return;
+        const s = scores[ind.color] ?? 0;
+        if (s === 1) strong++; else if (s === 0.5) partial++; else low++;
+      });
+    });
+
+    // Drift level dots
+    const fitClass = getFitClass(fitScore);
+    const dots = [
+      { c: 'var(--ad-red)',        label: 'Very High',  key: 'vh' },
+      { c: 'var(--ad-red-muted)',  label: 'High',       key: 'h'  },
+      { c: 'var(--ad-amber)',      label: 'Moderate',    key: 'm'  },
+      { c: 'var(--ad-teal-muted)', label: 'Low',        key: 'l'  },
+      { c: 'var(--ad-teal)',       label: 'Very Low',   key: 'vl' },
+    ];
+    const dotsHTML = dots.map(d =>
+      `<div class="ad-fit-dot-lg" style="background:${d.c};${d.key === fitClass ? 'border:2px solid rgba(255,255,255,0.3)' : 'opacity:0.4'}"></div>`
+    ).join('');
+    const labelsHTML = dots.map(d => {
+      const isCurrent = d.key === fitClass;
+      return `<span class="ad-fit-dot-label${isCurrent ? ' current' : ''}" style="${isCurrent ? `color:${d.c};font-weight:700` : ''}">${d.label}</span>`;
+    }).join('');
+
+    driftContent = `
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:32px;font-weight:700;color:${fitBadge.color};font-family:Georgia,serif">${fitScore}</div>
+          <div style="font-size:10px;color:var(--ad-text-dim)">/ 100</div>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:13px;font-weight:600;color:var(--ad-warm-white)">Tolerance Drift: <span class="ad-badge ${fitBadge.cls}">${fitBadge.label}</span></div>
+          <div style="font-size:11px;color:var(--ad-text-muted);margin-top:4px">${riskParts.length ? `Based on your ${riskParts.join(' \u00b7 ')} profile` : 'Based on your risk profile'}</div>
+        </div>
+      </div>
+      <div class="ad-fit-dots-row">${dotsHTML}</div>
+      <div class="ad-fit-dot-labels" style="margin-bottom:16px">${labelsHTML}</div>
+      <div class="ad-fit-sum-grid" style="margin-bottom:20px">
+        <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-teal)">${strong}</div><div class="ad-fit-sum-label">OK</div></div>
+        <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-amber)">${partial}</div><div class="ad-fit-sum-label">Warning</div></div>
+        <div class="ad-fit-sum-card"><div class="ad-fit-sum-num" style="color:var(--ad-red-muted)">${low}</div><div class="ad-fit-sum-label">Red Flags</div></div>
+      </div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ad-text-dim);margin-bottom:10px">Drift by category</div>
+      ${buildCategoryCards(coin, 'drift')}
+    `;
+  }
+
+  // ── Health tab content ──
+  const ind = coin.indicators || {};
+  const gT = IND_ORDER.filter(k => ind[k]?.color === 'green').length;
+  const aT = IND_ORDER.filter(k => ind[k]?.color === 'amber').length;
+  const rT = IND_ORDER.filter(k => ind[k]?.color === 'red').length;
+  const overallDot = rT >= 8 ? 'var(--ad-red-muted)' : rT >= 3 || aT >= 10 ? 'var(--ad-amber)' : 'var(--ad-teal)';
+
+  const healthContent = `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+      <div style="font-size:14px;font-weight:600">
+        <span style="color:var(--ad-teal)">\u25CF ${gT}</span> \u00a0
+        <span style="color:var(--ad-amber)">\u25CF ${aT}</span> \u00a0
+        <span style="color:var(--ad-red-muted)">\u25CF ${rT}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="font-size:10px;color:var(--ad-text-dim);text-transform:uppercase;letter-spacing:0.08em">Overall</span>
+        <span style="color:${overallDot};font-size:16px">\u25CF</span>
+      </div>
+    </div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ad-text-dim);margin-bottom:10px">Health by category</div>
+    ${buildCategoryCards(coin, 'health')}
+  `;
+
+  return `
+    <div class="ad-sec-label">Risk Analysis</div>
+    <div class="ad-tab-row">
+      <button class="ad-tab ${profile && fitScore != null ? 'active' : ''}" data-adtab="drift">Tolerance Drift</button>
+      <button class="ad-tab ${!profile || fitScore == null ? 'active' : ''}" data-adtab="health">Stock Health</button>
+    </div>
+    <div class="ad-tab-body">
+      <div class="ad-tab-content ${profile && fitScore != null ? 'active' : ''}" id="adTabDrift">${driftContent}</div>
+      <div class="ad-tab-content ${!profile || fitScore == null ? 'active' : ''}" id="adTabHealth">${healthContent}</div>
+    </div>
+  `;
+}
+
+function wireAdTabs(root) {
+  root.querySelectorAll('.ad-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.adtab;
+      root.querySelectorAll('.ad-tab').forEach(t => t.classList.remove('active'));
+      root.querySelectorAll('.ad-tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      const panel = root.querySelector(`#adTab${target.charAt(0).toUpperCase() + target.slice(1)}`);
+      if (panel) panel.classList.add('active');
+    });
+  });
+}
+
+function wireAdCategoryCards(root) {
+  root.querySelectorAll('.ad-cat-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.catcard;
+      const detail = root.querySelector(`[data-catdetail="${id}"]`);
+      if (!detail) return;
+      const isOpen = card.classList.contains('open');
+      card.classList.toggle('open', !isOpen);
+      detail.classList.toggle('open', !isOpen);
+    });
+  });
+  // Compact indicator rows — click to toggle explanation
+  root.querySelectorAll('[data-cptrow]').forEach(row => {
+    row.addEventListener('click', () => {
+      row.classList.toggle('open');
+    });
+  });
+}
+
 // Wire up click-to-toggle for every row
 function wireAdToggles(root) {
   root.querySelectorAll('.ad-row-head').forEach(head => {
@@ -1622,11 +1820,12 @@ function renderReport(coin) {
     ${buildAdTopbar(coin)}
     ${buildAdHeader(coin)}
     ${buildAdCompanyStrip(coin)}
-    ${buildAdFitSection(coin)}
-    ${buildAdScoresSection(coin)}
+    ${buildTabbedRiskSection(coin)}
   `;
 
   wireAdToggles(body);
+  wireAdTabs(body);
+  wireAdCategoryCards(body);
 
   // Wire watch button — toggles localStorage, flips icon state, shows toast prompt
   const watchBtn = body.querySelector('#adWatchBtn');
@@ -1646,13 +1845,7 @@ function renderReport(coin) {
     });
   }
 
-  // Auto-open the Tolerance Drift row so users see the breakdown immediately
-  const fitBody = body.querySelector('[data-row-body="fit"]');
-  const fitChev = body.querySelector('[data-row="fit"] .ad-chev');
-  if (fitBody && getProfile()) {
-    fitBody.classList.add('open');
-    fitChev?.classList.add('open');
-  }
+  // Tabs handle visibility — no auto-open needed for old accordion rows
 
   // Update tool bar links with current ticker (hidden elements kept for backwards compat)
   const rtbCompare = document.getElementById('rtbCompare');
